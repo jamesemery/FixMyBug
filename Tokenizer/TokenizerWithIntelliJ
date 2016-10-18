@@ -1,0 +1,11 @@
+How to use the Tokenizer with IntelliJ, by Alex Griese
+
+1. Open intelliJ and choose import existing project and select FixMyBug.
+2. Import as a regular project and click through (Make sure you have jdk 1.8).
+3. Go to View -> tool windows -> select Maven Projects
+4. Select + sign in Maven window and select the pom.xml under Tokenizer.
+5. Repeat this for gs-rest-service in the initial folder and the complete folder.
+6. Select second button in the maven window at the top, generate sources.
+7. Run Main.main by right clicking in the window when Main.java is open.
+8. Hover over red method names in Main.java until red lightbulb pops up.
+9. Add library and change file path to yours, and run.
