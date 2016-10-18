@@ -24,6 +24,8 @@ public class GreetingController {
 	        System.out.println(clientFile.getFileContent());
 	        System.out.println(clientFile.getErrorMessage());
 
+            clientFile.setErrorMessage("Now we can edit what we receive!");
+
 	        return clientFile;
 
     	} catch (JsonGenerationException e) {
