@@ -79,7 +79,7 @@ class Test {
 		public Worker(List<String> files) {
 			this.files = files;
 		}
-		@Override
+		//@Override
 		public void run() {
 			parserStart = System.currentTimeMillis();
 			for (String f : files) {
@@ -270,7 +270,7 @@ class Test {
 			// start parsing at the compilationUnit rule
 			ParserRuleContext t = parser.compilationUnit();
 			if ( notree ) parser.setBuildParseTree(false);
-			if ( gui ) t.inspect(parser);
+			if ( gui );//TODO t.inspect(parser);
 			if ( printTree ) System.out.println(t.toStringTree(parser));
 		}
 		catch (Exception e) {

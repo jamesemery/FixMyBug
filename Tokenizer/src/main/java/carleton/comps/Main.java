@@ -12,7 +12,7 @@ public class Main {
 
     public static void main(String[] args) {
         try {
-            ANTLRFileStream input = new ANTLRFileStream("/Users/jamie/Documents/College/Senior/Comps/Antlr4Test/src/com/company/Main.java");
+            ANTLRFileStream input = new ANTLRFileStream("/Users/jamie/Documents/College/Senior/Comps/FixMyBug/Tokenizer/src/main/java/carleton/comps/Main.java");
             JavaLexer lexer = new JavaLexer(input);
             CommonTokenStream stream = new CommonTokenStream(lexer);
             System.out.println(stream.getNumberOfOnChannelTokens());
