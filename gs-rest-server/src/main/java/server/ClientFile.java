@@ -1,4 +1,4 @@
-package hello;
+package server;
 
 public class ClientFile {
 	private static String fileContent;

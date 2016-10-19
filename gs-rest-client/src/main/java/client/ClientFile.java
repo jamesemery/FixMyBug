@@ -1,5 +1,11 @@
 package client;
 
+/*
+* ClientFile.java
+*
+* A simple class that contains a java file and its associated
+* compiler-error message.
+*/
 public class ClientFile {
 	private static String fileContent;
 	private static String errorMessage;

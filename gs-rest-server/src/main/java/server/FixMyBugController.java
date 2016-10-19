@@ -1,4 +1,4 @@
-package hello;
+package server;
 
 import java.util.concurrent.atomic.AtomicLong;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,7 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.*;
 
 @RestController
-public class GreetingController {
+public class FixMyBugController {
 
     @RequestMapping("/fix")
     public ClientFile clientCode(@RequestBody String input) {
