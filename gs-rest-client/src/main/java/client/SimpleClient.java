@@ -8,46 +8,52 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+/*
+* A Simple REST client that will send ClientFile objects to a server,
+* and handle its response.
+*/
 public class SimpleClient {
 
-    // http://localhost:8080/RESTfulExample/json/product/post
-    public static void main(String[] args) {
+    /*
+    * Reads in a text file and returns it as a string.
+    */
+    public static String fileToString(String fileName) throws IOException {
+        BufferedReader reader = new BufferedReader(new FileReader(fileName));
+        String line = null;
+        StringBuilder stringBuilder = new StringBuilder();
+        String ls = System.getProperty("line.separator");
 
         try {
+            while((line = reader.readLine()) != null) {
+                stringBuilder.append(line);
+                stringBuilder.append(ls);
+            }
+
+            return stringBuilder.toString();
+        } finally {
+            reader.close();
+        }
+    }
+
+    /*
+    * Sends a ClientFile object (file + error message) to the server
+    * as a JSON string and processes its response.
+    */
+    public static void fixMyBug(ClientFile clientFile) {
+        try {
+            //Setup an HTTP POST request
             URL url = new URL("http://localhost:8080/fix");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setDoOutput(true);
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json");
 
-            //Read in Java text file.
-            String fileName = args[0];
-            String input = "";
-            String line = null;
-
-            try {
-                FileReader fileReader = new FileReader(fileName);
-                BufferedReader bufferedReader = new BufferedReader(fileReader);
-
-                while((line = bufferedReader.readLine()) != null) {
-                    input += line + "\n";
-                }
-
-                bufferedReader.close();
-
-            } catch(FileNotFoundException ex) {
-                System.out.println("Unable to open file.");
-            }
-
-
             ObjectMapper mapper = new ObjectMapper();
-            ClientFile clientFile = new ClientFile(input, "Compile-Error-Message");
-
             try {
-                //Convert object to JSON string
-                String jsonInString = mapper.writeValueAsString(clientFile);
+                //Convert ClientFile object to JSON string
+                String clientFileAsJsonString = mapper.writeValueAsString(clientFile);
                 OutputStream os = conn.getOutputStream();
-                os.write(jsonInString.getBytes());
+                os.write(clientFileAsJsonString.getBytes());
                 os.flush();
             } catch (JsonGenerationException e) {
                 e.printStackTrace();
@@ -57,11 +63,7 @@ public class SimpleClient {
                 e.printStackTrace();
             }
 
-            // if (conn.getResponseCode() != HttpURLConnection.HTTP_CREATED) {
-            //     throw new RuntimeException("Failed : HTTP error code : "
-            //             + conn.getResponseCode());
-            // }
-
+            //Read JSON response from the server in a BufferedReader
             BufferedReader br = new BufferedReader(new InputStreamReader(
                     (conn.getInputStream())));
 
@@ -74,13 +76,29 @@ public class SimpleClient {
             conn.disconnect();
 
         } catch (MalformedURLException e) {
-
             e.printStackTrace();
-
         } catch (IOException e) {
-
             e.printStackTrace();
-
         }
+    }
+
+    public static void main(String[] args) {
+        if(args.length != 1) {
+            System.out.println("Usage: java -jar <jar> <file>");
+            System.exit(0);
+        }
+        String fileName = args[0];
+        String errorMessage = "Custom-Error-Message";
+        StringBuilder stringBuilder = new StringBuilder();
+
+        try {
+            stringBuilder.append(fileToString(fileName));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        ClientFile clientFile = new ClientFile(stringBuilder.toString(), errorMessage);
+
+        fixMyBug(clientFile);
     }
 }
