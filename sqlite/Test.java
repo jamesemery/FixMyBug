@@ -28,18 +28,18 @@ public class Test {
         }
     }
 
-    public static final void Connect(String databaseName) {
+    public static final String Connect(String inputStr) {
         boolean initialize = false;
         try {
             initialize = SQLiteJDBCLoader.initialize();
 
             SQLiteDataSource dataSource = new SQLiteDataSource();
             //dataSource.setUrl("jdbc:sqlite:.\\TEST_DATABASE.sqlite");
-            dataSource.setUrl("jdbc:sqlite:./" + databaseName);
+            dataSource.setUrl("jdbc:sqlite:./TEST_DATABASE");
 
             System.out.println("connected!");
             ResultSet rs = dataSource.getConnection()
-                    .createStatement().executeQuery("select * from \"master_table\"");
+                    .createStatement().executeQuery("select * from \"master_table\" where buggy_code = " + inputStr);
 
 
             while(rs.next()){
@@ -56,6 +56,9 @@ public class Test {
              System.out.print(", Buggy: '" + buggy_code + "'");
              System.out.print(", Fixed: '" + fixed_code + "'");
              System.out.println(", Count: " + count);
+             String result = "ID: " + id + ", Buggy Code: " + buggy_code +
+                             ", Fixed Code: " + fixed_code + ", Count: " + count;
+             return result;
           }
 
             // while (executeQuery.next()) {
