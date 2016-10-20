@@ -1,7 +1,6 @@
 # FixMyBug
-CS Comps
-
 Changelog
+
 10/20/16 - Added setup notes - Joe
 
 SETUP NOTES
