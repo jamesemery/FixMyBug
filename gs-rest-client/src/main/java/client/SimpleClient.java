@@ -28,7 +28,7 @@ public class SimpleClient {
                 stringBuilder.append(line);
                 stringBuilder.append(ls);
             }
-
+            stringBuilder.setLength(stringBuilder.length() - 1); //remove extra newline
             return stringBuilder.toString();
         } finally {
             reader.close();
@@ -69,10 +69,15 @@ public class SimpleClient {
 
             String output;
             System.out.println("Output from Server .... \n");
+            StringBuilder returnedJsonStringBuilder = new StringBuilder();
             while ((output = br.readLine()) != null) {
-                System.out.println(output);
+                returnedJsonStringBuilder.append(output).append("\n");
             }
+            returnedJsonStringBuilder.setLength(returnedJsonStringBuilder.length() - 1); //remove extra newline
+            String returnedJsonString = returnedJsonStringBuilder.toString();
 
+            ClientFile receivedBugFix = mapper.readValue(returnedJsonString, ClientFile.class);
+            System.out.println(receivedBugFix.getFileContent());
             conn.disconnect();
 
         } catch (MalformedURLException e) {

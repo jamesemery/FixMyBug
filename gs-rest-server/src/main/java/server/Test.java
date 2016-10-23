@@ -1,3 +1,5 @@
+package server;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 //import javax.swing.JOptionPane;
@@ -35,30 +37,31 @@ public class Test {
 
             SQLiteDataSource dataSource = new SQLiteDataSource();
             //dataSource.setUrl("jdbc:sqlite:.\\TEST_DATABASE.sqlite");
-            dataSource.setUrl("jdbc:sqlite:./TEST_DATABASE");
+            dataSource.setUrl("jdbc:sqlite:/FixMyBugDB/TEST_DATABASE");
 
-            System.out.println("connected!");
+            System.out.println("Input String: " + inputStr + ".");
             ResultSet rs = dataSource.getConnection()
-                    .createStatement().executeQuery("select * from \"master_table\" where buggy_code = " + inputStr);
+                    .createStatement().executeQuery("select fixed_code from \"master_table\" where buggy_code = \"" + inputStr + "\";");
+                    //.createStatement().executeQuery("select * from \"master_table\" where buggy_code = \"somebug\";");
 
 
             while(rs.next()){
              //Retrieve by column name
-             int id  = rs.getInt("id");
-             String buggy_code = rs.getString("buggy_code");
+            //  int id  = rs.getInt("id");
+            //  String buggy_code = rs.getString("buggy_code");
              String fixed_code = rs.getString("fixed_code");
-             int count = rs.getInt("count");
-             int bug_type = rs.getInt("bug_type");
+            //  int count = rs.getInt("count");
+            //  int bug_type = rs.getInt("bug_type");
 
              //Display values
-             System.out.print("ID: " + id);
-             System.out.print(", Bug Type: " + bug_type);
-             System.out.print(", Buggy: '" + buggy_code + "'");
-             System.out.print(", Fixed: '" + fixed_code + "'");
-             System.out.println(", Count: " + count);
-             String result = "ID: " + id + ", Buggy Code: " + buggy_code +
-                             ", Fixed Code: " + fixed_code + ", Count: " + count;
-             return result;
+            //  System.out.print("ID: " + id);
+            //  System.out.print(", Bug Type: " + bug_type);
+            //  System.out.print(", Buggy: '" + buggy_code + "'");
+             System.out.print("Sending Fixed Code: '" + fixed_code + "'");
+            //  System.out.println(", Count: " + count);
+            //  String result = "ID: " + id + ", Buggy Code: " + buggy_code +
+            //                  ", Fixed Code: " + fixed_code + ", Count: " + count;
+             return fixed_code;
           }
 
             // while (executeQuery.next()) {
@@ -67,7 +70,10 @@ public class Test {
         }
         catch (Exception ex) { //SQLException ex) {
             System.out.println(ex.getMessage());
+            return ex.getMessage();
         }
+        System.out.println("No results found");
+        return "No results found";
     }
 
     public static final void addToTable(String databaseName, int id, int bug_type, String buggy_code, String fixed_code, int count) {
@@ -92,11 +98,11 @@ public class Test {
     }
 
 
-    public static void main(String[] args) {
-        //createNewDatabase(args[0]);
-        Connect(args[0]);
-        //addToTable(args[0], 6, 5, "somebuggg", "somefffix", 2);
-        //addToTable(args[0], 4, 2, "somebug2", "somefix2", 2);
-        //addToTable(args[0], 5, 4, "somebug3", "somefix3", 2);
-    }
+    // public static void main(String[] args) {
+    //     //createNewDatabase(args[0]);
+    //     Connect(args[0]);
+    //     //addToTable(args[0], 6, 5, "somebuggg", "somefffix", 2);
+    //     //addToTable(args[0], 4, 2, "somebug2", "somefix2", 2);
+    //     //addToTable(args[0], 5, 4, "somebug3", "somefix3", 2);
+    // }
 }
