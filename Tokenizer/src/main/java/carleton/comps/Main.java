@@ -21,7 +21,7 @@ public class Main {
             // Testing the file type of the constructor.
 
             // Creates a new instance of TokenizerBuilder.
-            TokenizerBuilder t = new TokenizerBuilder("/Users/alexgriese/College/CS/CompsSeminar/FixMyBug/Tokenizer/src/main/java/carleton/comps/javaparser/examples/HelloWorld.jav","file");
+            TokenizerBuilder t = new TokenizerBuilder("./Tokenizer/src/main/java/carleton/comps/javaparser/examples/HelloWorld.java","file");
 
             // Prints the tokenized version of HelloWorld.java.
             //System.out.println(t.getString());
