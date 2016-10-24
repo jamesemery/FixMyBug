@@ -39,7 +39,7 @@ public class TokenizerBuilder {
         tokenizedLines = new ArrayList<List<Token>>();
 
         // This if statement is used to tokenize the code according to its type.
-        if (type.equals("file")){
+        if (type.equals("File")){
 
             // Checks to see if the file provided is a valid file.
             Scanner scanner;
@@ -55,6 +55,8 @@ public class TokenizerBuilder {
             }
 
         } else if (type.equals("String")) {
+
+            // Splits each string by line and then tokenizes it.
             String[] lines = code.split("\n");
             for (String line: lines) {
                 tokenizedLines.add(generateTokens(new JavaLexer(new ANTLRInputStream(line))));
