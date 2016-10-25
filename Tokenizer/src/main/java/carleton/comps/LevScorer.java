@@ -27,7 +27,7 @@ public class LevScorer implements SimilarityScorer{
      * @return
      */
     //@Override
-    public static int rankSimilarity(List<Token> queryString, List<Token>
+    public static int scoreSimilarity(List<Token> queryString, List<Token>
             tokens) {
         if (queryString.size() == 0 || tokens.size() == 0) return 0;
 
