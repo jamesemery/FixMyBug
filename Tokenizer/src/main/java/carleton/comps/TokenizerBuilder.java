@@ -96,10 +96,7 @@ public class TokenizerBuilder {
         // Goes through each tokenized line in tokenizedLines and gets the error type, token type and its value.
         // It then adds them to builder.
         for (List<Token> tokenizedLine: tokenizedLines) {
-            for (Token t : tokenizedLine) {
-                builder.append(t.getType() + " (" + JavaParser.VOCABULARY
-                        .getSymbolicName(t.getType()) + ") " + "(" + t.getText() + ") \n");
-            }
+            builder.append(tokensToString(tokenizedLine));
         }
         return builder.toString();
     }
@@ -128,15 +125,23 @@ public class TokenizerBuilder {
      * @Param: tokens, a list of tokens to be converted into a string.
      * @Return: tokens as a string.
      */
-    public String tokensToString(List<Token> tokens) {
+    public static String tokensToString(List<Token> tokens) {
+        return tokensToString(tokens, true);
+    }
 
         // Holds the string of tokens.
+    public static String tokensToString(List<Token> tokens, boolean verbose) {
+
         StringBuilder builder = new StringBuilder();
 
         // Goes through each token, converts it into a string and adds it to builder.
         for (Token t : tokens) {
-            builder.append(t.getType() +"(" + JavaParser.VOCABULARY
-                    .getSymbolicName(t.getType()) + ") " + "(" + t.getText() + ") \n");
+            if (verbose) {
+                builder.append(t.getType() +"(" + JavaParser.VOCABULARY
+                        .getSymbolicName(t.getType()) + ") " + "(" + t.getText() + ") \n");
+            } else {
+                builder.append(t.getType() +" ");
+            }
         }
 
         return builder.toString();
