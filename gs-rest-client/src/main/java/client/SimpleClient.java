@@ -39,7 +39,7 @@ public class SimpleClient {
     * Sends a ClientFile object (file + error message) to the server
     * as a JSON string and processes its response.
     */
-    public static void fixMyBug(ClientFile clientFile) {
+    public static void fixMyBug(ServerRequest server_request) {
         try {
             //Setup an HTTP POST request
             URL url = new URL("http://localhost:8080/fix");
@@ -50,10 +50,10 @@ public class SimpleClient {
 
             ObjectMapper mapper = new ObjectMapper();
             try {
-                //Convert ClientFile object to JSON string
-                String clientFileAsJsonString = mapper.writeValueAsString(clientFile);
+                //Convert ServerRequest object to JSON string
+                String serverRequestAsJsonString = mapper.writeValueAsString(server_request);
                 OutputStream os = conn.getOutputStream();
-                os.write(clientFileAsJsonString.getBytes());
+                os.write(serverRequestAsJsonString.getBytes());
                 os.flush();
             } catch (JsonGenerationException e) {
                 e.printStackTrace();
@@ -62,13 +62,15 @@ public class SimpleClient {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            
+            
 
             //Read JSON response from the server in a BufferedReader
             BufferedReader br = new BufferedReader(new InputStreamReader(
                     (conn.getInputStream())));
 
             String output;
-            System.out.println("Output from Server .... \n");
+            System.out.println("Output from Server .... \n\n");
             StringBuilder returnedJsonStringBuilder = new StringBuilder();
             while ((output = br.readLine()) != null) {
                 returnedJsonStringBuilder.append(output).append("\n");
@@ -76,8 +78,9 @@ public class SimpleClient {
             returnedJsonStringBuilder.setLength(returnedJsonStringBuilder.length() - 1); //remove extra newline
             String returnedJsonString = returnedJsonStringBuilder.toString();
 
-            ClientFile receivedBugFix = mapper.readValue(returnedJsonString, ClientFile.class);
-            System.out.println(receivedBugFix.getFileContent());
+            DatabaseEntry bug_fix = mapper.readValue(returnedJsonString, DatabaseEntry.class);
+            
+            System.out.println(bug_fix);
             conn.disconnect();
 
         } catch (MalformedURLException e) {
@@ -102,8 +105,8 @@ public class SimpleClient {
             e.printStackTrace();
         }
 
-        ClientFile clientFile = new ClientFile(stringBuilder.toString(), errorMessage);
+        ServerRequest server_request = new ServerRequest(stringBuilder.toString(), errorMessage);
 
-        fixMyBug(clientFile);
+        fixMyBug(server_request);
     }
 }
