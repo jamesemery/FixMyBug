@@ -18,19 +18,25 @@ import java.io.*;
 public class FixMyBugController {
 
     @RequestMapping("/fix")
-    public ClientFile clientCode(@RequestBody String input) {
+    public DatabaseEntry clientCode(@RequestBody String input) {
     	ObjectMapper mapper = new ObjectMapper();
 
     	try {
     		//Convert JSON string to object
-    		ClientFile clientFile = mapper.readValue(input, ClientFile.class);
+    		ServerRequest server_request = mapper.readValue(input, ServerRequest.class);
 
-	        System.out.println(clientFile.getFileContent());
-	        System.out.println(clientFile.getErrorMessage());
-
-          clientFile.setErrorMessage("Now we can edit what we receive!");
-          clientFile.setFileContent(Test.Connect(clientFile.getFileContent()));
-	        return clientFile;
+	        System.out.println(server_request.getBuggyCode());
+	        System.out.println(server_request.getErrorMessage());
+	        
+	        // Create a DatabaseEntry and return it.
+	        // Several of these fields are not from the database, but could be!
+	        DatabaseEntry database_entry = new DatabaseEntry();
+	        database_entry.setId(-1);
+	        database_entry.setErrorType(-2);
+	        database_entry.setBuggyCode(server_request.getBuggyCode());
+	        database_entry.setFixedCode(Test.Connect(server_request.getBuggyCode()));
+	        database_entry.setCount(-3);
+	        return database_entry;
 
     	} catch (JsonGenerationException e) {
             e.printStackTrace();
@@ -40,6 +46,6 @@ public class FixMyBugController {
             e.printStackTrace();
         }
 
-        return new ClientFile("File Contents: ERROR", "ERRORERRORERROR");
+        return new DatabaseEntry(-1, -2, "crap", "squid", -5);
     }
 }
