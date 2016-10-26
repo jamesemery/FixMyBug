@@ -10,6 +10,7 @@ import org.antlr.v4.runtime.Token;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.Queue;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -28,6 +29,8 @@ public class TokenizerBuilder {
 
     // Holds the tokenized lines of code.
     private List<List<Token>> tokenizedLines;
+
+    private Queue<String> varNames;
 
     /*
      * Constructs an instance of the TokenizerBuilder given the code passed in as the code parameter.
@@ -80,9 +83,47 @@ public class TokenizerBuilder {
         // Unclear as to why this line is needed, but if it is not called the token stream seemingly returns no tokens
         // and nothing can be printed out.
         stream.getNumberOfOnChannelTokens();
+        holdIdentifiers(tokenizedLine);
 
         return tokenizedLine;
     }
+
+
+    /*
+     * Holds the identifiers names so they can be used during
+     * @Param: tokenizedLine, tokens that may be identifiers, which means we need to store their function names for
+     *                        later use.
+     */
+    private void holdIdentifiers(List<Token> tokenizedLine) {
+
+        // Goes through all the tokens in the line and adds them into varNames.
+        for (Token t : tokenizedLine) {
+            if (t.getType() == 100) {
+                System.out.println(t.getText());
+            }
+        }
+    }
+
+    /*
+     * Given a line of code (potentially the solution), based on the tokens from the original code, we harmonize the
+     * code.
+     * @Param: tokens, holds all the tokens to be harmonized.
+     * @Return: harmonized, the harmonized code.
+     */
+    public String harmonize(String tokens) {
+        String[] splitTokens = tokens.split(" ");
+        StringBuilder builder = new StringBuilder();
+        for (String t : splitTokens) {
+            if (t.equals("IDENTIFIER")) {
+                builder.append(varNames.remove());
+            } else {
+                builder.append(t);
+            }
+        }
+        return builder.toString();
+    }
+
+
 
     /*
      * Returns the tokenized code as a string.
@@ -154,6 +195,11 @@ public class TokenizerBuilder {
      * @Return: tokens, all tokens between start line and stop line.
      */
     public List<Token> betweenLines(int start, int stop) {
+
+        // We do this, because the first line of code is stored in index 0 of tokenizedLines, the second line of code
+        // is stored index 1 of tokenizedLines, etc. Thus, this is done to correct this issue.
+        start--;
+        stop--;
 
         if (start < 1 || stop > tokenizedLines.size()) {
             throw new IndexOutOfBoundsException("The lines you specified are out of range.");
