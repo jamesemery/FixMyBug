@@ -7,6 +7,7 @@ import java.io.*;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import client.Tokenizer.TokenizerBuilder;
 
 /*
 * A Simple REST client that will send ClientFile objects to a server,
@@ -32,6 +33,18 @@ public class SimpleClient {
             return stringBuilder.toString();
         } finally {
             reader.close();
+        }
+    }
+
+    /*
+    * Utilizes the TokenizerBuilder class to tokenize a given file
+    */
+    public static void tokenize(String fileName) throws IOException {
+        try {
+          TokenizerBuilder t = new TokenizerBuilder(fileName, "File");
+          System.out.println(t.getString());
+        } catch (IOException ex) {
+          ex.printStackTrace();
         }
     }
 
@@ -62,8 +75,6 @@ public class SimpleClient {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            
-            
 
             //Read JSON response from the server in a BufferedReader
             BufferedReader br = new BufferedReader(new InputStreamReader(
@@ -79,7 +90,7 @@ public class SimpleClient {
             String returnedJsonString = returnedJsonStringBuilder.toString();
 
             DatabaseEntry bug_fix = mapper.readValue(returnedJsonString, DatabaseEntry.class);
-            
+
             System.out.println(bug_fix);
             conn.disconnect();
 
@@ -96,9 +107,17 @@ public class SimpleClient {
             System.exit(0);
         }
         String fileName = args[0];
+
+        //Tokenize the input file
+        try {
+          tokenize(fileName);
+        } catch (IOException ex) {
+          ex.printStackTrace();
+        }
+
+        //Build the ServerRequest object
         String errorMessage = "Custom-Error-Message";
         StringBuilder stringBuilder = new StringBuilder();
-
         try {
             stringBuilder.append(fileToString(fileName));
         } catch (IOException e) {
