@@ -4,6 +4,12 @@ import org.antlr.v4.runtime.Token;
 
 import java.util.List;
 
+/**
+ * Class providing basic functionality for calculating of levenshtein
+ * distance between two strings evaluated on a per-token basis for each.
+ *
+ * NOTE: a higher score indicates a greater degree of similarity
+ */
 public class LevScorer implements SimilarityScorer{
 
     /**
@@ -20,14 +26,14 @@ public class LevScorer implements SimilarityScorer{
     }
 
     /**
-     * Uses a Levenstein distance calculation algorith in order to clalculate
-     * the edit distance between two strings
+     * Uses a Levenstein distance calculation algorithm in order to calculate
+     * the edit distance between two lists of tokens
      * @param queryString
      * @param tokens
      * @return
      */
     //@Override
-    public static int scoreSimilarity(List<Token> queryString, List<Token>
+    public static double scoreSimilarity(List<Token> queryString, List<Token>
             tokens) {
         if (queryString.size() == 0 || tokens.size() == 0) return 0;
 
@@ -43,6 +49,6 @@ public class LevScorer implements SimilarityScorer{
                 scores[i][j] = max;
             }
         }
-        return scores[scores.length][scores[0].length];
+        return scores[scores.length-1][scores[0].length-1];
     }
 }

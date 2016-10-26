@@ -8,7 +8,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-
+/**
+ * Class with generic functionality for Ngram scoring algorithms for
+ * evaluating two strings or token streams. Can be fed either strings of code
+ * in the language, or token streams and will currently return a number
+ * corresponding to the total number of matched n-length subsequences
+ */
 public class NgramScorer implements SimilarityScorer {
     static final int DEFAULT_N = 5;
 
@@ -49,7 +54,8 @@ public class NgramScorer implements SimilarityScorer {
 
     /**
      * Performs an evaluation of the similarity of the two token sequences by
-     * counting the number of equivalent n lenght tokens they share
+     * counting the number of equivalent n length subsequences of tokens they
+     * share.
      * @param queryString
      * @param otherString
      * @param n

@@ -15,18 +15,18 @@ public class NgramTest {
             List<Token> c1 = new TokenizerBuilder
                     ("./Tokenizer/src/main/java/carleton/comps/javaparser" +
                     "/examples/HelloWorld.java","file").getTokens();
-//            List<Token> c2 = new TokenizerBuilder
-//                    ("./Tokenizer/src/main/java/carleton/comps/javaparser" +
-//                            "/examples/HelloWorld.java","file").betweenLines
-//                    (1,7);
-//            System.out.println(c2.size() + " " + new TokenizerBuilder
-//                    ("./Tokenizer/src/main/java/carleton/comps/javaparser" +
-//                            "/examples/HelloWorld.java","file").betweenLines
-//                    (1,7));
+            List<Token> c2 = new TokenizerBuilder
+                    ("./Tokenizer/src/main/java/carleton/comps/javaparser" +
+                            "/examples/HelloWorld.java","file").betweenLines
+                    (1,7);
+            System.out.println(c1.size() + " " + c1);
+            System.out.println(c2.size() + " " + c2);
 
             System.out.println(NgramScorer.scoreSimilarity("public static " +
                     "void main(String[] args) {", "public static void main" +
                     "(String[] args) { try {"));
+
+            System.out.println(LevScorer.scoreSimilarity(c1,c2));
 
         } catch (IOException e) {
             e.printStackTrace();
