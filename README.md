@@ -9,4 +9,4 @@ The database lives in the root directory of the computer (in "/FixMyBugDB"), so 
 
 Also in the root directory is the Maven archive. To get that up and running, all you need to do is edit your ~/.bash_profile folder and add the path "/FixMyBugDB/apache-maven-3.3.9/bin" to the PATH environment variable. You can verify that maven is installed by typing "mvn -v" and looking for output.
 
-To "compile" the client or server programs, navigate to the correct folder (e.g. gs-rest-server) and type "mvn package". This should create a jar that you can then execute.
+To "compile" the client or server programs, navigate to the correct folder (e.g. gs-rest-server) and type "mvn package". This should create a jar that you can then execute - "java -jar target/name-of-jar-file.jar".
