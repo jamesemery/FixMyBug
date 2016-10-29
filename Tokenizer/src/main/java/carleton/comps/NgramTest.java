@@ -14,11 +14,11 @@ public class NgramTest {
         try {
             List<Token> c1 = new TokenizerBuilder
                     ("./Tokenizer/src/main/java/carleton/comps/javaparser" +
-                    "/examples/HelloWorld.java","file").getTokens();
+                    "/examples/HelloWorld.java","File").getTokens();
             List<Token> c2 = new TokenizerBuilder
                     ("./Tokenizer/src/main/java/carleton/comps/javaparser" +
-                            "/examples/HelloWorld.java","file").betweenLines
-                    (1,7);
+                            "/examples/HelloWorld.java","File").betweenLines
+                    (0,7);
             System.out.println(c1.size() + " " + c1);
             System.out.println(c2.size() + " " + c2);
 
