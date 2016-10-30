@@ -48,6 +48,7 @@ public class SimpleClient {
           ex.printStackTrace();
         }
         return "";
+    }
 
     /*
      * Reads in a text file and returns it as a list of strings corresponding to
@@ -63,12 +64,12 @@ public class SimpleClient {
         try {
             while((line = reader.readLine()) != null) {
                 lineNum += 1;
-                if (firstLine < lineNum && lineNum < lastLine) {
+                if (firstLine <=lineNum && lineNum <= lastLine) {
                     stringBuilder.append(line);
                     stringBuilder.append(ls);
                 }
             }
-            stringBuilder.setLength(stringBuilder.length() - 1); //remove extra newline
+            if (stringBuilder.length() != 0) stringBuilder.setLength(stringBuilder.length() - 1); //remove extra newline
             return stringBuilder.toString();
         } finally {
             reader.close();
@@ -136,7 +137,13 @@ public class SimpleClient {
         String fileName = args[0];
         int startLine = Integer.parseInt(args[1]);
         int endLine = Integer.parseInt(args[2]);
-        String relevant_code = fileLinesToString(fileName, startLine, endLine);
+        
+        String relevant_code = "";
+        try {
+            relevant_code = fileLinesToString(fileName, startLine, endLine);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         String tokenized_code = "";
         //Tokenize the input file
@@ -148,11 +155,11 @@ public class SimpleClient {
 
         String errorMessage = "Custom-Error-Message";
         StringBuilder stringBuilder = new StringBuilder();
-        try {
+        //try {
             stringBuilder.append(tokenized_code);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        //} catch (IOException e) {
+        //    e.printStackTrace();
+        //}
 
         ServerRequest server_request = new ServerRequest(stringBuilder.toString(), errorMessage);
 
