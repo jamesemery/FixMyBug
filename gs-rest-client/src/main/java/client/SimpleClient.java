@@ -130,7 +130,7 @@ public class SimpleClient {
 
     public static void main(String[] args) {
         if(args.length != 3) {
-            System.out.println("Usage: java -jar <jar> <file>");
+            System.out.println("Usage: java -jar <jar> <file> <line #: bug start> <line #: bug end>");
             System.exit(0);
         }
         String fileName = args[0];
