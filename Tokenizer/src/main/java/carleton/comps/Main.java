@@ -55,6 +55,11 @@ public class Main {
             // Prints the tokenized version of HelloWorld.java.
             //System.out.println(t.getString());
 
+            System.out.println(t.harmonize("PACKAGE Identifier DOT Identifier DOT Identifier DOT Identifier SEMI EOF EOF " +
+                    "PUBLIC CLASS Identifier LBRACE EOF PUBLIC STATIC VOID Identifier LPAREN Identifier LBRACK RBRACK " +
+                    "Identifier RPAREN LBRACE EOF Identifier DOT Identifier DOT Identifier LPAREN StringLiteral RPAREN " +
+                    "SEMI EOF RBRACE EOF RBRACE EOF EOF"));
+
             //List<Token> tokens = t.getTokens();
             //System.out.println(t.tokensToString(tokens));
 
