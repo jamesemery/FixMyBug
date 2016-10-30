@@ -35,23 +35,33 @@
     </build>
 
     <dependencies>
-		<dependency>
-		  <groupId>com.fasterxml.jackson.core</groupId>
-		  <artifactId>jackson-core</artifactId>
-		  <version>2.5.3</version>
-		</dependency>
+  		<dependency>
+  		  <groupId>com.fasterxml.jackson.core</groupId>
+  		  <artifactId>jackson-core</artifactId>
+  		  <version>2.5.3</version>
+  		</dependency>
 
-		<dependency>
-		  <groupId>com.fasterxml.jackson.core</groupId>
-		  <artifactId>jackson-annotations</artifactId>
-		  <version>2.5.3</version>
-		</dependency>
+  		<dependency>
+  		  <groupId>com.fasterxml.jackson.core</groupId>
+  		  <artifactId>jackson-annotations</artifactId>
+  		  <version>2.5.3</version>
+  		</dependency>
 
-		<dependency>
-		  <groupId>com.fasterxml.jackson.core</groupId>
-		  <artifactId>jackson-databind</artifactId>
-		  <version>2.5.3</version>
-		</dependency>
-	</dependencies>
-    
+  		<dependency>
+  		  <groupId>com.fasterxml.jackson.core</groupId>
+  		  <artifactId>jackson-databind</artifactId>
+  		  <version>2.5.3</version>
+  		</dependency>
+
+      <dependency>
+          <groupId>org.antlr</groupId>
+          <artifactId>antlr4-maven-plugin</artifactId>
+          <version>4.5.3</version>
+      </dependency>
+    </dependencies>
+
+    <properties>
+      <java.version>1.8</java.version>
+    </properties>
+
 </project>
