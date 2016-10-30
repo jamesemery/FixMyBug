@@ -37,17 +37,42 @@ public class SimpleClient {
     }
 
     /*
-    * Utilizes the TokenizerBuilder class to tokenize a given file
-    */
-    public static String tokenize(String fileName) throws IOException {
+     * Utilizes the TokenizerBuilder class to tokenize a given file
+     */
+    public static String tokenize(String string) throws IOException {
         try {
-          TokenizerBuilder t = new TokenizerBuilder(fileName, "File");
+          TokenizerBuilder t = new TokenizerBuilder(string, "String");
           //System.out.println(t.getString());
           return t.getString();
         } catch (IOException ex) {
           ex.printStackTrace();
         }
         return "";
+
+    /*
+     * Reads in a text file and returns it as a list of strings corresponding to
+     * the given lines..
+     */
+    public static String fileLinesToString(String fileName, int firstLine, int lastLine) throws IOException {
+        BufferedReader reader = new BufferedReader(new FileReader(fileName));
+        String line = null;
+        int lineNum = 0;
+        StringBuilder stringBuilder = new StringBuilder();
+        String ls = System.getProperty("line.separator");
+
+        try {
+            while((line = reader.readLine()) != null) {
+                lineNum += 1;
+                if (firstLine < lineNum && lineNum < lastLine) {
+                    stringBuilder.append(line);
+                    stringBuilder.append(ls);
+                }
+            }
+            stringBuilder.setLength(stringBuilder.length() - 1); //remove extra newline
+            return stringBuilder.toString();
+        } finally {
+            reader.close();
+        }
     }
 
     /*
@@ -104,27 +129,29 @@ public class SimpleClient {
     }
 
     public static void main(String[] args) {
-        if(args.length != 1) {
+        if(args.length != 3) {
             System.out.println("Usage: java -jar <jar> <file>");
             System.exit(0);
         }
         String fileName = args[0];
+        int startLine = Integer.parseInt(args[1]);
+        int endLine = Integer.parseInt(args[2]);
+        String relevant_code = fileLinesToString(fileName, startLine, endLine);
+
         String tokenized_code = "";
         //Tokenize the input file
         try {
-          tokenized_code = tokenize(fileName);
+          tokenized_code = tokenize(relevant_code);
         } catch (Exception ex) {
           ex.printStackTrace();
         }
 
-        //Build the ServerRequest object
         String errorMessage = "Custom-Error-Message";
         StringBuilder stringBuilder = new StringBuilder();
         try {
-            //stringBuilder.append(fileToString(fileName));
             stringBuilder.append(tokenized_code);
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
         ServerRequest server_request = new ServerRequest(stringBuilder.toString(), errorMessage);
