@@ -17,12 +17,7 @@ public class NgramTest {
                     "/examples/HelloWorld.java","File").getTokens();
             List<Token> c2 = new TokenizerBuilder
                     ("./Tokenizer/src/main/java/carleton/comps/javaparser" +
-                            "/examples/HelloWorld.java","File").betweenLines
-<<<<<<< HEAD
-                    (0,7);
-=======
-                    (1,5);
->>>>>>> 11846fc... some readme stuff
+                            "/examples/HelloWorld.java","File").betweenLines(1,5);
             System.out.println(c1.size() + " " + c1);
             System.out.println(c2.size() + " " + c2);
 
