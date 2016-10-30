@@ -20,9 +20,10 @@ public class FixMyBugController {
     @RequestMapping("/fix")
     public DatabaseEntry clientCode(@RequestBody String input) {
     	ObjectMapper mapper = new ObjectMapper();
-
+        DatabaseServer DBConnection = new DatabaseServer("/FixMyBugDB/TEST_DATABASE");
     	try {
     		//Convert JSON string to object
+<<<<<<< HEAD
     		ServerRequest server_request = mapper.readValue(input, ServerRequest.class);
 
 	        System.out.println(server_request.getBuggyCode());
@@ -37,6 +38,16 @@ public class FixMyBugController {
 	        database_entry.setFixedCode(Test.Connect(server_request.getBuggyCode()));
 	        database_entry.setCount(-3);
 	        return database_entry;
+=======
+    		ClientFile clientFile = mapper.readValue(input, ClientFile.class);
+
+	        System.out.println(clientFile.getFileContent());
+	        System.out.println(clientFile.getErrorMessage());
+
+          clientFile.setErrorMessage("Now we can edit what we receive!");
+          clientFile.setFileContent(DBConnection.SelectFrom("fixed_code", clientFile.getFileContent()));
+	        return clientFile;
+>>>>>>> c77c614... Modified the database class, changed the server to interface with the new version
 
     	} catch (JsonGenerationException e) {
             e.printStackTrace();
