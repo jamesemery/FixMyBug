@@ -39,13 +39,15 @@ public class SimpleClient {
     /*
     * Utilizes the TokenizerBuilder class to tokenize a given file
     */
-    public static void tokenize(String fileName) throws IOException {
+    public static String tokenize(String fileName) throws IOException {
         try {
           TokenizerBuilder t = new TokenizerBuilder(fileName, "File");
-          System.out.println(t.getString());
+          //System.out.println(t.getString());
+          return t.getString();
         } catch (IOException ex) {
           ex.printStackTrace();
         }
+        return "";
     }
 
     /*
@@ -107,11 +109,11 @@ public class SimpleClient {
             System.exit(0);
         }
         String fileName = args[0];
-
+        String tokenized_code = "";
         //Tokenize the input file
         try {
-          tokenize(fileName);
-        } catch (IOException ex) {
+          tokenized_code = tokenize(fileName);
+        } catch (Exception ex) {
           ex.printStackTrace();
         }
 
@@ -119,9 +121,10 @@ public class SimpleClient {
         String errorMessage = "Custom-Error-Message";
         StringBuilder stringBuilder = new StringBuilder();
         try {
-            stringBuilder.append(fileToString(fileName));
-        } catch (IOException e) {
-            e.printStackTrace();
+            //stringBuilder.append(fileToString(fileName));
+            stringBuilder.append(tokenized_code);
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
 
         ServerRequest server_request = new ServerRequest(stringBuilder.toString(), errorMessage);
