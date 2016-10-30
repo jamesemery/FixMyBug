@@ -68,38 +68,41 @@ public class DatabaseServer {
         }    
     }
     
-    public final String SelectAll(String inputStr) {
+    public final DatabaseEntry SelectAll(String inputStr) {
+        DatabaseEntry queryResult = new DatabaseEntry();
+        
         try {
             System.out.println("Input String: " + inputStr + ".");
             ResultSet rs = dataSource.getConnection()
                     .createStatement().executeQuery("select * from \"" + tableName + "\" where buggy_code = \"" + inputStr + "\";");
 
             //Retrieve by column name
-            int id  = rs.getInt("id");
-            String buggy_code = rs.getString("buggy_code");
-            String fixed_code = rs.getString("fixed_code");
-            int count = rs.getInt("count");
-            int bug_type = rs.getInt("bug_type");
+            queryResult.setId(rs.getInt("id"));
+            queryResult.setBuggyCode(rs.getString("buggy_code"));
+            queryResult.setFixedCode(rs.getString("fixed_code"));
+            queryResult.setCount(rs.getInt("count"));
+            queryResult.setErrorType(rs.getInt("bug_type"));
             
-            if(id == 0) { //ID starts at 1, so 0 marks a null return value (i.e. no results)
+            if(queryResult.getId() == 0) { //ID starts at 1, so 0 marks a null return value (i.e. no results)
                 System.out.println("No results found\n");
-                return "";
+                return queryResult;
             }
 
             //Display values
-            System.out.print("ID: " + id);
+            /*System.out.print("ID: " + id);
             System.out.print(", Bug Type: " + bug_type);
             System.out.print(", Buggy: '" + buggy_code + "'");
             System.out.print("Sending Fixed Code: '" + fixed_code + "'");
             System.out.println(", Count: " + count);
             String result = "ID: " + id + ", Buggy Code: " + buggy_code +
                           ", Fixed Code: " + fixed_code + ", Count: " + count;
-            return fixed_code;
+            return queryResult;*/
         }
         catch (Exception ex) { //SQLException ex) {
             System.out.println(ex.getMessage());
-            return "";
+            return queryResult;
         }
+        return queryResult;
     }
 
     public final void Insert(int id, int bug_type, String buggy_code, String fixed_code, int count) {

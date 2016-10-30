@@ -23,31 +23,15 @@ public class FixMyBugController {
         DatabaseServer DBConnection = new DatabaseServer("/FixMyBugDB/TEST_DATABASE");
     	try {
     		//Convert JSON string to object
-<<<<<<< HEAD
-    		ServerRequest server_request = mapper.readValue(input, ServerRequest.class);
+            ServerRequest server_request = mapper.readValue(input, ServerRequest.class);
 
 	        System.out.println(server_request.getBuggyCode());
 	        System.out.println(server_request.getErrorMessage());
 	        
 	        // Create a DatabaseEntry and return it.
-	        // Several of these fields are not from the database, but could be!
-	        DatabaseEntry database_entry = new DatabaseEntry();
-	        database_entry.setId(-1);
-	        database_entry.setErrorType(-2);
-	        database_entry.setBuggyCode(server_request.getBuggyCode());
-	        database_entry.setFixedCode(Test.Connect(server_request.getBuggyCode()));
-	        database_entry.setCount(-3);
+	        DatabaseEntry database_entry = DBConnection.SelectAll(server_request.getBuggyCode());
 	        return database_entry;
-=======
-    		ClientFile clientFile = mapper.readValue(input, ClientFile.class);
 
-	        System.out.println(clientFile.getFileContent());
-	        System.out.println(clientFile.getErrorMessage());
-
-          clientFile.setErrorMessage("Now we can edit what we receive!");
-          clientFile.setFileContent(DBConnection.SelectFrom("fixed_code", clientFile.getFileContent()));
-	        return clientFile;
->>>>>>> c77c614... Modified the database class, changed the server to interface with the new version
 
     	} catch (JsonGenerationException e) {
             e.printStackTrace();
