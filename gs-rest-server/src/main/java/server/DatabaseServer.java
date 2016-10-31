@@ -10,10 +10,10 @@ import org.sqlite.SQLiteJDBCLoader;
 import java.sql.*;
 
 public class DatabaseServer {
-    
+
     SQLiteDataSource dataSource;
     String tableName;
-    
+
     public DatabaseServer(String fileName) {
         String url = "jdbc:sqlite:" + fileName;
         System.out.println("Making new database, url = " + url);
@@ -28,7 +28,7 @@ public class DatabaseServer {
         catch (Exception e) {
             System.out.println("Exception caught during database setup: \n");
             System.out.println(e.getMessage());
-        }      
+        }
     }
 
     public static void createNewDatabase(String fileName) {
