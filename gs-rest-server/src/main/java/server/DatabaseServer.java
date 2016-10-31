@@ -10,10 +10,10 @@ import org.sqlite.SQLiteJDBCLoader;
 import java.sql.*;
 
 public class DatabaseServer {
-
+    
     SQLiteDataSource dataSource;
     String tableName;
-
+    
     public DatabaseServer(String fileName) {
         String url = "jdbc:sqlite:" + fileName;
         System.out.println("Making new database, url = " + url);
@@ -28,7 +28,7 @@ public class DatabaseServer {
         catch (Exception e) {
             System.out.println("Exception caught during database setup: \n");
             System.out.println(e.getMessage());
-        }
+        }      
     }
 
     public static void createNewDatabase(String fileName) {
@@ -72,25 +72,23 @@ public class DatabaseServer {
             return "";
         }
     }
-    
-    public final DatabaseEntry SelectAll(String inputStr) {
-        DatabaseEntry queryResult = new DatabaseEntry();
-        
+
+    public final String SelectAll(String inputStr) {
         try {
             System.out.println("Input String: " + inputStr + ".");
             ResultSet rs = dataSource.getConnection()
                     .createStatement().executeQuery("select * from \"" + tableName + "\" where buggy_code = \"" + inputStr + "\";");
 
             //Retrieve by column name
-            queryResult.setId(rs.getInt("id"));
-            queryResult.setBuggyCode(rs.getString("buggy_code"));
-            queryResult.setFixedCode(rs.getString("fixed_code"));
-            queryResult.setCount(rs.getInt("count"));
-            queryResult.setErrorType(rs.getInt("bug_type"));
-            
-            if(queryResult.getId() == 0) { //ID starts at 1, so 0 marks a null return value (i.e. no results)
+            int id  = rs.getInt("id");
+            String buggy_code = rs.getString("buggy_code");
+            String fixed_code = rs.getString("fixed_code");
+            int count = rs.getInt("count");
+            int bug_type = rs.getInt("bug_type");
+
+            if(id == 0) { //ID starts at 1, so 0 marks a null return value (i.e. no results)
                 System.out.println("No results found\n");
-                return queryResult;
+                return "";
             }
 
             //Display values
