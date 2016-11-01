@@ -129,7 +129,12 @@ public class TokenizerBuilder {
         return tokensToString(tokens, true);
     }
 
-        // Holds the string of tokens.
+    /*
+     * Takes a list of tokens and returns the corresponding string.
+     * @Param: tokens, a list of tokens to be converted into a string.
+     * @Param: verbose,.
+     * @Return: tokens as a string.
+     */
     public static String tokensToString(List<Token> tokens, boolean verbose) {
 
         StringBuilder builder = new StringBuilder();
@@ -146,7 +151,7 @@ public class TokenizerBuilder {
         return builder.toString();
     }
 
-    /**
+    /*
      * Based on the lines specified by the user via @param start and @param stop, returns the tokenized code.
      * @Param: start, first line of tokenized code to be returned.
      * @Param: stop, last line of tokenized code to be returned.
@@ -174,5 +179,16 @@ public class TokenizerBuilder {
         }
         return tokens;
 
+    }
+
+
+    /*
+     * Harmonizes the tokenized code. Non-buggy tokenized code should be passed in. Will take this and replace tokens
+     * with appropriate variables, syntax, etc. Turns tokenized code into real code.
+     * @Param: tokens, holds the tokenized code.
+     * @Return: code, holds the de-tokenized code.
+     */
+    public String harmonize(String tokens) {
+        return tokens;
     }
 }
