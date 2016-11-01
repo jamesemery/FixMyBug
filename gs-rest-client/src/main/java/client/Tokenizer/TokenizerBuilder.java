@@ -203,12 +203,18 @@ public class TokenizerBuilder {
 
         // Converts each token into the appropriate grammatical expression.
         for (String t: tokens) {
+
+            // Turns each token into an int, so we can get its literal name.
             int token = Integer.parseInt(t);
+
+            // If the token is a specific token, gets its literal name.
             if ((token != 100) && ((token < 52) || (token > 57))) {
                 builder.append(JavaParser.VOCABULARY.getLiteralName(token));
-            } else if (token == 100) {
-                builder.append("Identifier");
-            } else {
+            }
+
+            // TODO do something better here.
+            // If the token is a non-specific token, just places its symbolic name instead.
+            else {
                 builder.append(JavaParser.VOCABULARY.getSymbolicName(token));
             }
         }
