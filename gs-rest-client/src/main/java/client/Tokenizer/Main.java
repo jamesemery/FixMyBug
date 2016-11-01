@@ -2,7 +2,7 @@
 
 package client.Tokenizer;
 
-import org.antlr.v4.runtime.Token;
+import ch.qos.logback.core.subst.Token;
 import java.util.List;
 
 import java.io.IOException;
@@ -24,7 +24,7 @@ public class Main {
             TokenizerBuilder t = new TokenizerBuilder("./Tokenizer/src/main/java/carleton/comps/javaparser/examples/HelloWorld.java","File");
 
             // Prints the tokenized version of HelloWorld.java.
-            //System.out.println(t.getString());
+            System.out.println(t.getString());
 
             //List<Token> tokens = t.getTokens();
             //System.out.println(t.tokensToString(tokens));

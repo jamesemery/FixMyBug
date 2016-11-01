@@ -137,10 +137,9 @@ public class TokenizerBuilder {
         // Goes through each token, converts it into a string and adds it to builder.
         for (Token t : tokens) {
             if (verbose) {
-                builder.append(t.getType() +"(" + JavaParser.VOCABULARY
-                        .getSymbolicName(t.getType()) + ") " + "(" + t.getText() + ") \n");
+                builder.append(t.getType() + " ");
             } else {
-                builder.append(t.getType() +" ");
+                builder.append(t.getType() + " ");
             }
         }
 
