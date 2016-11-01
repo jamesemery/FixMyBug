@@ -1,5 +1,4 @@
-public class Test {
-    public static void Main(String[] args) {
-        System.out.println("This is a test yay!");
-    }
-}
+this is line 1
+for(i < 10; i++)
+this is line 3
+this is line 4

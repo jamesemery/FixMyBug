@@ -8,25 +8,30 @@ import org.springframework.web.bind.annotation.RequestBody;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.sqlite.SQLiteDataSource;
+import org.sqlite.SQLiteJDBCLoader;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.io.*;
 
 @RestController
 public class FixMyBugController {
 
     @RequestMapping("/fix")
-    public ClientFile clientCode(@RequestBody String input) {
+    public DatabaseEntry clientCode(@RequestBody String input) {
     	ObjectMapper mapper = new ObjectMapper();
-
+        DatabaseServer DBConnection = new DatabaseServer("/FixMyBugDB/TEST_DATABASE");
     	try {
     		//Convert JSON string to object
-    		ClientFile clientFile = mapper.readValue(input, ClientFile.class);
+            ServerRequest server_request = mapper.readValue(input, ServerRequest.class);
 
-	        System.out.println(clientFile.getFileContent());
-	        System.out.println(clientFile.getErrorMessage());
+	        System.out.println(server_request.getBuggyCode());
+	        System.out.println(server_request.getErrorMessage());
+	        
+	        // Create a DatabaseEntry and return it.
+	        DatabaseEntry database_entry = DBConnection.SelectAll(server_request.getBuggyCode());
+	        return database_entry;
 
-            clientFile.setErrorMessage("Now we can edit what we receive!");
-
-	        return clientFile;
 
     	} catch (JsonGenerationException e) {
             e.printStackTrace();
@@ -36,6 +41,6 @@ public class FixMyBugController {
             e.printStackTrace();
         }
 
-        return new ClientFile("File Contents: ERROR", "ERRORERRORERROR");
+        return new DatabaseEntry(-1, -2, "crap", "squid", -5);
     }
 }
