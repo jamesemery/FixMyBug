@@ -185,10 +185,38 @@ public class TokenizerBuilder {
     /*
      * Harmonizes the tokenized code. Non-buggy tokenized code should be passed in. Will take this and replace tokens
      * with appropriate variables, syntax, etc. Turns tokenized code into real code.
-     * @Param: tokens, holds the tokenized code.
-     * @Return: code, holds the de-tokenized code.
+     * @Param: code, holds the tokenized code.
+     * @Return: detokenizedCode, holds the de-tokenized code.
      */
-    public String harmonize(String tokens) {
-        return tokens;
+    public String harmonize(String code) {
+
+        // Splits the string by spaces, as these separate the individual tokens.
+        String[] tokens = code.split(" ");
+
+        // Holds the detokenized, tokenized code.
+        StringBuilder builder = new StringBuilder();
+
+
+        // De-tokenizes the tokenized code.
+
+
+
+        // Converts each token into the appropriate grammatical expression.
+        for (String t: tokens) {
+            int token = Integer.parseInt(t);
+            if ((token != 100) && ((token < 52) || (token > 57))) {
+                builder.append(JavaParser.VOCABULARY.getLiteralName(token));
+            } else if (token == 100) {
+                builder.append("Identifier");
+            } else {
+                builder.append(JavaParser.VOCABULARY.getSymbolicName(token));
+            }
+        }
+
+
+        // Converts builder into an actual string.
+        String detokenizedCode = builder.toString();
+
+        return detokenizedCode;
     }
 }
