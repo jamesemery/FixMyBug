@@ -261,10 +261,20 @@ public class DatabaseServer {
 
         //TODO do another sort
 
+        List<String> output = new ArrayList<>();
+        while(shortList.next()) {
+            output.add()
+        }
 
-        return ResultSet.
+        return
     }
 
+
+    /**
+     * Method that formats a data row string for transmission
+     * @param
+     */
+    public static String
 
     public static void main(String[] args) {
         //createIdex(args[0], args[1]);
