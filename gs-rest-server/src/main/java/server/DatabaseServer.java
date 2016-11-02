@@ -18,11 +18,13 @@ public class DatabaseServer {
     // Default database operation variables
     public static final int DEFAULT_NGRAM_SIZE = 4;
     public static final String DATABASE_TABLE_NAME = "master_table";
-    public static final String[] DATABASE_TABLE_FORMAT = {"id", "buggyCode",
-            "fixedCode"};
     public static final int MIN_SIMILAR_TO_PULL = 4;
     public static final double DEFAULT_PERCENT_TO_PULL = 0.5;
     public static final int DEFAULT_USER_RETURN = 2;
+
+    // The table entries
+    public static final String[] DATABASE_TABLE_FORMAT = {"id", "buggyCode",
+            "fixedCode"};
 
     public DatabaseServer(String fileName) {
         String url = "jdbc:sqlite:" + fileName;
@@ -157,9 +159,13 @@ public class DatabaseServer {
 
     }
 
+
+
+
     public void createIdex(int ngramsize, String table) throws SQLException {
         // Delete the existing index
-        //dataSource.getConnection().createStatement().executeQuery("DROP TABLE table" + "_" + ngramsize + "gramindex;");
+        dataSource.getConnection().createStatement().executeQuery("DROP TABLE" +
+                " IF EXISTS dbo."+ table+"_"+ngramsize+"gramsindex");
 
         // Create new table
         dataSource.getConnection().createStatement().executeQuery("CREATE TABLE " + table + "_"
@@ -226,7 +232,8 @@ public class DatabaseServer {
             // Grab every in in result set and put it into the map
             while (ngramSet.next()) {
                 int masterid = ngramSet.getInt("id");
-                masterRow.put(masterid, masterRow.get(masterid) + 1);
+                masterRow.put(masterid, (masterRow.containsKey(masterid)?
+                        masterRow.get(masterid):0) + 1);
             }
         }
 
@@ -261,7 +268,7 @@ public class DatabaseServer {
         }
 
         StringJoiner j = new StringJoiner("SELECT * FROM " +
-                ""+DATABASE_TABLE_NAME+" WHERE id=", "OR " + "id=", "");
+                ""+DATABASE_TABLE_NAME+" WHERE id=", " OR id=", "");
         for (int i : rowsToPull) {
             j.add(Integer.toString(i));
         }
