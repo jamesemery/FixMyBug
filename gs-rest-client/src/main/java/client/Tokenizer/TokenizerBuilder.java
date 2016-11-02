@@ -7,9 +7,7 @@ import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Token;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Scanner;
+import java.util.*;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -29,6 +27,17 @@ public class TokenizerBuilder {
     // Holds the tokenized lines of code.
     private List<List<Token>> tokenizedLines;
 
+    // Holds the specific names of all null tokens.
+    private Queue<String> integerTokens;
+    private Queue<String> floatingTokens;
+    private Queue<String> booleanTokens;
+    private Queue<String> characterTokens;
+    private Queue<String> stringTokens;
+    private Queue<String> nullTokens;
+    private Queue<String> identifierTokens;
+
+    private boolean newLine;
+
     /*
      * Constructs an instance of the TokenizerBuilder given the code passed in as the code parameter.
      * @Param: Code, holds the code that is to be tokenized.
@@ -36,7 +45,17 @@ public class TokenizerBuilder {
      */
     public TokenizerBuilder(String code, String type) throws IOException {
 
+        // Initializes tokenizedLines of code.
         tokenizedLines = new ArrayList<List<Token>>();
+
+        // Initializes all the queues that hold the values for specific code.
+        integerTokens = new LinkedList<String>();
+        floatingTokens = new LinkedList<String>();
+        booleanTokens = new LinkedList<String>();
+        characterTokens = new LinkedList<String>();
+        stringTokens = new LinkedList<String>();
+        nullTokens = new LinkedList<String>();
+        identifierTokens = new LinkedList<String>();
 
         // This if statement is used to tokenize the code according to its type.
         if (type.equals("File")){
@@ -80,8 +99,37 @@ public class TokenizerBuilder {
         // Unclear as to why this line is needed, but if it is not called the token stream seemingly returns no tokens
         // and nothing can be printed out.
         stream.getNumberOfOnChannelTokens();
+        holdNullTokens(tokenizedLine);
 
         return tokenizedLine;
+    }
+
+    /*
+     * Holds the identifiers names so they can be used during
+     * @Param: tokenizedLine, tokens that may be identifiers, which means we need to store their function names for
+     *                        later use.
+     */
+    private void holdNullTokens(List<Token> tokenizedLine) {
+
+
+        // Goes through all the tokens in the line and adds them into varNames.
+        for (Token t : tokenizedLine) {
+            if (t.getType() == 51) {
+                integerTokens.add(t.getText());
+            } else if (t.getType() == 52) {
+                floatingTokens.add(t.getText());
+            } else if (t.getType() == 53) {
+                booleanTokens.add(t.getText());
+            } else if (t.getType() == 54) {
+                characterTokens.add(t.getText());
+            } else if (t.getType() == 55) {
+                stringTokens.add(t.getText());
+            } else if (t.getType() == 56) {
+                nullTokens.add(t.getText());
+            } else if (t.getType() == 100) {
+                identifierTokens.add(t.getText());
+            }
+        }
     }
 
     /*
@@ -197,6 +245,8 @@ public class TokenizerBuilder {
         StringBuilder builder = new StringBuilder();
 
 
+        newLine = true;
+
         // De-tokenizes the tokenized code.
 
 
@@ -207,22 +257,67 @@ public class TokenizerBuilder {
             // Turns each token into an int, so we can get its literal name.
             int token = Integer.parseInt(t);
 
+            // Sanitizes the output.
+            builder = sanitize(builder, token);
+
             // If the token is a specific token, gets its literal name.
-            if ((token != 100) && ((token < 52) || (token > 57))) {
+            if ((token != 100) && ((token < 51) || (token > 56)) && (token>-1) && (token!=63)) {
                 builder.append(JavaParser.VOCABULARY.getLiteralName(token));
             }
 
-            // TODO do something better here.
-            // If the token is a non-specific token, just places its symbolic name instead.
-            else {
-                builder.append(JavaParser.VOCABULARY.getSymbolicName(token));
+            // If the token returns a null value based on JavaParser, dequeues from the appropriate queue.
+            else if (token == 51) {
+                builder.append(integerTokens.remove());
+            } else if (token == 52) {
+                builder.append(floatingTokens.remove());
+            } else if (token == 53) {
+                builder.append(booleanTokens.remove());
+            } else if (token == 54) {
+                builder.append(characterTokens.remove());
+            } else if (token == 55) {
+                builder.append(stringTokens.remove());
+            } else if (token == 56) {
+                builder.append(nullTokens.remove());
+            } else if (token == 100) {
+                builder.append(identifierTokens.remove());
             }
+
+            // If we get an EOF token skip it.
+            else if (token == -1) {
+                continue;
+            }
+
+
         }
 
 
         // Converts builder into an actual string.
-        String detokenizedCode = builder.toString();
+        String detokenizedCode = builder.toString().replace("\'","");
+
 
         return detokenizedCode;
+    }
+
+    /*
+     * Sanitizes the detokenized code.
+     * @Param: builder, holds the detokenized code.
+     * @Param: token, the current token.
+     * @Return: builder, the sanitized, detokenized code.
+     */
+    private StringBuilder sanitize(StringBuilder builder, int token) {
+
+        // If the token is a semicolon, then the there is a new line.
+        if (token == 63) {
+            builder.append(";\n");
+            newLine = true;
+            return builder;
+        }
+
+        // If the token is not a (,),[,],{,},;, or . then we add a space before it.
+        else if ((token<57 || token > 63) && (token!=65)) {
+            builder.append(" ");
+        }
+        newLine = false;
+        return builder;
     }
 }
