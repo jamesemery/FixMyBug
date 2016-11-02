@@ -177,7 +177,7 @@ public class DatabaseServer {
         while (rows.next()) {
             int id = rows.getInt("id");
             String errCode = rows.getString("error_tokens");
-            String[] tokens = errCode.split(",");
+            String[] tokens = errCode.split(" ");
 
             // populate the the array with each ngram
             for (int i = ngramsize; i <= tokens.length; i++) {
