@@ -85,23 +85,23 @@ public class DatabaseServer {
         }
     }
 
-    public final String SelectAll(String inputStr) {
+    public final DatabaseEntry SelectAll(String inputStr) {
+        DatabaseEntry queryResult = new DatabaseEntry();
+
         try {
             System.out.println("Input String: " + inputStr + ".");
             ResultSet rs = dataSource.getConnection()
                     .createStatement().executeQuery("select * from \"" + tableName + "\" where buggy_code = \"" + inputStr + "\";");
 
-            //Retrieve by column name
-            int id  = rs.getInt("id");
-            String buggy_code = rs.getString("buggy_code");
-            String fixed_code = rs.getString("fixed_code");
-            int count = rs.getInt("count");
-            int bug_type = rs.getInt("bug_type");
-
-            if(id == 0) { //ID starts at 1, so 0 marks a null return value (i.e. no results)
+            rs.next();
+            if (rs.isAfterLast()) {//ID starts at 1, so 0 marks a null return value (i.e.
+            // no results)
                 System.out.println("No results found\n");
-                return "";
+                return queryResult;
             }
+
+            queryResult = new DatabaseEntry(rs);
+
 
             //Display values
             /*System.out.print("ID: " + id);
@@ -137,7 +137,7 @@ public class DatabaseServer {
         try {
             int rs = dataSource.getConnection().createStatement()
                 .executeUpdate("DELETE FROM \"" + tableName + "\" WHERE id="
-                + id + ";");
+                        + id + ";");
             System.out.println("Changes: " + rs);
         }
         catch (Exception ex) { //SQLException ex) {
