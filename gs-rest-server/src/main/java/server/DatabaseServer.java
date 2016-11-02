@@ -18,7 +18,10 @@ public class DatabaseServer {
     // Default database operation variables
     public static final int DEFAULT_NGRAM_SIZE = 4;
     public static final String DATABASE_TABLE_NAME = "master_table";
-
+    public static final String[] DATABASE_TABLE_FORMAT = {"id", "buggyCode",
+            "fixedCode"};
+    public static final int MIN_SIMILAR_TO_PULL = 4;
+    public static final double DEFAULT_PERCENT_TO_PULL = 0.5;
     public static final int DEFAULT_USER_RETURN = 2;
 
     public DatabaseServer(String fileName) {
@@ -159,8 +162,8 @@ public class DatabaseServer {
         //dataSource.getConnection().createStatement().executeQuery("DROP TABLE table" + "_" + ngramsize + "gramindex;");
 
         // Create new table
-        dataSource.getConnection().createStatement().executeQuery("CREATE TABLE "+ table + "_"
-        + ngramsize + "gramindex (id INTEGER, hash INTEGER);");
+        dataSource.getConnection().createStatement().executeQuery("CREATE TABLE " + table + "_"
+                + ngramsize + "gramindex (id INTEGER, hash INTEGER);");
 
         ResultSet rows = dataSource.getConnection().createStatement().executeQuery("SELECT * from "
         + table);
@@ -200,14 +203,12 @@ public class DatabaseServer {
         String indexTableName = table + "_" + ngramsize + "gramindex";
         Map<Integer, Integer> masterRow = new HashMap<>();
 
-
 //        if (dataSource.getConnection().createStatement().executeQuery("IF " +
 //                        "EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES"
 //                "WHERE TABLE_NAME = N'" + table + "')" +
 //        "BEGIN" +
 //        "PRINT 'Table Exists'" +
 //        "END))").get
-
 
         String[] qTokens = query.split(" ");
         for (int i = ngramsize; i <= qTokens.length; i++) {
@@ -239,17 +240,25 @@ public class DatabaseServer {
     }
 
     // TODO figure out what this returns in the grand scheme of things
+
+    /**
+     * Method that uses default values of the database server in order to grab
+     * all ngram similar code in the database and filter it to return only
+     * the most similar code to the user for transmission to the client
+     * @param userQuery
+     * @return
+     * @throws SQLException
+     */
     public List<String> getMostSimilarEntries(String userQuery) throws SQLException {
         List<Map.Entry<Integer, Integer>> sortedQuery = querySearch
                 (userQuery, DEFAULT_NGRAM_SIZE, DATABASE_TABLE_NAME);
 
         List<Integer> rowsToPull = new ArrayList<>();
-        for (int i = 0; i < DEFAULT_USER_RETURN && i < sortedQuery.size();
+        for (int i = 0; (i < MIN_SIMILAR_TO_PULL || i <
+                DEFAULT_PERCENT_TO_PULL*sortedQuery.size()) && i < sortedQuery.size();
              i++) {
             rowsToPull.add(sortedQuery.get(i).getKey());
         }
-        //TODO make a check here for rows to pull
-
 
         StringJoiner j = new StringJoiner("SELECT * FROM " +
                 ""+DATABASE_TABLE_NAME+" WHERE id=", "OR " + "id=", "");
@@ -259,22 +268,29 @@ public class DatabaseServer {
         ResultSet shortList = dataSource.getConnection().createStatement()
                 .executeQuery(j.toString());
 
-        //TODO do another sort
-
-        List<String> output = new ArrayList<>();
+        List<DatabaseEntry> entryList = new ArrayList<>();
         while(shortList.next()) {
-            output.add()
+            entryList.add(new DatabaseEntry(shortList));
         }
 
-        return
+        //TODO do another sort of the rows
+        for (DatabaseEntry e : entryList) {
+            e.setSimilarity( computeSecondarySimilarity(userQuery, e));
+        }
+
+        Collections.sort(entryList, (DatabaseEntry a, DatabaseEntry b) -> (int)(
+                a.getSimilarity() - b.getSimilarity()));
+
+
+        List<String> output = new ArrayList<>();
+        for (DatabaseEntry e : entryList) output.add(e.toString());
+        return output;
     }
 
+    private double computeSecondarySimilarity(String userQuery, DatabaseEntry e) {
+        return 0;
+    }
 
-    /**
-     * Method that formats a data row string for transmission
-     * @param
-     */
-    public static String
 
     public static void main(String[] args) {
         //createIdex(args[0], args[1]);
