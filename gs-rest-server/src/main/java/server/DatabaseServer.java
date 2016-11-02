@@ -8,11 +8,18 @@ import org.sqlite.SQLiteJDBCLoader;
 
 //to create database
 import java.sql.*;
+import java.util.*;
 
 public class DatabaseServer {
 
     SQLiteDataSource dataSource;
     String tableName;
+
+    // Default database operation variables
+    public static final int DEFAULT_NGRAM_SIZE = 4;
+    public static final String DATABASE_TABLE_NAME = "master_table";
+
+    public static final int DEFAULT_USER_RETURN = 2;
 
     public DatabaseServer(String fileName) {
         String url = "jdbc:sqlite:" + fileName;
@@ -147,7 +154,7 @@ public class DatabaseServer {
 
     }
 
-    public void createIdex(int ngramsize, String table) {
+    public void createIdex(int ngramsize, String table) throws SQLException {
         // Delete the existing index
         //dataSource.getConnection().createStatement().executeQuery("DROP TABLE table" + "_" + ngramsize + "gramindex;");
 
@@ -161,7 +168,7 @@ public class DatabaseServer {
         while (rows.next()) {
             int id = rows.getInt("id");
             String errCode = rows.getString("error_tokens");
-            String[] tokens = errcode.split(",");
+            String[] tokens = errCode.split(",");
 
             // populate the the array with each ngram
             for (int i = ngramsize; i <= tokens.length; i++) {
@@ -170,16 +177,97 @@ public class DatabaseServer {
                     b.append(tokens[j] + ",");
                 }
                 int hash = b.toString().hashCode();
-                dataSource.getConnection().createStatement().executeQuery("INSERt INTO"+ table + "_"
-                + ngramsize + "VALUES ("+id+","+hash+");");
+                dataSource.getConnection().createStatement().executeQuery("INSERT INTO"+ table + "_"
+                + ngramsize + "gramindex VALUES ("+id+","+hash+");");
             }
 
 
         }
     }
 
+    /**
+     * Search that querys the database and returns a list with an Entry pair
+     * containing the id of every occurance in the Table of each ngram from
+     * the query list sorted by occurance.
+     * @param query
+     * @param ngramsize
+     * @param table
+     * @return
+     * @throws SQLException
+     */
+    public List<Map.Entry<Integer, Integer>> querySearch(String query, int ngramsize, String table) throws SQLException {
+        //TODO make sure this test works for finding emtpy tables
+        String indexTableName = table + "_" + ngramsize + "gramindex";
+        Map<Integer, Integer> masterRow = new HashMap<>();
+
+
+//        if (dataSource.getConnection().createStatement().executeQuery("IF " +
+//                        "EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES"
+//                "WHERE TABLE_NAME = N'" + table + "')" +
+//        "BEGIN" +
+//        "PRINT 'Table Exists'" +
+//        "END))").get
+
+
+        String[] qTokens = query.split(" ");
+        for (int i = ngramsize; i <= qTokens.length; i++) {
+            StringBuilder b = new StringBuilder();
+            for (int j = i - ngramsize; j < i; j++) {
+                b.append(qTokens[j] + " ");
+            }
+            int hash = b.toString().hashCode();
+
+            //
+            ResultSet ngramSet = dataSource.getConnection().createStatement()
+                    .executeQuery("SELECT id FROM " + indexTableName + " " +
+                            "WHERE hash = " + hash);
+
+            // Grab every in in result set and put it into the map
+            while (ngramSet.next()) {
+                int masterid = ngramSet.getInt("id");
+                masterRow.put(masterid, masterRow.get(masterid) + 1);
+            }
+        }
+
+        // Sort the map and return a list of integers sorted
+        List<Map.Entry<Integer,Integer>> results = new ArrayList(masterRow.entrySet
+                ());
+        Collections.sort(results, (Map.Entry o1, Map.Entry o2) -> (int)o1
+                .getValue() - (int)o2.getValue()
+        );
+        return results;
+    }
+
+    // TODO figure out what this returns in the grand scheme of things
+    public List<String> getMostSimilarEntries(String userQuery) throws SQLException {
+        List<Map.Entry<Integer, Integer>> sortedQuery = querySearch
+                (userQuery, DEFAULT_NGRAM_SIZE, DATABASE_TABLE_NAME);
+
+        List<Integer> rowsToPull = new ArrayList<>();
+        for (int i = 0; i < DEFAULT_USER_RETURN && i < sortedQuery.size();
+             i++) {
+            rowsToPull.add(sortedQuery.get(i).getKey());
+        }
+        //TODO make a check here for rows to pull
+
+
+        StringJoiner j = new StringJoiner("SELECT * FROM " +
+                ""+DATABASE_TABLE_NAME+" WHERE id=", "OR " + "id=", "");
+        for (int i : rowsToPull) {
+            j.add(Integer.toString(i));
+        }
+        ResultSet shortList = dataSource.getConnection().createStatement()
+                .executeQuery(j.toString());
+
+        //TODO do another sort
+
+
+        return ResultSet.
+    }
+
+
     public static void main(String[] args) {
-        createIdex(args[0], args[1]);
+        //createIdex(args[0], args[1]);
         //DatabaseServer db = new DatabaseServer("/FixMyBug/TEST_DATABASE");
         //String fix1 = db.SelectFrom("fixed_code","somebuggg");
         //System.out.println("somefffix - " + fix1);
