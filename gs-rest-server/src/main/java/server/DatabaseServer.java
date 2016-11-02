@@ -300,8 +300,12 @@ public class DatabaseServer {
 
 
     public static void main(String[] args) {
-        //createIdex(args[0], args[1]);
-        //DatabaseServer db = new DatabaseServer("/FixMyBug/TEST_DATABASE");
+        DatabaseServer db = new DatabaseServer("/FixMyBug/TEST_DATABASE");
+        try {
+            db.createIdex(Integer.parseInt(args[0]), args[1]);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         //String fix1 = db.SelectFrom("fixed_code","somebuggg");
         //System.out.println("somefffix - " + fix1);
         //String fix2 = db.SelectAll("somebug2");
