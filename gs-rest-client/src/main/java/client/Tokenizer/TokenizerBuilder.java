@@ -281,19 +281,47 @@ public class TokenizerBuilder {
 
             // If the token returns a null value based on JavaParser, dequeues from the appropriate queue.
             else if (token == 51) {
-                builder.append(integerTokens.remove());
+                if (integerTokens.peek() != null) {
+                    builder.append(integerTokens.remove());
+                } else {
+                    builder.append("IntegerLiteral");
+                }
             } else if (token == 52) {
-                builder.append(floatingTokens.remove());
+                if (floatingTokens.peek()!= null) {
+                    builder.append(floatingTokens.remove());
+                } else {
+                    builder.append("FloatingPointLiteral");
+                }
             } else if (token == 53) {
-                builder.append(booleanTokens.remove());
+                if (booleanTokens.peek() != null) {
+                    builder.append(booleanTokens.remove());
+                } else {
+                    builder.append("BooleanLiteral");
+                }
             } else if (token == 54) {
-                builder.append(characterTokens.remove());
+                if (characterTokens.peek() != null) {
+                    builder.append(characterTokens.remove());
+                } else {
+                    builder.append("CharacterLiteral");
+                }
             } else if (token == 55) {
-                builder.append(stringTokens.remove());
+                if (stringTokens.peek() != null) {
+                    builder.append(stringTokens.remove());
+                } else {
+                    builder.append("StringLiteral");
+                }
             } else if (token == 56) {
-                builder.append(nullTokens.remove());
+                if (nullTokens.peek() != null) {
+                    builder.append(nullTokens.remove());
+                } else {
+                    builder.append("nullLiteral");
+                }
             } else if (token == 100) {
-                builder.append(identifierTokens.remove());
+                if (identifierTokens.peek() != null) {
+                    builder.append(identifierTokens.remove());
+                } else {
+                    builder.append("Identifier");
+                }
             }
 
             previousToken = token;
