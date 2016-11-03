@@ -15,6 +15,8 @@ import client.Tokenizer.TokenizerBuilder;
 */
 public class SimpleClient {
 
+    private static final String BASE_URL = "http://localhost:8080/";
+
     /*
     * Reads in a text file and returns it as a string.
     */
@@ -51,10 +53,16 @@ public class SimpleClient {
     }
 
     /*
-     * Reads in a text file and returns it as a list of strings corresponding to
-     * the given lines..
+     * A function that returns the lines of a file between provided starting and ending
+     * line numbers. 
+     *
+     * @param fileName: a text file
+     * @param firstLine: the starting line number of the desired code block
+     * @param lastLine: the end line number of the desired code block
+     * @return A String containing the lines from the text file we interpret to contain
+     * buggy code. 
      */
-    public static String fileLinesToString(String fileName, int firstLine, int lastLine) throws IOException {
+    public static String getLinesFromFile(String fileName, int firstLine, int lastLine) throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(fileName));
         String line = null;
         int lineNum = 0;
@@ -80,10 +88,10 @@ public class SimpleClient {
     * Sends a ClientFile object (file + error message) to the server
     * as a JSON string and processes its response.
     */
-    public static void fixMyBug(ServerRequest server_request) {
+    public static void fixMyBug(ServerRequest serverRequest, String method) {
         try {
             //Setup an HTTP POST request
-            URL url = new URL("http://localhost:8080/fix");
+            URL url = new URL(BASE_URL + method);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setDoOutput(true);
             conn.setRequestMethod("POST");
@@ -92,7 +100,7 @@ public class SimpleClient {
             ObjectMapper mapper = new ObjectMapper();
             try {
                 //Convert ServerRequest object to JSON string
-                String serverRequestAsJsonString = mapper.writeValueAsString(server_request);
+                String serverRequestAsJsonString = mapper.writeValueAsString(serverRequest);
                 OutputStream os = conn.getOutputStream();
                 os.write(serverRequestAsJsonString.getBytes());
                 os.flush();
@@ -117,9 +125,9 @@ public class SimpleClient {
             returnedJsonStringBuilder.setLength(returnedJsonStringBuilder.length() - 1); //remove extra newline
             String returnedJsonString = returnedJsonStringBuilder.toString();
 
-            DatabaseEntry bug_fix = mapper.readValue(returnedJsonString, DatabaseEntry.class);
+            DatabaseEntry bugFix = mapper.readValue(returnedJsonString, DatabaseEntry.class);
 
-            System.out.println(bug_fix);
+            System.out.println(bugFix.getFixedCode());
             conn.disconnect();
 
         } catch (MalformedURLException e) {
@@ -130,25 +138,28 @@ public class SimpleClient {
     }
 
     public static void main(String[] args) {
-        if(args.length != 3) {
-            System.out.println("Usage: java -jar <jar> <file> <line #: bug start> <line #: bug end>");
+
+        if(args.length != 4) {
+            System.out.println("Usage: java -jar <jar> <file> <line # start> <line # end> <server method> (fix, test)");
             System.exit(0);
         }
+
         String fileName = args[0];
         int startLine = Integer.parseInt(args[1]);
         int endLine = Integer.parseInt(args[2]);
+        String method = args[3];
         
-        String relevant_code = "";
+        String buggyCodeBlock = "";
         try {
-            relevant_code = fileLinesToString(fileName, startLine, endLine);
+            buggyCodeBlock = getLinesFromFile(fileName, startLine, endLine);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        String tokenized_code = "";
+        String tokenizedCodeBlock = "";
         //Tokenize the input file
         try {
-          tokenized_code = tokenize(relevant_code);
+          tokenizedCodeBlock = tokenize(buggyCodeBlock);
         } catch (Exception ex) {
           ex.printStackTrace();
         }
@@ -156,13 +167,13 @@ public class SimpleClient {
         String errorMessage = "Custom-Error-Message";
         StringBuilder stringBuilder = new StringBuilder();
         //try {
-            stringBuilder.append(tokenized_code);
+            stringBuilder.append(tokenizedCodeBlock);
         //} catch (IOException e) {
         //    e.printStackTrace();
         //}
 
-        ServerRequest server_request = new ServerRequest(stringBuilder.toString(), errorMessage);
+        ServerRequest serverRequest = new ServerRequest(stringBuilder.toString(), errorMessage);
 
-        fixMyBug(server_request);
+        fixMyBug(serverRequest, method);
     }
 }
