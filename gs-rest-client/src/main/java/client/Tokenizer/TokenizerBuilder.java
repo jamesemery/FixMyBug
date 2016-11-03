@@ -136,10 +136,18 @@ public class TokenizerBuilder {
     }
 
     /*
+     * Returns the tokenized code as a space separated string of ints. Defaults verbose to false.
+     * @Return: string version of space separated string of ints.
+     */
+    public String getString() {
+        return getString(false);
+    }
+
+    /*
      * Returns the tokenized code as a string.
      * @Return: the string version of the tokenized code.
      */
-    public String getString() {
+    public String getString(Boolean verbose) {
 
         // StringBuilder makes it easy to concatenate strings together.
         StringBuilder builder = new StringBuilder();
@@ -147,7 +155,7 @@ public class TokenizerBuilder {
         // Goes through each tokenized line in tokenizedLines and gets the error type, token type and its value.
         // It then adds them to builder.
         for (List<Token> tokenizedLine: tokenizedLines) {
-            builder.append(tokensToString(tokenizedLine));
+            builder.append(tokensToString(tokenizedLine, verbose));
         }
         return builder.toString();
     }
@@ -193,7 +201,8 @@ public class TokenizerBuilder {
         // Goes through each token, converts it into a string and adds it to builder.
         for (Token t : tokens) {
             if (verbose) {
-                builder.append(t.getType() + " ");
+                builder.append(t.getType() +"(" + JavaParser.VOCABULARY
+                        .getSymbolicName(t.getType()) + ") " + "(" + t.getText() + ") \n");
             } else {
                 builder.append(t.getType() + " ");
             }
@@ -250,6 +259,8 @@ public class TokenizerBuilder {
 
         newLine = true;
 
+        int previousToken = 0;
+
         // De-tokenizes the tokenized code.
 
 
@@ -261,7 +272,7 @@ public class TokenizerBuilder {
             int token = Integer.parseInt(t);
 
             // Sanitizes the output.
-            builder = sanitize(builder, token);
+            builder = sanitize(builder, token, previousToken);
 
             // If the token is a specific token, gets its literal name.
             if ((token != 100) && ((token < 51) || (token > 56)) && (token>-1) && (token!=63)) {
@@ -285,12 +296,7 @@ public class TokenizerBuilder {
                 builder.append(identifierTokens.remove());
             }
 
-            // If we get an EOF token skip it.
-            else if (token == -1) {
-                continue;
-            }
-
-
+            previousToken = token;
         }
 
 
@@ -307,7 +313,7 @@ public class TokenizerBuilder {
      * @Param: token, the current token.
      * @Return: builder, the sanitized, detokenized code.
      */
-    private StringBuilder sanitize(StringBuilder builder, int token) {
+    private StringBuilder sanitize(StringBuilder builder, int token, int previousToken) {
 
         // If the token is a semicolon, then the there is a new line.
         if (token == 63) {
@@ -316,8 +322,8 @@ public class TokenizerBuilder {
             return builder;
         }
 
-        // If the token is not a (,),[,],{,},;, or . then we add a space before it.
-        else if ((token<57 || token > 63) && (token!=65)) {
+        // If the token is not a '(', ')', '[', ']', '{', '}', ';', or '.' then we add a space before it.
+        else if (((token<57 || token > 63) && (token!=65)) && ((previousToken<57 || previousToken > 63 || previousToken == 59 || previousToken == 62) && (previousToken!=65)) && !newLine) {
             builder.append(" ");
         }
         newLine = false;
