@@ -101,6 +101,9 @@ public class TokenizerBuilder {
         stream.getNumberOfOnChannelTokens();
         holdNullTokens(tokenizedLine);
 
+        // Removes the EOF token.
+        tokenizedLine.remove(tokenizedLine.size()-1);
+
         return tokenizedLine;
     }
 
