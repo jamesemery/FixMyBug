@@ -5,6 +5,7 @@ import java.sql.SQLException;
 //import javax.swing.JOptionPane;
 import org.sqlite.SQLiteDataSource;
 import org.sqlite.SQLiteJDBCLoader;
+import server.javaparser.LevScorer;
 
 //to create database
 import java.sql.*;
@@ -17,7 +18,7 @@ public class DatabaseServer {
 
     // Default database operation variables
     public static final int DEFAULT_NGRAM_SIZE = 4;
-    public static final String DATABASE_TABLE_NAME = "master_table";
+    public static final String DATABASE_TABLE_NAME = "test_tokens";
     public static final int MIN_SIMILAR_TO_PULL = 4;
     public static final double DEFAULT_PERCENT_TO_PULL = 0.5;
     public static final int DEFAULT_USER_RETURN = 2;
@@ -176,7 +177,7 @@ public class DatabaseServer {
                 + ngramsize + "gramindex (id INTEGER, hash INTEGER);");
 
         ResultSet rows = statement.executeQuery("SELECT * from "
-        + table);
+                + table);
 
         while (true) {
             System.out.println(rows.getRow());
@@ -191,7 +192,7 @@ public class DatabaseServer {
                 for (int i = ngramsize; i <= tokens.length; i++) {
                     StringBuilder b = new StringBuilder();
                     for (int j = i - ngramsize; j < i; j++) {
-                        b.append(tokens[j] + ",");
+                        b.append(tokens[j] + " ");
                     }
                     int hash = b.toString().hashCode();
                     statement2.executeUpdate("INSERT INTO "+ table + "_"
@@ -234,7 +235,9 @@ public class DatabaseServer {
             for (int j = i - ngramsize; j < i; j++) {
                 b.append(qTokens[j] + " ");
             }
+            System.out.println("qTokens String: " + b.toString());
             int hash = b.toString().hashCode();
+            System.out.println(hash);
 
             //
             ResultSet ngramSet = dataSource.getConnection().createStatement()
@@ -252,8 +255,8 @@ public class DatabaseServer {
         // Sort the map and return a list of integers sorted
         List<Map.Entry<Integer,Integer>> results = new ArrayList(masterRow.entrySet
                 ());
-        Collections.sort(results, (Map.Entry o1, Map.Entry o2) -> (int)o1
-                .getValue() - (int)o2.getValue()
+        Collections.sort(results, (Map.Entry o1, Map.Entry o2) -> (int)o2
+                .getValue() - (int)o1.getValue()
         );
         return results;
     }
@@ -271,50 +274,61 @@ public class DatabaseServer {
     public List<String> getMostSimilarEntries(String userQuery) throws SQLException {
         List<Map.Entry<Integer, Integer>> sortedQuery = querySearch
                 (userQuery, DEFAULT_NGRAM_SIZE, DATABASE_TABLE_NAME);
+        System.out.println(sortedQuery);
 
         List<Integer> rowsToPull = new ArrayList<>();
         for (int i = 0; (i < MIN_SIMILAR_TO_PULL || i <
                 DEFAULT_PERCENT_TO_PULL*sortedQuery.size()) && i < sortedQuery.size();
              i++) {
+            System.out.println("i: " + i);
             rowsToPull.add(sortedQuery.get(i).getKey());
         }
 
-        StringJoiner j = new StringJoiner("SELECT * FROM " +
-                ""+DATABASE_TABLE_NAME+" WHERE id=", " OR id=", "");
+        StringJoiner j = new StringJoiner(",", "SELECT * FROM " +
+                ""+DATABASE_TABLE_NAME+" WHERE id IN (", ");");
         for (int i : rowsToPull) {
             j.add(Integer.toString(i));
         }
+        System.out.println(j.toString());
         ResultSet shortList = dataSource.getConnection().createStatement()
                 .executeQuery(j.toString());
 
         List<DatabaseEntry> entryList = new ArrayList<>();
+        System.out.println(shortList.getRow());
         while(shortList.next()) {
-            entryList.add(new DatabaseEntry(shortList));
+                System.out.println(shortList.getRow());
+                System.out.println("making a database entry");
+                entryList.add(new DatabaseEntry(shortList));
+
         }
 
-        //TODO do another sort of the rows
+        // Sorting the rows by a secondary algorithm
         for (DatabaseEntry e : entryList) {
             e.setSimilarity( computeSecondarySimilarity(userQuery, e));
+            System.out.println("ID: " + e.getId() + "  " + e.getSimilarity());
         }
-
-        Collections.sort(entryList, (DatabaseEntry a, DatabaseEntry b) -> (int)(
-                a.getSimilarity() - b.getSimilarity()));
-
+        Collections.sort(entryList, (DatabaseEntry a, DatabaseEntry b) -> (int)(b.getSimilarity() - a.getSimilarity()));
 
         List<String> output = new ArrayList<>();
         for (DatabaseEntry e : entryList) output.add(e.toString());
         return output;
     }
 
-    private double computeSecondarySimilarity(String userQuery, DatabaseEntry e) {
-        return 0;
+    private double computeSecondarySimilarity(String userQuery, DatabaseEntry entry) {
+        List<Integer> q = new ArrayList<>();
+        List<Integer> e = new ArrayList<>();
+
+        for (String s : userQuery.split(" ")) { q.add(Integer.parseInt(s)); }
+        for (String s : entry.getBuggyCode().split(" ")) { e.add(Integer.parseInt(s)); }
+        return LevScorer.scoreSimilarity(q, e);
     }
 
 
     public static void main(String[] args) {
         DatabaseServer db = new DatabaseServer("/FixMyBugDB/TEST_DATABASE");
         try {
-            db.createIndex(Integer.parseInt(args[0]), args[1]);
+            db.createIndex(Integer.parseInt("4"), "test_tokens");
+            System.out.println(db.getMostSimilarEntries("100 100 100 100 100 110 100 100 100 60"));
         } catch (SQLException e) {
             e.printStackTrace();
         }

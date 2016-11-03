@@ -34,10 +34,11 @@ public class DatabaseEntry {
 		// TODO see how this handles exceptions
 		// TODO update this to handle a real entry
 		try{
-			if(source.next()) {
+			if(!source.isAfterLast()&&!source.isBeforeFirst()) {
 				this.id = source.getInt("id");
-				this.buggy_code = source.getString("buggyCode");
-				this.fixed_code = source.getString("fixedCode");
+				this.buggy_code = source.getString("error_tokens");
+				this.fixed_code = source.getString("fix_tokens");
+
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
