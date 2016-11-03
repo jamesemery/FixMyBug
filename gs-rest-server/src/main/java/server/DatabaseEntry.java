@@ -8,7 +8,7 @@ import java.sql.SQLException;
 /**
  * We make a data structure specifically for each entry we decide to
  * return, formatted like the database contents themselves.
- * 
+ *
  * (In the future, we might have harmonized_code instead of directly
  * returning fixed_code.)
  */
@@ -34,9 +34,11 @@ public class DatabaseEntry {
 		// TODO see how this handles exceptions
 		// TODO update this to handle a real entry
 		try{
-			this.id = source.getInt("id");
-			this.buggy_code = source.getString("buggyCode");
-			this.fixed_code = source.getString("fixedCode");
+			if(source.next()) {
+				this.id = source.getInt("id");
+				this.buggy_code = source.getString("buggyCode");
+				this.fixed_code = source.getString("fixedCode");
+			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -57,10 +59,10 @@ public class DatabaseEntry {
 	public void setSimilarity(double v) { this.similarity = v;}
 
     public String toString() {
-        return "(" + id + " | " + 
-                     error_type + " | " + 
-                     buggy_code + " | " + 
-                     fixed_code + " | " + 
+        return "(" + id + " | " +
+                     error_type + " | " +
+                     buggy_code + " | " +
+                     fixed_code + " | " +
                      count + ")";
     }
 }

@@ -162,36 +162,48 @@ public class DatabaseServer {
 
 
 
-    public void createIdex(int ngramsize, String table) throws SQLException {
+    public void createIndex(int ngramsize, String table) throws SQLException {
         // Delete the existing index
-        dataSource.getConnection().createStatement().executeQuery("DROP TABLE" +
-                " IF EXISTS dbo."+ table+"_"+ngramsize+"gramsindex");
+
+        Connection connection = dataSource.getConnection();
+        Statement statement = connection.createStatement();
+        Statement statement2 = connection.createStatement();
+        statement.executeUpdate("DROP TABLE" +
+                " IF EXISTS "+ table+"_"+ngramsize+"gramindex;");
 
         // Create new table
-        dataSource.getConnection().createStatement().executeQuery("CREATE TABLE " + table + "_"
+        statement.executeUpdate("CREATE TABLE " + table + "_"
                 + ngramsize + "gramindex (id INTEGER, hash INTEGER);");
 
-        ResultSet rows = dataSource.getConnection().createStatement().executeQuery("SELECT * from "
+        ResultSet rows = statement.executeQuery("SELECT * from "
         + table);
 
-        while (rows.next()) {
-            int id = rows.getInt("id");
-            String errCode = rows.getString("error_tokens");
-            String[] tokens = errCode.split(" ");
+        while (true) {
+            System.out.println(rows.getRow());
+            if (rows.next()) {
+                System.out.print(rows.getRow());
+                System.out.println("!");
+                int id = rows.getInt("id");
+                String errCode = rows.getString("error_tokens");
+                String[] tokens = errCode.split(" ");
 
-            // populate the the array with each ngram
-            for (int i = ngramsize; i <= tokens.length; i++) {
-                StringBuilder b = new StringBuilder();
-                for (int j = i - ngramsize; j < i; j++) {
-                    b.append(tokens[j] + ",");
+                // populate the the array with each ngram
+                for (int i = ngramsize; i <= tokens.length; i++) {
+                    StringBuilder b = new StringBuilder();
+                    for (int j = i - ngramsize; j < i; j++) {
+                        b.append(tokens[j] + ",");
+                    }
+                    int hash = b.toString().hashCode();
+                    statement2.executeUpdate("INSERT INTO "+ table + "_"
+                    + ngramsize + "gramindex VALUES ("+id+","+hash+");");
                 }
-                int hash = b.toString().hashCode();
-                dataSource.getConnection().createStatement().executeQuery("INSERT INTO"+ table + "_"
-                + ngramsize + "gramindex VALUES ("+id+","+hash+");");
             }
-
+            else break;
 
         }
+        System.out.println(rows.getRow());
+        connection.close();
+
     }
 
     /**
@@ -300,22 +312,22 @@ public class DatabaseServer {
 
 
     public static void main(String[] args) {
-        DatabaseServer db = new DatabaseServer("/FixMyBug/TEST_DATABASE");
+        DatabaseServer db = new DatabaseServer("/FixMyBugDB/TEST_DATABASE");
         try {
-            db.createIdex(Integer.parseInt(args[0]), args[1]);
+            db.createIndex(Integer.parseInt(args[0]), args[1]);
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        //String fix1 = db.SelectFrom("fixed_code","somebuggg");
-        //System.out.println("somefffix - " + fix1);
-        //String fix2 = db.SelectAll("somebug2");
-        //System.out.println(fix2);
-        //db.RemoveByID(4);
-        //db.RemoveByID(5);
-        //db.RemoveByID(6);
-        //addToTable(args[0], 6, 5, "somebuggg", "somefffix", 2);
-        //addToTable(args[0], 4, 2, "somebug2", "somefix2", 2);
-        //addToTable(args[0], 5, 4, "somebug3", "somefix3", 2);
+    //     //String fix1 = db.SelectFrom("fixed_code","somebuggg");
+    //     //System.out.println("somefffix - " + fix1);
+    //     //String fix2 = db.SelectAll("somebug2");
+    //     //System.out.println(fix2);
+    //     //db.RemoveByID(4);
+    //     //db.RemoveByID(5);
+    //     //db.RemoveByID(6);
+    //     //addToTable(args[0], 6, 5, "somebuggg", "somefffix", 2);
+    //     //addToTable(args[0], 4, 2, "somebug2", "somefix2", 2);
+    //     //addToTable(args[0], 5, 4, "somebug3", "somefix3", 2);
     }
 
 }
