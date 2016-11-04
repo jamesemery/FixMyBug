@@ -36,9 +36,10 @@ public class DatabaseEntry {
 		try{
 			if(!source.isAfterLast()&&!source.isBeforeFirst()) {
 				this.id = source.getInt("id");
-				this.buggy_code = source.getString("error_tokens");
-				this.fixed_code = source.getString("fix_tokens");
-
+				this.error_type = source.getInt("error_type");
+				this.buggy_code = source.getString("buggy_code");
+				this.fixed_code = source.getString("fixed_code");
+				this.count = source.getInt("count");
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
