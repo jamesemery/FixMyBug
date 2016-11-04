@@ -1,6 +1,6 @@
 package server.javaparser;
 
-import org.antlr.v4.runtime.Token;
+//import org.antlr.v4.runtime.Token;
 
 import java.util.List;
 
@@ -19,10 +19,10 @@ public class LevScorer {
      * @param tokens
      * @return
      */
-    public List<Integer> rankSimilarity(List<Token> queryString, List<List<Token>> tokens) {
-        //Integer[][] scores = new int[queryString.size()][tokens]
-        return null;
-    }
+//    public List<Integer> rankSimilarity(List<Token> queryString, List<List<Token>> tokens) {
+//        //Integer[][] scores = new int[queryString.size()][tokens]
+//        return null;
+//    }
 
     /**
      * Uses a Levenstein distance calculation algorithm in order to calculate

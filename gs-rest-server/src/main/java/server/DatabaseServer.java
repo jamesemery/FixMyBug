@@ -18,10 +18,10 @@ public class DatabaseServer {
 
     // Default database operation variables
     public static final int DEFAULT_NGRAM_SIZE = 4;
-    public static final String DATABASE_TABLE_NAME = "test_tokens";
+    public static final String DATABASE_TABLE_NAME = "master_table";
     public static final int MIN_SIMILAR_TO_PULL = 4;
     public static final double DEFAULT_PERCENT_TO_PULL = 0.5;
-    public static final int DEFAULT_USER_RETURN = 2;
+    public static final int MAX_USER_RETURN = 4;
 
     // The table entries
     public static final String[] DATABASE_TABLE_FORMAT = {"id", "buggyCode",
@@ -163,7 +163,7 @@ public class DatabaseServer {
 
 
 
-    public void createIndex(int ngramsize, String table) throws SQLException {
+    public int createIndex(int ngramsize, String table) throws SQLException {
         // Delete the existing index
 
         Connection connection = dataSource.getConnection();
@@ -179,13 +179,14 @@ public class DatabaseServer {
         ResultSet rows = statement.executeQuery("SELECT * from "
                 + table);
 
+        int counter = 0;
         while (true) {
             System.out.println(rows.getRow());
             if (rows.next()) {
                 System.out.print(rows.getRow());
                 System.out.println("!");
                 int id = rows.getInt("id");
-                String errCode = rows.getString("error_tokens");
+                String errCode = rows.getString("buggy_code");
                 String[] tokens = errCode.split(" ");
 
                 // populate the the array with each ngram
@@ -195,6 +196,7 @@ public class DatabaseServer {
                         b.append(tokens[j] + " ");
                     }
                     int hash = b.toString().hashCode();
+                    counter++;
                     statement2.executeUpdate("INSERT INTO "+ table + "_"
                     + ngramsize + "gramindex VALUES ("+id+","+hash+");");
                 }
@@ -204,7 +206,7 @@ public class DatabaseServer {
         }
         System.out.println(rows.getRow());
         connection.close();
-
+        return counter;
     }
 
     /**
@@ -271,7 +273,7 @@ public class DatabaseServer {
      * @return
      * @throws SQLException
      */
-    public List<String> getMostSimilarEntries(String userQuery) throws SQLException {
+    public List<DatabaseEntry> getMostSimilarEntries(String userQuery) throws SQLException {
         List<Map.Entry<Integer, Integer>> sortedQuery = querySearch
                 (userQuery, DEFAULT_NGRAM_SIZE, DATABASE_TABLE_NAME);
         System.out.println(sortedQuery);
@@ -299,8 +301,8 @@ public class DatabaseServer {
                 System.out.println(shortList.getRow());
                 System.out.println("making a database entry");
                 entryList.add(new DatabaseEntry(shortList));
-
         }
+        System.out.println("entryList has this:"+entryList);
 
         // Sorting the rows by a secondary algorithm
         for (DatabaseEntry e : entryList) {
@@ -309,9 +311,11 @@ public class DatabaseServer {
         }
         Collections.sort(entryList, (DatabaseEntry a, DatabaseEntry b) -> (int)(b.getSimilarity() - a.getSimilarity()));
 
-        List<String> output = new ArrayList<>();
-        for (DatabaseEntry e : entryList) output.add(e.toString());
-        return output;
+        //TODO right here cull the list again
+        if (entryList.size() > MAX_USER_RETURN) {
+            entryList = entryList.subList(0, MAX_USER_RETURN);
+        }
+        return entryList;
     }
 
     private double computeSecondarySimilarity(String userQuery, DatabaseEntry entry) {
@@ -324,14 +328,14 @@ public class DatabaseServer {
     }
 
 
-    public static void main(String[] args) {
-        DatabaseServer db = new DatabaseServer("/FixMyBugDB/TEST_DATABASE");
-        try {
-            db.createIndex(Integer.parseInt("4"), "test_tokens");
-            System.out.println(db.getMostSimilarEntries("100 100 100 100 100 110 100 100 100 60"));
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+//    public static void main(String[] args) {
+//        DatabaseServer db = new DatabaseServer("/FixMyBugDB/TEST_DATABASE");
+//        try {
+//            db.createIndex(Integer.parseInt("4"), "test_tokens");
+//            System.out.println(db.getMostSimilarEntries("100 100 100 100 100 110 100 100 100 60"));
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
     //     //String fix1 = db.SelectFrom("fixed_code","somebuggg");
     //     //System.out.println("somefffix - " + fix1);
     //     //String fix2 = db.SelectAll("somebug2");
@@ -342,6 +346,6 @@ public class DatabaseServer {
     //     //addToTable(args[0], 6, 5, "somebuggg", "somefffix", 2);
     //     //addToTable(args[0], 4, 2, "somebug2", "somefix2", 2);
     //     //addToTable(args[0], 5, 4, "somebug3", "somefix3", 2);
-    }
+//    }
 
 }
