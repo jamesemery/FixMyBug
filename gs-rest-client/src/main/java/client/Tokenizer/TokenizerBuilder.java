@@ -185,7 +185,7 @@ public class TokenizerBuilder {
      * @Return: tokens as a string.
      */
     public static String tokensToString(List<Token> tokens) {
-        return tokensToString(tokens, true);
+        return tokensToString(tokens, false);
     }
 
     /*

@@ -113,8 +113,7 @@ public class SimpleClient {
             }
 
             //Read JSON response from the server in a BufferedReader
-            BufferedReader br = new BufferedReader(new InputStreamReader(
-                    (conn.getInputStream())));
+            BufferedReader br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
 
             String output;
             System.out.println("Output from Server .... \n\n");
@@ -125,10 +124,16 @@ public class SimpleClient {
             returnedJsonStringBuilder.setLength(returnedJsonStringBuilder.length() - 1); //remove extra newline
             String returnedJsonString = returnedJsonStringBuilder.toString();
 
-            DatabaseEntry bugFix = mapper.readValue(returnedJsonString, DatabaseEntry.class);
+            if (method.equals("index")) {
+                System.out.println(returnedJsonString.toString());
+                conn.disconnect();
+            } else {
+                DatabaseEntryListWrapper bugFixes = mapper.readValue(returnedJsonString,
+                        DatabaseEntryListWrapper.class);
 
-            System.out.println(bugFix.getFixedCode());
-            conn.disconnect();
+                System.out.println(bugFixes.getEntryList());
+                conn.disconnect();
+            }
 
         } catch (MalformedURLException e) {
             e.printStackTrace();
@@ -140,7 +145,8 @@ public class SimpleClient {
     public static void main(String[] args) {
 
         if(args.length != 4) {
-            System.out.println("Usage: java -jar <jar> <file> <line # start> <line # end> <server method> (fix, test)");
+            System.out.println("Usage: java -jar <jar> <file> <line # start> <line # end> <server" +
+                    " method> (fix, test, index)");
             System.exit(0);
         }
 
@@ -148,32 +154,41 @@ public class SimpleClient {
         int startLine = Integer.parseInt(args[1]);
         int endLine = Integer.parseInt(args[2]);
         String method = args[3];
-        
-        String buggyCodeBlock = "";
-        try {
-            buggyCodeBlock = getLinesFromFile(fileName, startLine, endLine);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
-        String tokenizedCodeBlock = "";
-        //Tokenize the input file
-        try {
-          tokenizedCodeBlock = tokenize(buggyCodeBlock);
-        } catch (Exception ex) {
-          ex.printStackTrace();
-        }
+        ServerRequest serverRequest;
 
-        String errorMessage = "Custom-Error-Message";
-        StringBuilder stringBuilder = new StringBuilder();
-        //try {
+        if (method.equals("index")) {
+            // Hack into the parameters of serverRequest the arguments for index
+            serverRequest = new ServerRequest(fileName, args[1]);
+            System.out.println(serverRequest.getBuggyCode());
+
+        } else {
+            String buggyCodeBlock = "";
+            try {
+                buggyCodeBlock = getLinesFromFile(fileName, startLine, endLine);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            String tokenizedCodeBlock = "";
+            //Tokenize the input file
+            try {
+                tokenizedCodeBlock = tokenize(buggyCodeBlock);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+
+            String errorMessage = "Custom-Error-Message";
+            StringBuilder stringBuilder = new StringBuilder();
+            //try {
             stringBuilder.append(tokenizedCodeBlock);
-        //} catch (IOException e) {
-        //    e.printStackTrace();
-        //}
+            //} catch (IOException e) {
+            //    e.printStackTrace();
+            //}
 
-        ServerRequest serverRequest = new ServerRequest(stringBuilder.toString(), errorMessage);
-
+            serverRequest = new ServerRequest(stringBuilder.toString(), errorMessage);
+        }
+        System.out.println("Sending tokenized code: "+serverRequest.getBuggyCode()+"\nWith the error message: "+serverRequest.getErrorMessage());
         fixMyBug(serverRequest, method);
     }
 }
