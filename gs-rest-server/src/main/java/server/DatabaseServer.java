@@ -255,11 +255,8 @@ public class DatabaseServer {
         }
 
         // Sort the map and return a list of integers sorted
-        List<Map.Entry<Integer,Integer>> results = new ArrayList(masterRow.entrySet
-                ());
-        Collections.sort(results, (Map.Entry o1, Map.Entry o2) -> (int)o2
-                .getValue() - (int)o1.getValue()
-        );
+        List<Map.Entry<Integer,Integer>> results = new ArrayList(masterRow.entrySet());
+        Collections.sort(results, (Map.Entry o1, Map.Entry o2) -> (int)o2.getValue() - (int)o1.getValue());
         return results;
     }
 
