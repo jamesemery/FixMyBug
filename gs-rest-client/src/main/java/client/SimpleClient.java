@@ -41,15 +41,17 @@ public class SimpleClient {
     /*
      * Utilizes the TokenizerBuilder class to tokenize a given file
      */
-    public static String tokenize(String string) throws IOException {
+    public static TokenizerBuilder tokenize(String string) throws IOException {
+        System.out.println("tokenize");
         try {
           TokenizerBuilder t = new TokenizerBuilder(string, "String");
           //System.out.println(t.getString());
-          return t.getString();
+          return t;
         } catch (IOException ex) {
           ex.printStackTrace();
         }
-        return "";
+        System.out.println("returning an empty thing");
+        return new TokenizerBuilder("","String");
     }
 
     /*
@@ -89,6 +91,10 @@ public class SimpleClient {
     * as a JSON string and processes its response.
     */
     public static void fixMyBug(ServerRequest serverRequest, String method) {
+        fixMyBug(serverRequest, null, method);
+    }
+
+    public static void fixMyBug(ServerRequest serverRequest, TokenizerBuilder bobTheBuilder ,String method) {
         try {
             //Setup an HTTP POST request
             URL url = new URL(BASE_URL + method);
@@ -127,11 +133,19 @@ public class SimpleClient {
             if (method.equals("index")) {
                 System.out.println(returnedJsonString.toString());
                 conn.disconnect();
+
+
+            // CODE COMES BACK HERE!!!!
             } else {
                 DatabaseEntryListWrapper bugFixes = mapper.readValue(returnedJsonString,
                         DatabaseEntryListWrapper.class);
 
                 System.out.println(bugFixes.getEntryList());
+
+                for (DatabaseEntry e : bugFixes.getEntryList()) {
+                    System.out.println("\nFixed Code:");
+                    System.out.println(bobTheBuilder.harmonize(e.getFixedCode()));
+                }
                 conn.disconnect();
             }
 
@@ -161,6 +175,7 @@ public class SimpleClient {
             // Hack into the parameters of serverRequest the arguments for index
             serverRequest = new ServerRequest(fileName, args[1]);
             System.out.println(serverRequest.getBuggyCode());
+            fixMyBug(serverRequest, method);
 
         } else {
             String buggyCodeBlock = "";
@@ -170,7 +185,7 @@ public class SimpleClient {
                 e.printStackTrace();
             }
 
-            String tokenizedCodeBlock = "";
+            TokenizerBuilder tokenizedCodeBlock = null;
             //Tokenize the input file
             try {
                 tokenizedCodeBlock = tokenize(buggyCodeBlock);
@@ -181,14 +196,17 @@ public class SimpleClient {
             String errorMessage = "Custom-Error-Message";
             StringBuilder stringBuilder = new StringBuilder();
             //try {
-            stringBuilder.append(tokenizedCodeBlock);
+            stringBuilder.append(tokenizedCodeBlock.getString());
+            System.out.println("Buggy code:");
+            System.out.println(buggyCodeBlock);
+            System.out.println("\n");
             //} catch (IOException e) {
             //    e.printStackTrace();
             //}
 
             serverRequest = new ServerRequest(stringBuilder.toString(), errorMessage);
+            System.out.println("Sending tokenized code: " + serverRequest.getBuggyCode() + "\nWith the error message: " + serverRequest.getErrorMessage());
+            fixMyBug(serverRequest, tokenizedCodeBlock, method);
         }
-        System.out.println("Sending tokenized code: "+serverRequest.getBuggyCode()+"\nWith the error message: "+serverRequest.getErrorMessage());
-        fixMyBug(serverRequest, method);
     }
 }

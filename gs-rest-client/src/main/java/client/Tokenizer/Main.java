@@ -2,7 +2,6 @@
 
 package client.Tokenizer;
 
-import ch.qos.logback.core.subst.Token;
 import java.util.List;
 
 import java.io.IOException;

@@ -263,7 +263,13 @@ public class TokenizerBuilder {
 
         // De-tokenizes the tokenized code.
 
-
+        Queue<String> integerTokenss = new LinkedList<String>(integerTokens);
+        Queue<String> floatingTokenss = new LinkedList<String>(floatingTokens);
+        Queue<String> booleanTokenss = new LinkedList<String>(booleanTokens);
+        Queue<String> characterTokenss = new LinkedList<String>(characterTokens);
+        Queue<String> stringTokenss = new LinkedList<String>(stringTokens);
+        Queue<String> nullTokenss = new LinkedList<String>(nullTokens);
+        Queue<String> identifierTokenss = new LinkedList<String>(identifierTokens);
 
         // Converts each token into the appropriate grammatical expression.
         for (String t: tokens) {
@@ -281,44 +287,44 @@ public class TokenizerBuilder {
 
             // If the token returns a null value based on JavaParser, dequeues from the appropriate queue.
             else if (token == 51) {
-                if (integerTokens.peek() != null) {
-                    builder.append(integerTokens.remove());
+                if (integerTokenss.peek() != null) {
+                    builder.append(integerTokenss.remove());
                 } else {
                     builder.append("IntegerLiteral");
                 }
             } else if (token == 52) {
-                if (floatingTokens.peek()!= null) {
-                    builder.append(floatingTokens.remove());
+                if (floatingTokenss.peek()!= null) {
+                    builder.append(floatingTokenss.remove());
                 } else {
                     builder.append("FloatingPointLiteral");
                 }
             } else if (token == 53) {
-                if (booleanTokens.peek() != null) {
-                    builder.append(booleanTokens.remove());
+                if (booleanTokenss.peek() != null) {
+                    builder.append(booleanTokenss.remove());
                 } else {
                     builder.append("BooleanLiteral");
                 }
             } else if (token == 54) {
-                if (characterTokens.peek() != null) {
-                    builder.append(characterTokens.remove());
+                if (characterTokenss.peek() != null) {
+                    builder.append(characterTokenss.remove());
                 } else {
                     builder.append("CharacterLiteral");
                 }
             } else if (token == 55) {
-                if (stringTokens.peek() != null) {
-                    builder.append(stringTokens.remove());
+                if (stringTokenss.peek() != null) {
+                    builder.append(stringTokenss.remove());
                 } else {
                     builder.append("StringLiteral");
                 }
             } else if (token == 56) {
-                if (nullTokens.peek() != null) {
-                    builder.append(nullTokens.remove());
+                if (nullTokenss.peek() != null) {
+                    builder.append(nullTokenss.remove());
                 } else {
                     builder.append("nullLiteral");
                 }
             } else if (token == 100) {
-                if (identifierTokens.peek() != null) {
-                    builder.append(identifierTokens.remove());
+                if (identifierTokenss.peek() != null) {
+                    builder.append(identifierTokenss.remove());
                 } else {
                     builder.append("Identifier");
                 }
