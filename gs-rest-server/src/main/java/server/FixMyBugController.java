@@ -53,7 +53,7 @@ public class FixMyBugController {
         return new DatabaseEntryListWrapper(new ArrayList<>());
     }
 
-    @RequestMapping("/test")
+    @RequestMapping("/echo")
     public DatabaseEntryListWrapper echo(@RequestBody String input) {
         //Setup the JSON object mapper
         ObjectMapper mapper = new ObjectMapper();
@@ -62,8 +62,9 @@ public class FixMyBugController {
             //Convert JSON string to object
             ServerRequest serverRequest = mapper.readValue(input, ServerRequest.class);
 
-            System.out.println(serverRequest.getBuggyCode());
-            System.out.println(serverRequest.getErrorMessage());
+            System.out.println("BuggyCode received: " + serverRequest.getBuggyCode() + "\n");
+            System.out.println("Error message received: " + serverRequest.getErrorMessage() + "\n");
+            System.out.println("Echoing back the received data...\n\n\n");
 
             return new DatabaseEntryListWrapper(new DatabaseEntry(-1, -2, serverRequest.getBuggyCode(),
                     serverRequest.getErrorMessage(), -5));

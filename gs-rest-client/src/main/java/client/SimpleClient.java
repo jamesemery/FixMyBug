@@ -42,15 +42,13 @@ public class SimpleClient {
      * Utilizes the TokenizerBuilder class to tokenize a given file
      */
     public static TokenizerBuilder tokenize(String string) throws IOException {
-        System.out.println("tokenize");
         try {
           TokenizerBuilder t = new TokenizerBuilder(string, "String");
-          //System.out.println(t.getString());
           return t;
         } catch (IOException ex) {
           ex.printStackTrace();
         }
-        System.out.println("returning an empty thing");
+        System.out.println("Error while tokenizing... returning an empty string.");
         return new TokenizerBuilder("","String");
     }
 
@@ -90,11 +88,11 @@ public class SimpleClient {
     * Sends a ClientFile object (file + error message) to the server
     * as a JSON string and processes its response.
     */
-    public static void fixMyBug(ServerRequest serverRequest, String method) {
-        fixMyBug(serverRequest, null, method);
+    public static void makeRequest(ServerRequest serverRequest, String method) {
+        makeRequest(serverRequest, null, method);
     }
 
-    public static void fixMyBug(ServerRequest serverRequest, TokenizerBuilder bobTheBuilder ,String method) {
+    public static void makeRequest(ServerRequest serverRequest, TokenizerBuilder tokenBuilder, String method) {
         try {
             //Setup an HTTP POST request
             URL url = new URL(BASE_URL + method);
@@ -105,7 +103,7 @@ public class SimpleClient {
 
             ObjectMapper mapper = new ObjectMapper();
             try {
-                //Convert ServerRequest object to JSON string
+                //Convert ServerRequest object to JSON string and send to server
                 String serverRequestAsJsonString = mapper.writeValueAsString(serverRequest);
                 OutputStream os = conn.getOutputStream();
                 os.write(serverRequestAsJsonString.getBytes());
@@ -118,11 +116,11 @@ public class SimpleClient {
                 e.printStackTrace();
             }
 
-            //Read JSON response from the server in a BufferedReader
+            //Read the byte response from the server in a BufferedReader
             BufferedReader br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
-
             String output;
-            System.out.println("Output from Server .... \n\n");
+
+            //Convert input stream of bytes into a JSON string
             StringBuilder returnedJsonStringBuilder = new StringBuilder();
             while ((output = br.readLine()) != null) {
                 returnedJsonStringBuilder.append(output).append("\n");
@@ -130,24 +128,9 @@ public class SimpleClient {
             returnedJsonStringBuilder.setLength(returnedJsonStringBuilder.length() - 1); //remove extra newline
             String returnedJsonString = returnedJsonStringBuilder.toString();
 
-            if (method.equals("index")) {
-                System.out.println(returnedJsonString.toString());
-                conn.disconnect();
-
-
-            // CODE COMES BACK HERE!!!!
-            } else {
-                DatabaseEntryListWrapper bugFixes = mapper.readValue(returnedJsonString,
-                        DatabaseEntryListWrapper.class);
-
-                System.out.println(bugFixes.getEntryList());
-
-                for (DatabaseEntry e : bugFixes.getEntryList()) {
-                    System.out.println("\nFixed Code:");
-                    System.out.println(bobTheBuilder.harmonize(e.getFixedCode()));
-                }
-                conn.disconnect();
-            }
+            //Handle the server's response based on the requested method.
+            handleResponse(returnedJsonString, tokenBuilder, method);
+            conn.disconnect();
 
         } catch (MalformedURLException e) {
             e.printStackTrace();
@@ -156,57 +139,109 @@ public class SimpleClient {
         }
     }
 
-    public static void main(String[] args) {
+    /*
+    * Handles the response from gs REST server.
+    * @param json: a JSON string returned from the server
+    * @param tokenBuilder: a TokenizerBuilder object that contains data for harmonizing tokenized data
+    * @param method: the method requested from the server
+    * 
+    * @return void: Simply print returned data so that the user can see it.
+    */
+    public static void handleResponse(String json, TokenizerBuilder tokenBuilder, String method) {
+        //Setup a new object mapper for converting json to POJO
+        ObjectMapper mapper = new ObjectMapper();
 
-        if(args.length != 4) {
-            System.out.println("Usage: java -jar <jar> <file> <line # start> <line # end> <server" +
-                    " method> (fix, test, index)");
+        //Convert returned JSON string to a list of DatabaseEntry objects.
+        try {
+            DatabaseEntryListWrapper dbEntries = mapper.readValue(json, DatabaseEntryListWrapper.class);
+
+            //Handle returned dbEntries based on requested server method.
+            switch (method) {
+            case "fix":
+                System.out.println(dbEntries.getEntryList());
+
+                for (DatabaseEntry e : dbEntries.getEntryList()) {
+                    System.out.println("\nFixed Code:");
+                    System.out.println(tokenBuilder.harmonize(e.getFixedCode()));
+                }
+                break;
+            case "echo":
+                System.out.println(dbEntries.getEntryList());
+                break;
+            case "index":
+                System.out.println(json.toString());
+                break;
+            default:
+                System.out.println(dbEntries.getEntryList());
+
+                for (DatabaseEntry e : dbEntries.getEntryList()) {
+                    System.out.println("\nFixed Code:");
+                    System.out.println(tokenBuilder.harmonize(e.getFixedCode()));
+                }
+                break;
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void main(String[] args) {
+        //Grab arguments from the command line and setup variables
+        if(args.length != 5) {
+            System.out.println("Usage: java -jar <jar> <file> <error> <line # start> <line # end> <server" +
+                    " method> (fix, echo, index)");
             System.exit(0);
         }
 
         String fileName = args[0];
-        int startLine = Integer.parseInt(args[1]);
-        int endLine = Integer.parseInt(args[2]);
-        String method = args[3];
-
+        String errorMessage = args[1];
+        int startLine = Integer.parseInt(args[2]);
+        int endLine = Integer.parseInt(args[3]);
+        String method = args[4];
         ServerRequest serverRequest;
 
-        if (method.equals("index")) {
-            // Hack into the parameters of serverRequest the arguments for index
-            serverRequest = new ServerRequest(fileName, args[1]);
-            System.out.println(serverRequest.getBuggyCode());
-            fixMyBug(serverRequest, method);
+        //Identify the buggy code block within the provided file.
+        String buggyCodeBlock = "";
+        try {
+            buggyCodeBlock = getLinesFromFile(fileName, startLine, endLine);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Buggy code block:\n\n" + buggyCodeBlock + "\n");
 
-        } else {
-            String buggyCodeBlock = "";
-            try {
-                buggyCodeBlock = getLinesFromFile(fileName, startLine, endLine);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        //Tokenize the buggy code block and return as a TokenizerBuilder
+        TokenizerBuilder tokenBuilder = null;
+        try {
+            tokenBuilder = tokenize(buggyCodeBlock);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        System.out.println("Tokens:\n\n" + tokenBuilder.getString() + "\n");
 
-            TokenizerBuilder tokenizedCodeBlock = null;
-            //Tokenize the input file
-            try {
-                tokenizedCodeBlock = tokenize(buggyCodeBlock);
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
+        //Generate the serverRequest from the provided tokenized code
+        //and the input error message.
+        StringBuilder tokenizedCodeBlock = new StringBuilder();
+        tokenizedCodeBlock.append(tokenBuilder.getString());
+        serverRequest = new ServerRequest(tokenizedCodeBlock.toString(), errorMessage);
 
-            String errorMessage = "Custom-Error-Message";
-            StringBuilder stringBuilder = new StringBuilder();
-            //try {
-            stringBuilder.append(tokenizedCodeBlock.getString());
-            System.out.println("Buggy code:");
-            System.out.println(buggyCodeBlock);
-            System.out.println("\n");
-            //} catch (IOException e) {
-            //    e.printStackTrace();
-            //}
-
-            serverRequest = new ServerRequest(stringBuilder.toString(), errorMessage);
-            System.out.println("Sending tokenized code: " + serverRequest.getBuggyCode() + "\nWith the error message: " + serverRequest.getErrorMessage());
-            fixMyBug(serverRequest, tokenizedCodeBlock, method);
+        //Make the request to the server for the desired method (fix, echo, index)
+        System.out.println("Sending tokenized code: " + serverRequest.getBuggyCode() + "\nWith the error message: " + serverRequest.getErrorMessage());
+        
+        switch (method) {
+            case "fix":
+                System.out.println("\nFixing your bug...\n\n\n");
+                makeRequest(serverRequest, tokenBuilder, method);
+                break;
+            case "echo":
+                System.out.println("\nEchoing your request...\n\n\n");
+                makeRequest(serverRequest, tokenBuilder, method);
+                break;
+            case "index":
+                break;
+            default:
+                System.out.println("Invalid method provided.");
+                break;
         }
     }
 }
