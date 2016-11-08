@@ -1,4 +1,1 @@
-this is line 1
-for(i < 10; i++)
-this is line 3
-this is line 4
+for(i = 0; i < 10; i++) { listName[i] = 0; }
