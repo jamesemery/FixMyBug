@@ -93,6 +93,8 @@ public class SimpleClient {
     }
 
     public static void makeRequest(ServerRequest serverRequest, TokenizerBuilder tokenBuilder, String method) {
+        System.out.println("Sending tokenized code: " + serverRequest.getBuggyCode() + "\nWith the error message: " + serverRequest.getErrorMessage() + "\n\n\n");
+
         try {
             //Setup an HTTP POST request
             URL url = new URL(BASE_URL + method);
@@ -225,9 +227,7 @@ public class SimpleClient {
         tokenizedCodeBlock.append(tokenBuilder.getString());
         serverRequest = new ServerRequest(tokenizedCodeBlock.toString(), errorMessage);
 
-        //Make the request to the server for the desired method (fix, echo, index)
-        System.out.println("Sending tokenized code: " + serverRequest.getBuggyCode() + "\nWith the error message: " + serverRequest.getErrorMessage());
-        
+        //Make the request to the server for the desired method (fix, echo, index)        
         switch (method) {
             case "fix":
                 System.out.println("\nFixing your bug...\n\n\n");
@@ -238,6 +238,8 @@ public class SimpleClient {
                 makeRequest(serverRequest, tokenBuilder, method);
                 break;
             case "index":
+                System.out.println("\nIndexing...\n\n\n");
+                makeRequest(new ServerRequest(fileName, args[2]), method);
                 break;
             default:
                 System.out.println("Invalid method provided.");
