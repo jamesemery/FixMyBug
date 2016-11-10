@@ -244,10 +244,6 @@ public class SimpleClient {
                 System.out.println("\nEchoing your request...\n\n\n");
                 makeRequest(serverRequest, tokenBuilder, method);
                 break;
-            case "index":
-                System.out.println("\nIndexing...\n\n\n");
-                makeRequest(new ServerRequest(fileName, args[2]), method);
-                break;
             default:
                 System.out.println("Invalid method provided.");
                 break;
