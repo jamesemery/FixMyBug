@@ -155,11 +155,12 @@ public class SimpleClient {
 
         //Convert returned JSON string to a list of DatabaseEntry objects.
         try {
-            DatabaseEntryListWrapper dbEntries = mapper.readValue(json, DatabaseEntryListWrapper.class);
+            DatabaseEntryListWrapper dbEntries;
 
             //Handle returned dbEntries based on requested server method.
             switch (method) {
             case "fix":
+                dbEntries = mapper.readValue(json, DatabaseEntryListWrapper.class);
                 System.out.println(dbEntries.getEntryList());
 
                 for (DatabaseEntry e : dbEntries.getEntryList()) {
@@ -168,12 +169,14 @@ public class SimpleClient {
                 }
                 break;
             case "echo":
+                dbEntries = mapper.readValue(json, DatabaseEntryListWrapper.class);
                 System.out.println(dbEntries.getEntryList());
                 break;
             case "index":
                 System.out.println(json.toString());
                 break;
             default:
+                dbEntries = mapper.readValue(json, DatabaseEntryListWrapper.class);
                 System.out.println(dbEntries.getEntryList());
 
                 for (DatabaseEntry e : dbEntries.getEntryList()) {
@@ -191,8 +194,8 @@ public class SimpleClient {
     public static void main(String[] args) {
         //Check to see if index method.
         if(args.length == 3 && args[2].equals("index")) {
-            serverRequest = new ServerRequest(args[0], args[1]);
-            makeRequest(serverRequest, args[3]);
+            ServerRequest serverRequest = new ServerRequest(args[0], args[1]);
+            makeRequest(serverRequest, args[2]);
             System.exit(0);
         }
         //Grab arguments from the command line and setup variables
