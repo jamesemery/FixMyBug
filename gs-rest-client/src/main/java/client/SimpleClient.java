@@ -15,7 +15,7 @@ import client.Tokenizer.TokenizerBuilder;
 */
 public class SimpleClient {
 
-    private static final String BASE_URL = "http://137.22.167.131:8080/";
+    private static final String BASE_URL = "http://localhost:8080/";
 
     /*
     * Reads in a text file and returns it as a string.
