@@ -2,7 +2,6 @@
 
 package client.Tokenizer;
 
-import org.antlr.v4.runtime.Token;
 import java.util.List;
 
 import java.io.IOException;
@@ -23,6 +22,7 @@ public class Main {
             // Creates a new instance of TokenizerBuilder.
             TokenizerBuilder t = new TokenizerBuilder("./Tokenizer/src/main/java/carleton/comps/javaparser/examples/HelloWorld.java","File");
 
+
             // Prints the tokenized version of HelloWorld.java.
             //System.out.println(t.getString());
 
@@ -35,8 +35,8 @@ public class Main {
             // Prints out the list of Tokens in lines 1 to 6 in the HelloWorld.java file.
             //System.out.println(t.tokensToString(l));
 
-
-
+            // Prints out the detokenized, tokenized code.
+            //System.out.println(t.harmonize(t.getString()));
 
             /*========================================================================================================*/
 
