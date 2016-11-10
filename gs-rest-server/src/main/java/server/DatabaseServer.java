@@ -3,6 +3,9 @@ package server;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 //import javax.swing.JOptionPane;
+
+
+//to connect to the database using sqlite3
 import org.sqlite.SQLiteDataSource;
 import org.sqlite.SQLiteJDBCLoader;
 import server.javaparser.LevScorer;
@@ -11,6 +14,15 @@ import server.javaparser.LevScorer;
 import java.sql.*;
 import java.util.*;
 
+/*class DatabaseServer holds all of the methods
+and parameters for creating a database, creating
+a table within that database and executing queries for
+that table.
+
+We use this class to store all of our bug/fix code data
+as well as for the matching algorithm that compares client
+code with the data to suggest a fix.
+*/
 public class DatabaseServer {
 
     SQLiteDataSource dataSource;
@@ -27,11 +39,13 @@ public class DatabaseServer {
     public static final String[] DATABASE_TABLE_FORMAT = {"id", "buggyCode",
             "fixedCode"};
 
+    // constructior (takes database name as the argument)
     public DatabaseServer(String fileName) {
         String url = "jdbc:sqlite:" + fileName;
-        System.out.println("Making new database, url = " + url);
-        tableName = "master_table";
+        tableName = DATABASE_TABLE_NAME;
         boolean initialize = false;
+        
+        //try to connect to the DB
         try {
             initialize = SQLiteJDBCLoader.initialize();
             if (!initialize) throw new Exception("SQLite Library Not Loaded\n");
@@ -44,6 +58,9 @@ public class DatabaseServer {
         }
     }
 
+    /**
+     * Test method for creating a new database
+     */
     public static void createNewDatabase(String fileName) {
         String url = "jdbc:sqlite:./" + fileName;
 
@@ -66,10 +83,14 @@ public class DatabaseServer {
     }
 
 
+    /**
+     * select from method that generates an sql query in the form of:
+     * SELECT column FROM table WHERE buggy_code = input;
+     * This is mainly used for testing purposes
+     */
     public final String SelectFrom(String column, String inputStr, String table) {
 
         try {
-            System.out.println("Input String: " + inputStr + ".");
             ResultSet rs = dataSource.getConnection().createStatement()
                     .executeQuery("select " + column + " from \"" + table + "\" where buggy_code = \"" + inputStr + "\";");
 
@@ -86,6 +107,11 @@ public class DatabaseServer {
         }
     }
 
+    /**
+     * select all method that generates an sql query in the form of:
+     * SELECT * FROM table WHERE buggy_code = input;
+     * Mainly used for testing.
+     */
     public final DatabaseEntry SelectAll(String inputStr) {
         DatabaseEntry queryResult = new DatabaseEntry();
 
@@ -102,17 +128,6 @@ public class DatabaseServer {
             }
 
             queryResult = new DatabaseEntry(rs);
-
-
-            //Display values
-            /*System.out.print("ID: " + id);
-            System.out.print(", Bug Type: " + bug_type);
-            System.out.print(", Buggy: '" + buggy_code + "'");
-            System.out.print("Sending Fixed Code: '" + fixed_code + "'");
-            System.out.println(", Count: " + count);
-            String result = "ID: " + id + ", Buggy Code: " + buggy_code +
-                          ", Fixed Code: " + fixed_code + ", Count: " + count;
-            return queryResult;*/
         }
         catch (Exception ex) { //SQLException ex) {
             System.out.println(ex.getMessage());
@@ -121,12 +136,16 @@ public class DatabaseServer {
         return queryResult;
     }
 
+    
+    /**
+     * Insert method that takes in parameters that match the master_table columns
+     * This method then connects to the database and adds the data to the master_table
+     */
     public final void Insert(int id, int bug_type, String buggy_code, String fixed_code, int count) {
         try {
             int rs = dataSource.getConnection().createStatement()
                 .executeUpdate("INSERT INTO \"" + tableName + "\" VALUES ("
                 + id + ", " + bug_type + ", \"" + buggy_code + "\", \"" + fixed_code + "\", " + count + ");");
-            System.out.println("Changes: " + rs);
         }
         catch (Exception ex) { //SQLException ex) {
             System.out.println(ex.getMessage());
@@ -134,12 +153,15 @@ public class DatabaseServer {
 
     }
 
+    /**
+     * RemoveByID method simply removes a tuple from the default table
+     * based on the ID that the user passes in. For testing mainly
+     */
     public final void RemoveByID(int id) {
         try {
             int rs = dataSource.getConnection().createStatement()
                 .executeUpdate("DELETE FROM \"" + tableName + "\" WHERE id="
                         + id + ";");
-            System.out.println("Changes: " + rs);
         }
         catch (Exception ex) { //SQLException ex) {
             System.out.println(ex.getMessage());
@@ -147,12 +169,15 @@ public class DatabaseServer {
 
     }
 
+    /**
+     * RemoveByBug is very similar to RemoveByID
+     * Removes the tuple based on the buggy_code match
+     */
     public final void RemoveByBug(String bug) {
         try {
             int rs = dataSource.getConnection().createStatement()
                 .executeUpdate("DELETE FROM \"" + tableName + "\" WHERE buggy_code="
                 + bug + ";");
-            System.out.println("Changes: " + rs);
         }
         catch (Exception ex) { //SQLException ex) {
             System.out.println(ex.getMessage());
@@ -160,9 +185,13 @@ public class DatabaseServer {
 
     }
 
-
-
-
+    /**
+     * Mehtod that builds a database index table of the supllied table argument in the string 
+     * based on the Ngrams for error_code in the given table. The size of the Ngrams is determined
+     * by the ngramSize argument.
+     *
+     * @return count of the total number of table rows that were created in the index
+     */
     public int createIndex(int ngramsize, String table) throws SQLException {
         // Delete the existing index
 
@@ -179,12 +208,10 @@ public class DatabaseServer {
         ResultSet rows = statement.executeQuery("SELECT * from "
                 + table);
 
+        // Iterate through the master table to find ngrams
         int counter = 0;
         while (true) {
-            System.out.println(rows.getRow());
             if (rows.next()) {
-                System.out.print(rows.getRow());
-                System.out.println("!");
                 int id = rows.getInt("id");
                 String errCode = rows.getString("buggy_code");
                 String[] tokens = errCode.split(" ");
@@ -204,7 +231,6 @@ public class DatabaseServer {
             else break;
 
         }
-        System.out.println(rows.getRow());
         connection.close();
         return counter;
     }
@@ -220,28 +246,19 @@ public class DatabaseServer {
      * @throws SQLException
      */
     public List<Map.Entry<Integer, Integer>> querySearch(String query, int ngramsize, String table) throws SQLException {
-        //TODO make sure this test works for finding emtpy tables
         String indexTableName = table + "_" + ngramsize + "gramindex";
         Map<Integer, Integer> masterRow = new HashMap<>();
-
-//        if (dataSource.getConnection().createStatement().executeQuery("IF " +
-//                        "EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES"
-//                "WHERE TABLE_NAME = N'" + table + "')" +
-//        "BEGIN" +
-//        "PRINT 'Table Exists'" +
-//        "END))").get
-
+        
+        
         String[] qTokens = query.split(" ");
         for (int i = ngramsize; i <= qTokens.length; i++) {
             StringBuilder b = new StringBuilder();
             for (int j = i - ngramsize; j < i; j++) {
                 b.append(qTokens[j] + " ");
             }
-            System.out.println("qTokens String: " + b.toString());
             int hash = b.toString().hashCode();
-            System.out.println(hash);
 
-            //
+            // Getting all of table IDS that have the given string hash
             ResultSet ngramSet = dataSource.getConnection().createStatement()
                     .executeQuery("SELECT id FROM " + indexTableName + " " +
                             "WHERE hash = " + hash);
@@ -260,8 +277,6 @@ public class DatabaseServer {
         return results;
     }
 
-    // TODO figure out what this returns in the grand scheme of things
-
     /**
      * Method that uses default values of the database server in order to grab
      * all ngram similar code in the database and filter it to return only
@@ -271,50 +286,50 @@ public class DatabaseServer {
      * @throws SQLException
      */
     public List<DatabaseEntry> getMostSimilarEntries(String userQuery) throws SQLException {
+        // Pull database entries based on ngrams
         List<Map.Entry<Integer, Integer>> sortedQuery = querySearch
                 (userQuery, DEFAULT_NGRAM_SIZE, DATABASE_TABLE_NAME);
-        System.out.println(sortedQuery);
 
+        // Pull the rows that are most prevalent
         List<Integer> rowsToPull = new ArrayList<>();
         for (int i = 0; (i < MIN_SIMILAR_TO_PULL || i <
                 DEFAULT_PERCENT_TO_PULL*sortedQuery.size()) && i < sortedQuery.size();
              i++) {
-            System.out.println("i: " + i);
             rowsToPull.add(sortedQuery.get(i).getKey());
         }
 
+        // Create a query to pull all the rows from the table
         StringJoiner j = new StringJoiner(",", "SELECT * FROM " +
                 ""+DATABASE_TABLE_NAME+" WHERE id IN (", ");");
         for (int i : rowsToPull) {
             j.add(Integer.toString(i));
         }
-        System.out.println(j.toString());
         ResultSet shortList = dataSource.getConnection().createStatement()
                 .executeQuery(j.toString());
-
         List<DatabaseEntry> entryList = new ArrayList<>();
-        System.out.println(shortList.getRow());
         while(shortList.next()) {
-                System.out.println(shortList.getRow());
-                System.out.println("making a database entry");
                 entryList.add(new DatabaseEntry(shortList));
         }
-        System.out.println("entryList has this:"+entryList);
 
         // Sorting the rows by a secondary algorithm
         for (DatabaseEntry e : entryList) {
             e.setSimilarity( computeSecondarySimilarity(userQuery, e));
-            System.out.println("ID: " + e.getId() + "  " + e.getSimilarity());
         }
         Collections.sort(entryList, (DatabaseEntry a, DatabaseEntry b) -> (int)(b.getSimilarity() - a.getSimilarity()));
 
-        //TODO right here cull the list again
+        //Cull the list to keep down outbound traffic to the client
         if (entryList.size() > MAX_USER_RETURN) {
             entryList = entryList.subList(0, MAX_USER_RETURN);
         }
         return entryList;
     }
 
+    /**
+     * A secondary similarity scoring algoirhtm that will be run in order to sort database entires 
+     * after they are pulled based on their ngram similarity
+     * 
+     * @return a similarity score between the userQuery and Database Entry code represented as a double 
+     */
     private double computeSecondarySimilarity(String userQuery, DatabaseEntry entry) {
         List<Integer> q = new ArrayList<>();
         List<Integer> e = new ArrayList<>();
