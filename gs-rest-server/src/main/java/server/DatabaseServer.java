@@ -245,9 +245,19 @@ public class DatabaseServer {
      * @return
      * @throws SQLException
      */
-    public List<Map.Entry<Integer, Integer>> querySearch(String query, int ngramsize, String table) throws SQLException {
+    public List<Integer> querySearch(String query, int ngramsize, String table) throws SQLException {
         String indexTableName = table + "_" + ngramsize + "gramindex";
-        Map<Integer, Integer> masterRow = new HashMap<>();
+        //Map<Integer, Integer> masterRow = new HashMap<>();
+        
+        Connection indConnection = dataSource.getConnection();
+        Statement indStatement = indConnection.createStatement();
+
+        indStatement.executeUpdate("DROP TABLE" +
+                " IF EXISTS "+ table+"_"+ngramsize+"comparison;");
+
+        // Create new table for comparisons
+        indStatement.executeUpdate("CREATE TABLE " + table + "_"
+                + ngramsize + "comparison (id INTEGER, fix VARCHAR(128));");
         
         
         String[] qTokens = query.split(" ");
@@ -259,21 +269,35 @@ public class DatabaseServer {
             int hash = b.toString().hashCode();
 
             // Getting all of table IDS that have the given string hash
-            ResultSet ngramSet = dataSource.getConnection().createStatement()
-                    .executeQuery("SELECT id FROM " + indexTableName + " " +
-                            "WHERE hash = " + hash);
-
+            //ResultSet ngramSet = dataSource.getConnection().createStatement()
+              //      .executeQuery("SELECT id FROM " + indexTableName + " " +
+                //            "WHERE hash = " + hash);
+            indStatement.executeUpdate("INSERT INTO " + table + "_" + ngramsize +
+                    "comparison SELECT M.id, M.fixed_code FROM  master_table M JOIN " +
+                    indexTableName + " I on M.id = I.id WHERE I.hash = " + hash + ";");
             // Grab every in in result set and put it into the map
-            while (ngramSet.next()) {
-                int masterid = ngramSet.getInt("id");
-                masterRow.put(masterid, (masterRow.containsKey(masterid)?
-                        masterRow.get(masterid):0) + 1);
-            }
+//            while (ngramSet.next()) {
+//                int masterid = ngramSet.getInt("id");
+//                masterRow.put(masterid, (masterRow.containsKey(masterid)?
+//                        masterRow.get(masterid):0) + 1);
+//            }
         }
+        ResultSet fixedSet = indStatement.executeQuery("SELECT id, count(*) from " + table + "_" + ngramsize +
+                "comparison GROUP BY id ORDER BY count(*) desc LIMIT 20;");
 
         // Sort the map and return a list of integers sorted
-        List<Map.Entry<Integer,Integer>> results = new ArrayList(masterRow.entrySet());
-        Collections.sort(results, (Map.Entry o1, Map.Entry o2) -> (int)o2.getValue() - (int)o1.getValue());
+//        List<Map.Entry<Integer,Integer>> results = new ArrayList(masterRow.entrySet());
+//        Collections.sort(results, (Map.Entry o1, Map.Entry o2) -> (int)o2.getValue() - (int)o1.getValue());
+//        return results;
+        List<Integer> results = new ArrayList<>();
+        while (fixedSet.next()) {
+            int fixedid = fixedSet.getInt("id");
+            results.add(fixedid);
+        }
+        
+        indStatement.executeUpdate("DROP TABLE" +
+                " IF EXISTS "+ table+"_"+ngramsize+"comparison;");
+        
         return results;
     }
 
@@ -287,17 +311,12 @@ public class DatabaseServer {
      */
     public List<DatabaseEntry> getMostSimilarEntries(String userQuery) throws SQLException {
         // Pull database entries based on ngrams
-        List<Map.Entry<Integer, Integer>> sortedQuery = querySearch
-                (userQuery, DEFAULT_NGRAM_SIZE, DATABASE_TABLE_NAME);
+//        List<Map.Entry<Integer, Integer>> sortedQuery = querySearch
+//                (userQuery, DEFAULT_NGRAM_SIZE, DATABASE_TABLE_NAME);
 
         // Pull the rows that are most prevalent
-        List<Integer> rowsToPull = new ArrayList<>();
-        for (int i = 0; (i < MIN_SIMILAR_TO_PULL || i <
-                DEFAULT_PERCENT_TO_PULL*sortedQuery.size()) && i < sortedQuery.size();
-             i++) {
-            rowsToPull.add(sortedQuery.get(i).getKey());
-        }
-
+        List<Integer> rowsToPull =  querySearch(userQuery, DEFAULT_NGRAM_SIZE, DATABASE_TABLE_NAME);
+        
         // Create a query to pull all the rows from the table
         StringJoiner j = new StringJoiner(",", "SELECT * FROM " +
                 ""+DATABASE_TABLE_NAME+" WHERE id IN (", ");");
