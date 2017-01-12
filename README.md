@@ -1,6 +1,9 @@
 # FixMyBug
 Changelog
 
+1/11/17
+select CO1.compile_event_id, C1.id, C2.id, M1.session_id, M2.session_id, CO1.source_file_id from ((compile_outputs CO1 join compile_events C1 on CO1.compile_event_id = C1.id) join master_events M1 on C1.id = M1.event_id) join (compile_events C2 join master_events M2 on C2.id = M2.event_id) where M1.event_type = 'CompileEvent' and M2.event_type = 'CompileEvent' and C1.success = 0 and C1.id = C2.id-1 and C2.success = 1 and M1.session_id = M2.session_id limit 20;
+
 1/8/17 - select C1.id, C1.success, C2.id, C2.success from compile_events C1 join compile_events C2 where C1.success = 1 and C2.id = C1.id-1 and C2.success = 0 limit 20;
 
 ^helpful sql query for grabbing success and previous error
