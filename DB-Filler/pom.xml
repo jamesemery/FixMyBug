@@ -14,7 +14,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>client.SimpleClient</mainClass>
+                            <mainClass>Filler.Main</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

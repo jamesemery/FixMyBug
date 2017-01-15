@@ -22,6 +22,9 @@ that table.
 We use this class to store all of our bug/fix code data
 as well as for the matching algorithm that compares client
 code with the data to suggest a fix.
+
+This code is adapted from the server version of
+DatabaseServer
 */
 public class DatabaseServer {
 
