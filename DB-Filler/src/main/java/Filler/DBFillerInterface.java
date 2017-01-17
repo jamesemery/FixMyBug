@@ -2,8 +2,8 @@ package Filler;
 
 import Filler.Tokenizer.TokenizerBuilder;
 import Filler.Tokenizer.javaparser.*;
+import Filler.Tokenizer.javaparser.JavaLexer;
 import org.antlr.v4.runtime.Token;
-import
 
 import java.io.IOException;
 import java.util.*;
@@ -66,10 +66,38 @@ public class DBFillerInterface {
                 }
             }
 
-            // Test to make sure that the number is within the adapter range
-            if (assigned Variables )
-            // If possible, try to write this thing to be smart
+            // Prune the lists to only account for the specified lines
+            int errTokenStartIndex = 0;
+            int errTokenEndIndex = 0;
+            int fixTokenStartIndex = 0;
+            int fixTokenEndIndex =0;
 
+            boolean inWindow = false;
+            for (int i = 0; i < errFileTokens.size(); i++) {
+                if (!inWindow && errFileTokens.get(i).getLine()>=errStartLine) {
+                    errTokenStartIndex = i;
+                    inWindow = true;
+                } else if (inWindow && errFileTokens.get(i).getLine()>errEndLine){
+                    errTokenEndIndex = i -1;
+                    break;
+                }
+            }
+
+            inWindow = false;
+            for (int i = 0; i < fixFileTokens.size(); i++) {
+                if (!inWindow && fixFileTokens.get(i).getLine()>=fixStartLine) {
+                    fixTokenStartIndex = i;
+                    inWindow = true;
+                } else if (inWindow && fixFileTokens.get(i).getLine()>fixEndLine){
+                    fixTokenEndIndex = i -1;
+                    break;
+                }
+            }
+
+            // Pruning the lists to the correct indexes
+
+            // Conversion and building the thing
+            // Tokens
 
         }
         catch (IllegalArgumentException e) {
@@ -86,10 +114,11 @@ public class DBFillerInterface {
     /**
      * Method that tests whether a given token is type ambiguous
      */
-    public static boolean isAmbiguousToken(Token t) {
-        if (JavaLexer. )
+    public static boolean isAmbiguousToken(Token t)
+    {
+        return JavaParser.VOCABULARY.getLiteralName(t.getType())==null;
     }
     public static boolean isAmbiuousToken(int t) {
-
+        return JavaParser.VOCABULARY.getLiteralName(t)==null;
     }
 }

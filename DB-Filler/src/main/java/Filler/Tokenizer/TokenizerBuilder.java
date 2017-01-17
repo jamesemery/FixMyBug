@@ -1,7 +1,7 @@
 package Filler.Tokenizer;
 
-import client.Tokenizer.javaparser.JavaLexer;
-import client.Tokenizer.javaparser.JavaParser;
+import Filler.Tokenizer.javaparser.JavaLexer;
+import Filler.Tokenizer.javaparser.JavaParser;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
