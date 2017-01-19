@@ -1,7 +1,6 @@
 package Filler.Tokenizer;
 
 import com.google.common.collect.Lists;
-import com.sun.tools.javac.parser.Tokens;
 import org.antlr.v4.runtime.Token;
 
 import java.util.ArrayList;
