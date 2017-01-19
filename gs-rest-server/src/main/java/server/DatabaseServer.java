@@ -8,11 +8,14 @@ import java.sql.SQLException;
 //to connect to the database using sqlite3
 import org.sqlite.SQLiteDataSource;
 import org.sqlite.SQLiteJDBCLoader;
+import server.javaparser.DBAscii;
 import server.javaparser.LevScorer;
 
 //to create database
 import java.sql.*;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /*class DatabaseServer holds all of the methods
 and parameters for creating a database, creating
@@ -214,13 +217,12 @@ public class DatabaseServer {
             if (rows.next()) {
                 int id = rows.getInt("id");
                 String errCode = rows.getString("buggy_code");
-                String[] tokens = errCode.split(" ");
 
                 // populate the the array with each ngram
-                for (int i = ngramsize; i <= tokens.length; i++) {
+                for (int i = ngramsize; i <= errCode.length(); i++) {
                     StringBuilder b = new StringBuilder();
                     for (int j = i - ngramsize; j < i; j++) {
-                        b.append(tokens[j] + " ");
+                        b.append(errCode.charAt(j));
                     }
                     int hash = b.toString().hashCode();
                     counter++;
@@ -253,18 +255,19 @@ public class DatabaseServer {
         Statement indStatement = indConnection.createStatement();
 
         indStatement.executeUpdate("DROP TABLE" +
-                " IF EXISTS "+ table+"_"+ngramsize+"comparison;");
+                " IF EXISTS " + table + "_" + ngramsize + "comparison;");
 
         // Create new table for comparisons
         indStatement.executeUpdate("CREATE TABLE " + table + "_"
                 + ngramsize + "comparison (id INTEGER, fix VARCHAR(128));");
         
-        
-        String[] qTokens = query.split(" ");
-        for (int i = ngramsize; i <= qTokens.length; i++) {
+
+        String qTokens = DBAscii.toAsciiFormat(Arrays.asList(query.split(" ")).stream().map(Integer::parseInt)
+                .collect(Collectors.toList()));
+        for (int i = ngramsize; i <= qTokens.length(); i++) {
             StringBuilder b = new StringBuilder();
             for (int j = i - ngramsize; j < i; j++) {
-                b.append(qTokens[j] + " ");
+                b.append(qTokens.charAt(i));
             }
             int hash = b.toString().hashCode();
 

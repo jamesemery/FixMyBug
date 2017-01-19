@@ -51,6 +51,7 @@ public class FixMyBugController {
         }
 
         return new DatabaseEntryListWrapper(new ArrayList<>());
+        // TODO this needs to convert back from dangerous stings
     }
 
     @RequestMapping("/echo")
@@ -67,7 +68,7 @@ public class FixMyBugController {
             System.out.println("Echoing back the received data...\n\n\n");
 
             return new DatabaseEntryListWrapper(new DatabaseEntry(-1, -2, serverRequest.getBuggyCode(),
-                    serverRequest.getErrorMessage(), -5));
+                    serverRequest.getErrorMessage(), -5)); //TODO fix this outdated method
 
 
         } catch (JsonGenerationException e) {
@@ -78,7 +79,8 @@ public class FixMyBugController {
             e.printStackTrace();
         }
 
-        return new DatabaseEntryListWrapper(new DatabaseEntry(-1, -2, "crap", "squid", -5));
+        return new DatabaseEntryListWrapper(new DatabaseEntry(-1, -2, "crap", "squid", -5)); //
+        // TODO fix this outdated method
     }
 
     // THIS IS 100% a hack, I am using the ServerRequest object to send arguments for the

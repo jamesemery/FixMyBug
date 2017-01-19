@@ -1,5 +1,6 @@
 package Filler;
 
+import Filler.Tokenizer.DBAscii;
 import Filler.Tokenizer.TokenizerBuilder;
 import Filler.Tokenizer.javaparser.*;
 import Filler.Tokenizer.javaparser.JavaLexer;
@@ -94,10 +95,40 @@ public class DBFillerInterface {
                 }
             }
 
-            // Pruning the lists to the correct indexes
+            System.out.println("File A: " + errCode);
+            System.out.println("A Tokens: " + errFileTokens);
+            System.out.println("A File Assignments: " + errFileAssignments);
+
+            System.out.println("\n\n" + ambigousAssignments.toString() + "\n\n");
+
+
+            System.out.println("File B: " + fixCode);
+            System.out.println("B Tokens: " + fixFileTokens);
+            System.out.println("B File Assignments: " + fixFileAssignments);
+
+            // Pruning everything to the correct lines
+            System.out.println("File A Grabbed Lines: " + errFileTokens.subList(errTokenStartIndex,
+                            errTokenEndIndex));
+            System.out.println("File B Grabbed Lines: " + fixFileTokens.subList(fixTokenStartIndex,
+                    fixTokenEndIndex));
+            String buggy_code = DBAscii.tokensToAsciiFormat(errFileTokens.subList
+                    (errTokenStartIndex, errTokenEndIndex));
+            String buggy_code_assignnments = DBAscii.toAsciiFormat(errFileAssignments.subList(
+                    errTokenStartIndex,errTokenEndIndex));
+
+            String fix_code = DBAscii.tokensToAsciiFormat(fixFileTokens.subList(fixTokenStartIndex,
+                    fixTokenEndIndex));
+            String fix_code_assignnments = DBAscii.toAsciiFormat(fixFileAssignments.subList(
+                    fixTokenStartIndex,fixTokenEndIndex));
+
+
 
             // Conversion and building the thing
-            // Tokens
+            // TODO: NOTE, ID PRODUCED HERE IS BOGUS FOR THE TIME BEING
+            DatabaseEntry out = new DatabaseEntry(0,0,buggy_code,buggy_code_assignnments,
+                    fix_code,fix_code_assignnments,0);
+
+            return out;
 
         }
         catch (IllegalArgumentException e) {
@@ -106,6 +137,7 @@ public class DBFillerInterface {
         catch (IOException e) {
             System.out.println("Could not read file");
         }
+        return null;
     }
 
     //NOTES FROM MEETING: Put this code into a speperate file that does its own thing.

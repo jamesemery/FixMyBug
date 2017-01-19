@@ -8,7 +8,6 @@ import java.sql.SQLException;
 //to connect to the database using sqlite3
 import org.sqlite.SQLiteDataSource;
 import org.sqlite.SQLiteJDBCLoader;
-import server.javaparser.LevScorer;
 
 //to create database
 import java.sql.*;
@@ -358,7 +357,7 @@ public class DatabaseServer {
 
         for (String s : userQuery.split(" ")) { q.add(Integer.parseInt(s)); }
         for (String s : entry.getBuggyCode().split(" ")) { e.add(Integer.parseInt(s)); }
-        return LevScorer.scoreSimilarity(q, e);
+        return 0;//LevScorer.scoreSimilarity(q, e);
     }
 
 
