@@ -3,8 +3,9 @@ package Filler;
 import Filler.Tokenizer.DBAscii;
 import Filler.Tokenizer.TokenizerBuilder;
 import Filler.Tokenizer.javaparser.*;
-import Filler.Tokenizer.javaparser.JavaLexer;
 import org.antlr.v4.runtime.Token;
+import org.sqlite.SQLiteDataSource;
+import org.sqlite.SQLiteJDBCLoader;
 
 import java.io.IOException;
 import java.util.*;
@@ -13,12 +14,70 @@ import java.util.*;
  * A Class that handles the process of filling the database given input of two files
  */
 public class DBFillerInterface {
+    public static HashMap<Character,Character> ESCAPE_CHARACTERS = new HashMap<>();
 
+    SQLiteDataSource dataSource;
+    String tableName;
+    public static int currentID = 1;
+
+    public static final String DATABASE_TABLE_NAME = "master_table";
+
+
+    // constructior (takes database name as the argument)
+    public DBFillerInterface(String fileName) {
+        if (ESCAPE_CHARACTERS.isEmpty()) {
+            ESCAPE_CHARACTERS.put('\0','0');
+            ESCAPE_CHARACTERS.put('\'','\'');
+            ESCAPE_CHARACTERS.put('\"','\"');
+            ESCAPE_CHARACTERS.put('\b','b');
+            ESCAPE_CHARACTERS.put('\n','n');
+            ESCAPE_CHARACTERS.put('\r','r');
+            ESCAPE_CHARACTERS.put('\t','t');
+            ESCAPE_CHARACTERS.put('\\','\\');
+            ESCAPE_CHARACTERS.put('\t','t');
+            ESCAPE_CHARACTERS.put('%','%');
+            ESCAPE_CHARACTERS.put('_','_');
+        }
+
+        String url = "jdbc:sqlite:" + fileName;
+        tableName = DATABASE_TABLE_NAME;
+        boolean initialize = false;
+
+        //try to connect to the DB
+        try {
+            initialize = SQLiteJDBCLoader.initialize();
+            if (!initialize) throw new Exception("SQLite Library Not Loaded\n");
+            dataSource = new SQLiteDataSource();
+            dataSource.setUrl(url);
+        }
+        catch (Exception e) {
+            System.out.println("Exception caught during database setup: \n");
+            System.out.println(e.getMessage());
+        }
+    }
+
+
+    /**
+     * Insert method that takes in parameters that match the master_table columns
+     * This method then connects to the database and adds the data to the master_table
+     */
+    public final void Insert(DatabaseEntry entry) {
+        try {
+            entry.escape();
+            int rs = dataSource.getConnection().createStatement()
+                    .executeUpdate("INSERT INTO \"" + tableName + "\" VALUES ("
+                            + currentID++ + ", \"" + entry.getBuggyCode() + "\" , \"" + entry
+                            .getBuggyCodeAssignments() + "\", \"" + entry.getFixedCode() + "\", \"" +
+                            entry.getFixedCodeAssignments() + "\");");
+        } catch (Exception ex) { //SQLException ex) {
+            System.out.println(ex.getMessage());
+        }
+    }
 
     /**
      * Method that takes two files and associated lines and builds a database entry to send
      */
-    public DatabaseEntry createDatabaseEntry(String errCode, String fixCode, String errorMessage,
+    public DatabaseEntry createDatabaseEntry(String errCode, String fixCode,
                                              int errStartLine, int errEndLine, int fixStartLine,
                                              int fixEndLine) {
         try {
@@ -84,6 +143,7 @@ public class DBFillerInterface {
                 }
             }
 
+            // Determining which caracters in the tokens are in the target lines
             inWindow = false;
             for (int i = 0; i < fixFileTokens.size(); i++) {
                 if (!inWindow && fixFileTokens.get(i).getLine()>=fixStartLine) {
@@ -125,8 +185,8 @@ public class DBFillerInterface {
 
             // Conversion and building the thing
             // TODO: NOTE, ID PRODUCED HERE IS BOGUS FOR THE TIME BEING
-            DatabaseEntry out = new DatabaseEntry(0,0,buggy_code,buggy_code_assignnments,
-                    fix_code,fix_code_assignnments,0);
+            DatabaseEntry out = new DatabaseEntry(0,buggy_code,buggy_code_assignnments,
+                    fix_code,fix_code_assignnments);
 
             return out;
 
@@ -139,9 +199,6 @@ public class DBFillerInterface {
         }
         return null;
     }
-
-    //NOTES FROM MEETING: Put this code into a speperate file that does its own thing.
-
 
     /**
      * Method that tests whether a given token is type ambiguous

@@ -23,7 +23,7 @@ public class Main {
         try {
 
             // Testing the file type of the constructor.
-            List<Integer> test1 = java.util.Arrays.asList(0, 100, 30, 25, 0);
+            List<Integer> test1 = java.util.Arrays.asList(0, 100, 30, 25, 26, 27);
             String test1a = DBAscii.toAsciiFormat(test1);
             System.out.println("test1a: " + test1a + "   test1a.size() = " + test1a.length());
             List<Integer> test1b = DBAscii.toIntegerListFromAscii(test1a);
@@ -39,8 +39,8 @@ public class Main {
                     ("/Users/jamie/Documents/College/Senior/Comps/FixMyBug/DB-Filler/src/main" +
                             "/java/Filler/Tokenizer/javaparser/examples/HelloWorld.java")));
 
-            DBFillerInterface i = new DBFillerInterface();
-            System.out.println(i.createDatabaseEntry(file1,file1," ",3,4,1,5));
+            DBFillerInterface i = new DBFillerInterface("foo");
+            System.out.println(i.createDatabaseEntry(file1,file1,3,4,1,5));
 
 
             // Creates a new instance of TokenizerBuilder.

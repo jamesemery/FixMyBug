@@ -26,7 +26,7 @@ public class DBAscii {
         StringBuilder builder = new StringBuilder();
 
         for (int t : ints) {
-            builder.append(Character.toChars(t + 1));
+            builder.append(Character.toChars((t>=25?t+2:t+1)));
         }
         return builder.toString();
     }
@@ -36,7 +36,7 @@ public class DBAscii {
         List<Integer> out = new ArrayList<>();
 
         for (char c : data.toCharArray()) {
-            out.add((int)c -1);
+            out.add(((int)c>26?(int)c-2:(int)c-1));
         }
         return out;
     }
