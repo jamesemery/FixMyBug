@@ -114,13 +114,14 @@ public class DatabaseServer {
      * SELECT * FROM table WHERE buggy_code = input;
      * Mainly used for testing.
      */
-    public final DatabaseEntry SelectAll(String inputStr) {
+    public final DatabaseEntry SelectAll(int id) {
         DatabaseEntry queryResult = new DatabaseEntry();
 
         try {
-            System.out.println("Input String: " + inputStr + ".");
+            System.out.println("ID String: " + id + ".");
             ResultSet rs = dataSource.getConnection()
-                    .createStatement().executeQuery("select * from \"" + tableName + "\" where buggy_code = \"" + inputStr + "\";");
+                    .createStatement().executeQuery("select * from \"" + tableName + "\" where " +
+                            "id = \"" + id + "\";");
 
             rs.next();
             if (rs.isAfterLast()) {//ID starts at 1, so 0 marks a null return value (i.e.

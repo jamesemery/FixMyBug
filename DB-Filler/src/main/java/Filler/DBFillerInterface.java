@@ -8,6 +8,7 @@ import org.sqlite.SQLiteDataSource;
 import org.sqlite.SQLiteJDBCLoader;
 
 import java.io.IOException;
+import java.sql.ResultSet;
 import java.util.*;
 
 /**
@@ -72,6 +73,36 @@ public class DBFillerInterface {
         }
         Insert(createDatabaseEntry(file1,file2,errLine-1,errLine+1,errLine-1,errLine+1));
         return true;
+    }
+
+    /**
+     * select all method that generates an sql query in the form of: TODO TEMPORARY
+     * SELECT * FROM table WHERE buggy_code = input;
+     * Mainly used for testing.
+     */
+    public final DatabaseEntry SelectAll(int id) {
+        DatabaseEntry queryResult = new DatabaseEntry();
+
+        try {
+            System.out.println("ID String: " + id + ".");
+            ResultSet rs = dataSource.getConnection()
+                    .createStatement().executeQuery("select * from \"" + tableName + "\" where " +
+                            "id = \"" + id + "\";");
+
+            rs.next();
+            if (rs.isAfterLast()) {//ID starts at 1, so 0 marks a null return value (i.e.
+                // no results)
+                System.out.println("No results found\n");
+                return queryResult;
+            }
+
+            queryResult = new DatabaseEntry(rs);
+        }
+        catch (Exception ex) { //SQLException ex) {
+            System.out.println(ex.getMessage());
+            return queryResult;
+        }
+        return queryResult;
     }
 
 

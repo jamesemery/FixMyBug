@@ -92,7 +92,6 @@ public class DatabaseEntry {
 	}
 
 
-
 	// Method that escapes dangerous ascii characters from ascii encoded fields for sql transmission
 	public DatabaseEntry escape() {
 		StringBuilder b = new StringBuilder();

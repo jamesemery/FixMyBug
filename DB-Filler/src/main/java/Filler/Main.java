@@ -44,8 +44,9 @@ public class Main {
             DBFillerInterface i = new DBFillerInterface("uploadTestDB");
             System.out.println(i.createDatabaseEntry(file1,file1,3,5,3,5));
 
-            i.uploadToDatabase(file1,file1,4);
+            i.uploadToDatabase(file1, file1, 4);
 
+            System.out.println("DATABASE RETURN:\n\n"+i.SelectAll(1));
 
             // Creates a new instance of TokenizerBuilder.
             //TokenizerBuilder t = new TokenizerBuilder("./src/main/java/carleton/comps/javaparser/examples/HelloWorld.java","File");
