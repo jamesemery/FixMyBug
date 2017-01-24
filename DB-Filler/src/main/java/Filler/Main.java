@@ -46,7 +46,7 @@ public class Main {
 
             i.uploadToDatabase(file1, file1, 4);
 
-            System.out.println("DATABASE RETURN:\n\n"+i.SelectAll(1));
+            System.out.println("DATABASE RETURN:\n\n"+i.SelectAll(1).toStringVerbose());
 
             // Creates a new instance of TokenizerBuilder.
             //TokenizerBuilder t = new TokenizerBuilder("./src/main/java/carleton/comps/javaparser/examples/HelloWorld.java","File");
