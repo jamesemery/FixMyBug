@@ -48,7 +48,7 @@ public class Main {
 
 
             // Creates a new instance of TokenizerBuilder.
-            TokenizerBuilder t = new TokenizerBuilder("./src/main/java/carleton/comps/javaparser/examples/HelloWorld.java","File");
+            //TokenizerBuilder t = new TokenizerBuilder("./src/main/java/carleton/comps/javaparser/examples/HelloWorld.java","File");
 
         } catch (IOException e) {
             e.printStackTrace();

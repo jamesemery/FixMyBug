@@ -82,11 +82,16 @@ public class DBFillerInterface {
     public final void Insert(DatabaseEntry entry) {
         try {
             entry.escape();
+            System.out.println("filling to database: " + entry.toString());
             int rs = dataSource.getConnection().createStatement()
                     .executeUpdate("INSERT INTO \"" + tableName + "\" VALUES ("
                             + currentID++ + ", \"" + entry.getBuggyCode() + "\" , \"" + entry
                             .getBuggyCodeAssignments() + "\", \"" + entry.getFixedCode() + "\", \"" +
                             entry.getFixedCodeAssignments() + "\");");
+            System.out.println("INSERT INTO \"" + tableName + "\" VALUES ("
+                    + currentID++ + ", \"" + entry.getBuggyCode() + "\" , \"" + entry
+                    .getBuggyCodeAssignments() + "\", \"" + entry.getFixedCode() + "\", \"" +
+                    entry.getFixedCodeAssignments() + "\");");
         } catch (Exception ex) { //SQLException ex) {
             System.out.println(ex.getMessage());
         }
