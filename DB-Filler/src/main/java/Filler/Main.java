@@ -6,6 +6,7 @@ import Filler.Tokenizer.DBAscii;
 import Filler.Tokenizer.TokenizerBuilder;
 
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
@@ -34,6 +35,10 @@ public class Main {
 
             System.out.println("Test2: " + DBAscii.toIntegerListFromAscii("qbds"));
             System.out.println("Test3: " + DBAscii.toIntegerListFromAscii(""));
+
+            Path currentRelativePath = Paths.get("");
+            String s = currentRelativePath.toAbsolutePath().toString();
+            System.out.println("Current relative path is: " + s);
 
             String file1 = new String(Files.readAllBytes(Paths.get
                     ("./src/main/java/Filler/Tokenizer/javaparser/examples" +
