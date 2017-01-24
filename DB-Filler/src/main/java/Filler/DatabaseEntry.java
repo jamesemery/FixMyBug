@@ -47,7 +47,7 @@ public class DatabaseEntry {
 				this.buggy_code = source.getString("buggy_code");
 				this.buggy_code_assignments = source.getString("buggy_code_assignments");
 				this.fixed_code = source.getString("fixed_code");
-				this.fixed_code_assignments = source.getString("fixed_code_assignmetns");
+				this.fixed_code_assignments = source.getString("fixed_code_assignments");
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
