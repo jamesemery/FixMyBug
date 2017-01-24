@@ -56,6 +56,24 @@ public class DBFillerInterface {
         }
     }
 
+    /**
+     * Main externally visible method that digests two files with err code data and uploads the
+     * resulting generated database entry into the database
+     *
+     * @param file1 text of file containing the eroneous code
+     * @param file2 text of file containing the fixed code
+     * @param errLine the line number of the error message
+     * @return
+     */
+    public boolean uploadToDatabase(String file1, String file2, int errLine) {
+        //TODO here is where a check goes for valid line syntax
+        if (false) {
+            return false;
+        }
+        Insert(createDatabaseEntry(file1,file2,errLine-1,errLine+1,errLine-1,errLine+1));
+        return true;
+    }
+
 
     /**
      * Insert method that takes in parameters that match the master_table columns
@@ -180,8 +198,6 @@ public class DBFillerInterface {
                     fixTokenEndIndex));
             String fix_code_assignnments = DBAscii.toAsciiFormat(fixFileAssignments.subList(
                     fixTokenStartIndex,fixTokenEndIndex));
-
-
 
             // Conversion and building the thing
             // TODO: NOTE, ID PRODUCED HERE IS BOGUS FOR THE TIME BEING

@@ -36,11 +36,12 @@ public class Main {
             System.out.println("Test3: " + DBAscii.toIntegerListFromAscii(""));
 
             String file1 = new String(Files.readAllBytes(Paths.get
-                    ("/Users/jamie/Documents/College/Senior/Comps/FixMyBug/DB-Filler/src/main" +
-                            "/java/Filler/Tokenizer/javaparser/examples/HelloWorld.java")));
+                    ("./Tokenizer/src/main/java/Filler/Tokenizer/javaparser/examples/HelloWorld.java")));
 
-            DBFillerInterface i = new DBFillerInterface("foo");
-            System.out.println(i.createDatabaseEntry(file1,file1,3,4,1,5));
+            DBFillerInterface i = new DBFillerInterface("uploadTestDB");
+            System.out.println(i.createDatabaseEntry(file1,file1,3,5,3,5));
+
+            i.uploadToDatabase(file1,file1,4);
 
 
             // Creates a new instance of TokenizerBuilder.
