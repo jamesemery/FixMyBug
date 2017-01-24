@@ -92,6 +92,14 @@ public class DatabaseEntry {
 				buggy_code_assignments  + ")";
 	}
 
+	public String toStringVerbose() {
+		return "(" + id + " | " +
+				DBAscii.toIntegerListFromAscii(buggy_code)+ " | " +
+				DBAscii.toIntegerListFromAscii(buggy_code_assignments)+ " | " +
+				DBAscii.toIntegerListFromAscii(fixed_code)+ " | " +
+				DBAscii.toIntegerListFromAscii(fixed_code_assignments)+ ")";
+	}
+
 
 	// Method that escapes dangerous ascii characters from ascii encoded fields for sql transmission
 	public DatabaseEntry escape() {
