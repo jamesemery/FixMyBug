@@ -16,6 +16,7 @@ import java.util.*;
  */
 public class DBFillerInterface {
     public static HashMap<Character,Character> ESCAPE_CHARACTERS = new HashMap<>();
+    public static HashMap<Character,Character> SRETCARAHC_EPASCE = new HashMap<>();
 
     SQLiteDataSource dataSource;
     String tableName;
@@ -35,9 +36,20 @@ public class DBFillerInterface {
             ESCAPE_CHARACTERS.put('\r','r');
             ESCAPE_CHARACTERS.put('\t','t');
             ESCAPE_CHARACTERS.put('\\','\\');
-            ESCAPE_CHARACTERS.put('\t','t');
             ESCAPE_CHARACTERS.put('%','%');
             ESCAPE_CHARACTERS.put('_','_');
+        }
+        if (SRETCARAHC_EPASCE.isEmpty()) {
+            SRETCARAHC_EPASCE.put('0','\0');
+            SRETCARAHC_EPASCE.put('\'','\'');
+            SRETCARAHC_EPASCE.put('\"','\"');
+            SRETCARAHC_EPASCE.put('b','\b');
+            SRETCARAHC_EPASCE.put('n','\n');
+            SRETCARAHC_EPASCE.put('r','\r');
+            SRETCARAHC_EPASCE.put('t','\t');
+            SRETCARAHC_EPASCE.put('\\','\\');
+            SRETCARAHC_EPASCE.put('%','%');
+            SRETCARAHC_EPASCE.put('_','_');
         }
 
         String url = "jdbc:sqlite:" + fileName;

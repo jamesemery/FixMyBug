@@ -48,6 +48,7 @@ public class DatabaseEntry {
 				this.buggy_code_assignments = source.getString("buggy_code_assignments");
 				this.fixed_code = source.getString("fixed_code");
 				this.fixed_code_assignments = source.getString("fixed_code_assignments");
+				this.unEscape();
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -130,6 +131,54 @@ public class DatabaseEntry {
 		for(int i = 0; i < fixed_code.length(); i++) {
 			if (DBFillerInterface.ESCAPE_CHARACTERS.containsKey(fixed_code.charAt(i))) {
 				b.append("\\"+ DBFillerInterface.ESCAPE_CHARACTERS.get(fixed_code.charAt(i)));
+			} else {
+				b.append(fixed_code.charAt(i));
+			}
+		}
+		fixed_code = b.toString();
+		return this;
+	}
+
+	// Method that undoes our escape characters
+	public DatabaseEntry unEscape() {
+		StringBuilder b = new StringBuilder();
+		for(int i = 0; i < buggy_code.length(); i++) {
+			if ('\\'==buggy_code.charAt(i)) {
+				i++; //TODO check pathological case
+				b.append(DBFillerInterface.SRETCARAHC_EPASCE.get(buggy_code.charAt(i)));
+			} else {
+				b.append(buggy_code.charAt(i));
+			}
+		}
+		buggy_code = b.toString();
+		b = new StringBuilder();
+
+		for(int i = 0; i < buggy_code_assignments.length(); i++) {
+			if ('\\'==buggy_code_assignments.charAt(i)) {
+				i++; //TODO check pathological case
+				b.append(DBFillerInterface.SRETCARAHC_EPASCE.get(buggy_code_assignments.charAt(i)));
+			} else {
+				b.append(buggy_code_assignments.charAt(i));
+			}
+		}
+		buggy_code_assignments = b.toString();
+		b = new StringBuilder();
+
+		for(int i = 0; i < fixed_code_assignments.length(); i++) {
+			if ('\\'==fixed_code_assignments.charAt(i)) {
+				i++; //TODO check pathological case
+				b.append(DBFillerInterface.SRETCARAHC_EPASCE.get(fixed_code_assignments.charAt(i)));
+			} else {
+				b.append(fixed_code_assignments.charAt(i));
+			}
+		}
+		fixed_code_assignments = b.toString();
+		b = new StringBuilder();
+
+		for(int i = 0; i < fixed_code.length(); i++) {
+			if ('\\'==fixed_code.charAt(i)) {
+				i++; //TODO check pathological case
+				b.append(DBFillerInterface.SRETCARAHC_EPASCE.get(fixed_code.charAt(i)));
 			} else {
 				b.append(fixed_code.charAt(i));
 			}
