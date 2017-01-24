@@ -42,7 +42,8 @@ public class Main {
                             "/HelloWorld.java")));
 
             DBFillerInterface i = new DBFillerInterface("uploadTestDB");
-            System.out.println(i.createDatabaseEntry(file1,file1,3,5,3,5));
+            System.out.println(i.createDatabaseEntry(file1,file1,3,5,3,5).toStringVerbose());
+            System.out.println("=========================");
 
             i.uploadToDatabase(file1, file1, 4);
 
