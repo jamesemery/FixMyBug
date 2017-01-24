@@ -36,7 +36,8 @@ public class Main {
             System.out.println("Test3: " + DBAscii.toIntegerListFromAscii(""));
 
             String file1 = new String(Files.readAllBytes(Paths.get
-                    ("./Tokenizer/src/main/java/Filler/Tokenizer/javaparser/examples/HelloWorld.java")));
+                    ("./src/main/java/Filler/Tokenizer/javaparser/examples" +
+                            "/HelloWorld.java")));
 
             DBFillerInterface i = new DBFillerInterface("uploadTestDB");
             System.out.println(i.createDatabaseEntry(file1,file1,3,5,3,5));
@@ -45,7 +46,7 @@ public class Main {
 
 
             // Creates a new instance of TokenizerBuilder.
-            TokenizerBuilder t = new TokenizerBuilder("./Tokenizer/src/main/java/carleton/comps/javaparser/examples/HelloWorld.java","File");
+            TokenizerBuilder t = new TokenizerBuilder("./src/main/java/carleton/comps/javaparser/examples/HelloWorld.java","File");
 
         } catch (IOException e) {
             e.printStackTrace();
