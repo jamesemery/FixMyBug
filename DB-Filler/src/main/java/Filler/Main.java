@@ -9,6 +9,7 @@ import org.bitbucket.cowwoc.diffmatchpatch.DiffMatchPatch;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.LinkedList;
 import java.util.List;
 
 import java.io.IOException;
@@ -50,7 +51,10 @@ public class Main {
             System.out.println("=========================");
 
             DiffMatchPatch differ = new DiffMatchPatch();
-            System.out.println(differ.diffMain(file1,file2));
+            LinkedList<DiffMatchPatch.Diff> diff = differ.diffMain(file1, file2);
+            System.out.println(diff);
+            differ.diffCleanupSemantic(diff);
+            System.out.println(diff);
 
 //            i.uploadToDatabase(file1, file1, 4);
 
