@@ -4,6 +4,7 @@ import Filler.Tokenizer.DBAscii;
 import Filler.Tokenizer.TokenizerBuilder;
 import Filler.Tokenizer.javaparser.*;
 import org.antlr.v4.runtime.Token;
+import org.bitbucket.cowwoc.diffmatchpatch.DiffMatchPatch;
 import org.sqlite.SQLiteDataSource;
 import org.sqlite.SQLiteJDBCLoader;
 
@@ -21,8 +22,14 @@ public class DBFillerInterface {
     SQLiteDataSource dataSource;
     String tableName;
     public static int currentID = 1;
+    private DiffMatchPatch differ = new DiffMatchPatch();
 
     public static final String DATABASE_TABLE_NAME = "master_table";
+
+    //CONSTANTS ABOUT PROCESSING
+    private static int MAX_LINES_TO_GRAB = 5;
+    private static int PRECEEDING_LINES = 2;
+    private static int TRAILING_LINES = 1;
 
 
     // constructior (takes database name as the argument)
@@ -75,16 +82,63 @@ public class DBFillerInterface {
      *
      * @param file1 text of file containing the eroneous code
      * @param file2 text of file containing the fixed code
-     * @param errLine the line number of the error message
+     * @param messageLine the line number of the error message
      * @return
      */
-    public boolean uploadToDatabase(String file1, String file2, int errLine) {
+    public boolean uploadToDatabase(String file1, String file2, int messageLine) {
         //TODO here is where a check goes for valid line syntax
-        if (false) {
+
+        LinkedList<DiffMatchPatch.Diff> edits = differ.diffMain(file1, file2);
+        differ.diffCleanupSemantic(edits);
+
+        // Forgetting about files that have excessivley complicated diff profiles
+        if (edits.size()>15) {
             return false;
         }
-        Insert(createDatabaseEntry(file1,file2,errLine-1,errLine+1,errLine-1,errLine+1));
+
+
+        // Processing the list so that the lines are clear
+        List<DiffFinderHelper> processed = new ArrayList<>();
+        int errline = 1;
+        int endline = 1;
+        int candidateFixIndex = -1;
+        for (DiffMatchPatch.Diff d: edits) {
+
+            // Finding the first edit before the change error message;
+            if ((errline < messageLine) && (d.operation != DiffMatchPatch.Operation.EQUAL)) {
+                candidateFixIndex = processed.size();
+            }
+
+            processed.add(new DiffFinderHelper(errline, endline, d));
+            int i = d.text.split("\r\n|\r|\n", -1).length - 1;
+            if (d.operation == DiffMatchPatch.Operation.EQUAL) {
+                errline += i;
+                endline += i;
+            } else if (d.operation == DiffMatchPatch.Operation.DELETE) {
+                errline += i;
+            } else {
+                endline += i;
+            }
+        }
+
+        // Logic to find lines
+        processed.get(candidateFixIndex).errStartLine;
+
+
+        Insert(createDatabaseEntry(file1,file2,messageLine-1,messageLine+1,messageLine-1,messageLine+1));
         return true;
+    }
+
+    private class DiffFinderHelper {
+        int errStartLine;
+        int fixStartLine;
+        DiffMatchPatch.Diff diff;
+
+        public DiffFinderHelper(int errStartLine, int fixStartLine, DiffMatchPatch.Diff d) {
+            this.errStartLine = errStartLine;
+            this.fixStartLine = fixStartLine;
+            this.diff = d;
+        }
     }
 
     /**
