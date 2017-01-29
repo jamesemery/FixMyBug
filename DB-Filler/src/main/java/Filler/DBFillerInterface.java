@@ -8,8 +8,11 @@ import org.bitbucket.cowwoc.diffmatchpatch.DiffMatchPatch;
 import org.sqlite.SQLiteDataSource;
 import org.sqlite.SQLiteJDBCLoader;
 
+
 import java.io.IOException;
 import java.sql.ResultSet;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.*;
 
 /**
@@ -122,10 +125,12 @@ public class DBFillerInterface {
         }
 
         // Logic to find lines
-        processed.get(candidateFixIndex).errStartLine;
+        //processed.get(candidateFixIndex).errStartLine;
 
 
         Insert(createDatabaseEntry(file1,file2,messageLine-1,messageLine+1,messageLine-1,messageLine+1));
+        System.out.println("Curr ID: " + currentID);
+        System.out.println(SelectAll(currentID-1).toStringVerbose());
         return true;
     }
 
@@ -151,8 +156,8 @@ public class DBFillerInterface {
 
         try {
             System.out.println("ID String: " + id + ".");
-            ResultSet rs = dataSource.getConnection()
-                    .createStatement().executeQuery("select * from \"" + tableName + "\" where " +
+            Connection connection = dataSource.getConnection();
+            ResultSet rs = connection.createStatement().executeQuery("select * from \"" + tableName + "\" where " +
                             "id = \"" + id + "\";");
 
             rs.next();
@@ -163,6 +168,7 @@ public class DBFillerInterface {
             }
 
             queryResult = new DatabaseEntry(rs);
+            connection.close();
         }
         catch (Exception ex) { //SQLException ex) {
             System.out.println(ex.getMessage());
@@ -180,19 +186,22 @@ public class DBFillerInterface {
         try {
             entry.escape();
             System.out.println("filling to database: " + entry.toString());
-            int rs = dataSource.getConnection().createStatement()
+            Connection connection = dataSource.getConnection();
+            int rs = connection.createStatement()
                     .executeUpdate("INSERT INTO \"" + tableName + "\" VALUES ("
                             + currentID++ + ", \"" + entry.getBuggyCode() + "\" , \"" + entry
                             .getBuggyCodeAssignments() + "\", \"" + entry.getFixedCode() + "\", \"" +
                             entry.getFixedCodeAssignments() + "\");");
-            System.out.println("INSERT INTO \"" + tableName + "\" VALUES ("
+            /*System.out.println("INSERT INTO \"" + tableName + "\" VALUES ("
                     + currentID++ + ", \"" + entry.getBuggyCode() + "\" , \"" + entry
                     .getBuggyCodeAssignments() + "\", \"" + entry.getFixedCode() + "\", \"" +
-                    entry.getFixedCodeAssignments() + "\");");
+                    entry.getFixedCodeAssignments() + "\");");*/
+                    connection.close();
         } catch (Exception ex) { //SQLException ex) {
             System.out.println(ex.getMessage());
         }
     }
+
 
     /**
      * Method that takes two files and associated lines and builds a database entry to send
@@ -275,7 +284,7 @@ public class DBFillerInterface {
                 }
             }
 
-            System.out.println("File A: " + errCode);
+            /*System.out.println("File A: " + errCode);
             System.out.println("A Tokens: " + errFileTokens);
             System.out.println("A File Assignments: " + errFileAssignments);
 
@@ -290,7 +299,7 @@ public class DBFillerInterface {
             System.out.println("File A Grabbed Lines: " + errFileTokens.subList(errTokenStartIndex,
                             errTokenEndIndex));
             System.out.println("File B Grabbed Lines: " + fixFileTokens.subList(fixTokenStartIndex,
-                    fixTokenEndIndex));
+                    fixTokenEndIndex));*/
             String buggy_code = DBAscii.tokensToAsciiFormat(errFileTokens.subList
                     (errTokenStartIndex, errTokenEndIndex));
             String buggy_code_assignnments = DBAscii.toAsciiFormat(errFileAssignments.subList(

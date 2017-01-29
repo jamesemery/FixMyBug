@@ -14,7 +14,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>Filler.Main</mainClass>
+                            <mainClass>Filler.BlackBoxConnection</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
@@ -35,6 +35,13 @@
     </build>
 
     <dependencies>
+
+    <dependency>
+      <groupId>com.jcraft</groupId>
+      <artifactId>jsch</artifactId>
+      <version>0.1.53</version>
+    </dependency>
+
 		<dependency>
 		    <groupId>org.bitbucket.cowwoc</groupId>
 		    <artifactId>diff-match-patch</artifactId>
@@ -69,6 +76,11 @@
             <groupId>org.xerial</groupId>
             <artifactId>sqlite-jdbc</artifactId>
             <version>3.8.7</version>
+        </dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>5.1.30</version>
         </dependency>
     </dependencies>
 
