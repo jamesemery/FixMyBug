@@ -36,17 +36,29 @@ public class Main {
 //            }
 //
 //            System.out.println("Test2: " + DBAscii.toIntegerListFromAscii("qbds"));
-//            System.out.println("Test3: " + DBAscii.toIntegerListFromAscii(""));
+//            System.out.println("Test3: " + DBAscii.toIntegerListFromAscii(""));   a
+            String file1 = "package Filler.Tokenizer.javaparser.examples;\n" +
+                    "\n" +
+                    "public class HelloWorld {\n" +
+                    "   public static void main(String[] args) {\n" +
+                    "      System.out.println(\"Hello, World\");\n" +
+                    "      System.out.println(\"\");\n" +
+                    "   }\n" +
+                    "}\n";
+
+            String file2 = "package Filler.Tokenizer.javaparser.examples;\n" +
+                    "\n" +
+                    "// Comment comment comment\n" +
+                    "public class HelloWorld2 {\n" +
+                    "    public static void main(String[] args) {\n" +
+                    "        System.out.println(\"\");\n" +
+                    "        System.out.println(\"Hello, World\");\n" +
+                    "    }\n" +
+                    "}\n";
 
 
-            String file1 = new String(Files.readAllBytes(Paths.get
-                    ("./src/main/java/Filler/Tokenizer/javaparser/examples" +
-                            "/HelloWorld.java")));
-            String file2 = new String(Files.readAllBytes(Paths.get
-                    ("./src/main/java/Filler/Tokenizer/javaparser/examples" +
-                            "/HelloWorld2.java")));
-
-//            DBFillerInterface i = new DBFillerInterface("uploadTestDB");
+            DBFillerInterface i = new DBFillerInterface("uploadTestDB");
+            i.uploadToDatabase(file1,file2,5);
 //            System.out.println(i.createDatabaseEntry(file1,file1,3,5,3,5).toStringVerbose());
             System.out.println("=========================");
 
@@ -63,7 +75,7 @@ public class Main {
             // Creates a new instance of TokenizerBuilder.
             //TokenizerBuilder t = new TokenizerBuilder("./src/main/java/carleton/comps/javaparser/examples/HelloWorld.java","File");
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 

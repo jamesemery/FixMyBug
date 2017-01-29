@@ -30,7 +30,7 @@ public class DBFillerInterface {
     public static final String DATABASE_TABLE_NAME = "master_table";
 
     //CONSTANTS ABOUT PROCESSING
-    private static int MAX_LINES_TO_GRAB = 5;
+    private static int MAX_LINES_TO_GRAB = 2;
     private static int PRECEEDING_LINES = 1;
     private static int TRAILING_LINES = 1;
 
@@ -143,7 +143,7 @@ public class DBFillerInterface {
 
         int errLineEnd = errLineStart + MAX_LINES_TO_GRAB - errLinesRemaining + TRAILING_LINES;
         int fixLineEnd = fixLineStart + MAX_LINES_TO_GRAB - fixLinesRemaining + TRAILING_LINES;
-        int curIndex = candidateFixIndex-1;
+        int curIndex = candidateFixIndex;
 
         // Loop through until we eat our entire fix line allowence on a deletion
         while (curIndex >= 0 && errLinesRemaining > 0) {
@@ -167,7 +167,7 @@ public class DBFillerInterface {
 
                 // case where it doesnt
                 } else {
-                    errLinesRemaining = errLinesRemaining - h.errStartLine - errLineStart;
+                    errLinesRemaining = errLinesRemaining - (errLineStart - h.errStartLine);
                     errLineStart = h.errStartLine;
                     fixLineStart = h.fixStartLine;
                 }
