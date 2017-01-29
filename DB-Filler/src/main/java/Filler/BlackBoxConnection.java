@@ -79,11 +79,14 @@ public class BlackBoxConnection {
 
       String host=null;
       if(arg.length>0){
-        host=arg[0];
+          host=arg[0];
+      } else if (arg[0].equals("test")){
+          Main.main(arg);
       } else {
-        System.out.println("Needs an argument, in the form username@white.kent.ac.uk");
-        System.exit(0);
+          System.out.println("Needs an argument, in the form username@white.kent.ac.uk");
+          System.exit(0);
       }
+
 
       String user=host.substring(0, host.indexOf('@'));
       host=host.substring(host.indexOf('@')+1);
