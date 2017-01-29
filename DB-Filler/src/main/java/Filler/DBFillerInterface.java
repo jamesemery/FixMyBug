@@ -31,7 +31,7 @@ public class DBFillerInterface {
 
     //CONSTANTS ABOUT PROCESSING
     private static int MAX_LINES_TO_GRAB = 5;
-    private static int PRECEEDING_LINES = 2;
+    private static int PRECEEDING_LINES = 1;
     private static int TRAILING_LINES = 1;
 
 
@@ -108,7 +108,7 @@ public class DBFillerInterface {
         for (DiffMatchPatch.Diff d: edits) {
 
             // Finding the first edit before the change error message;
-            if ((errline < messageLine) && (d.operation != DiffMatchPatch.Operation.EQUAL)) {
+            if ((errline <= messageLine) && (d.operation != DiffMatchPatch.Operation.EQUAL)) {
                 candidateFixIndex = processed.size();
             }
 
@@ -125,12 +125,57 @@ public class DBFillerInterface {
         }
 
         // Logic to find lines
-        //processed.get(candidateFixIndex).errStartLine;
+        int errLineStart = processed.get(candidateFixIndex).errStartLine;
+        int fixLineStart = processed.get(candidateFixIndex).fixStartLine;
+        int errLinesRemaining = MAX_LINES_TO_GRAB;
+        int fixLinesRemaining = MAX_LINES_TO_GRAB;
+
+        if (candidateFixIndex+1!=processed.size()) {
+            errLinesRemaining = MAX_LINES_TO_GRAB - (processed.get(candidateFixIndex+1).errStartLine
+                    - processed.get(candidateFixIndex).errStartLine);
+
+            // Currently not used in processing
+            fixLinesRemaining = MAX_LINES_TO_GRAB - (processed.get(candidateFixIndex+1).fixStartLine
+                    - processed.get(candidateFixIndex).fixStartLine);
+
+        }
 
 
-        Insert(createDatabaseEntry(file1,file2,messageLine-1,messageLine+1,messageLine-1,messageLine+1));
-        System.out.println("Curr ID: " + currentID);
-        System.out.println(SelectAll(currentID-1).toStringVerbose());
+        int errLineEnd = errLineStart + MAX_LINES_TO_GRAB - errLinesRemaining + TRAILING_LINES;
+        int fixLineEnd = fixLineStart + MAX_LINES_TO_GRAB - fixLinesRemaining + TRAILING_LINES;
+        int curIndex = candidateFixIndex-1;
+
+        // Loop through until we eat our entire fix line allowence on a deletion
+        while (curIndex >= 0 && errLinesRemaining > 0) {
+            curIndex--;
+            DiffFinderHelper h = processed.get(curIndex);
+            if (h.diff.operation== DiffMatchPatch.Operation.EQUAL) {
+
+                //IF an equals eats all of our allowence, don't add any lines
+                if(h.errStartLine - errLineStart > errLinesRemaining) {
+                    errLineStart = errLineStart - PRECEEDING_LINES;
+                    fixLineStart = fixLineStart - PRECEEDING_LINES;
+                    break;
+                }
+
+            } else {
+                // Case where it eats all the remaining lines
+                if (h.errStartLine - errLineStart > errLinesRemaining)  {
+                    errLineStart = errLineStart - errLinesRemaining - PRECEEDING_LINES;
+                    fixLineStart = h.fixStartLine - PRECEEDING_LINES;
+                    break;
+
+                // case where it doesnt
+                } else {
+                    errLinesRemaining = errLinesRemaining - h.errStartLine - errLineStart;
+                    errLineStart = h.errStartLine;
+                    fixLineStart = h.fixStartLine;
+                }
+            }
+        }
+
+
+        Insert(createDatabaseEntry(file1,file2,errLineStart,errLineEnd,fixLineStart, fixLineEnd));
         return true;
     }
 
