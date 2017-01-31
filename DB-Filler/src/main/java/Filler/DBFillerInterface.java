@@ -175,7 +175,7 @@ public class DBFillerInterface {
         }
 
 
-        Insert(createDatabaseEntry(file1,file2,errLineStart,errLineEnd,fixLineStart, fixLineEnd));
+        Insert(createDatabaseEntry(file1, file2, errLineStart, errLineEnd, fixLineStart, fixLineEnd));
         return true;
     }
 
@@ -302,9 +302,9 @@ public class DBFillerInterface {
 
             // Prune the lists to only account for the specified lines
             int errTokenStartIndex = 0;
-            int errTokenEndIndex = 0;
+            int errTokenEndIndex = -1;
             int fixTokenStartIndex = 0;
-            int fixTokenEndIndex =0;
+            int fixTokenEndIndex = -1;
 
             boolean inWindow = false;
             for (int i = 0; i < errFileTokens.size(); i++) {
@@ -315,6 +315,9 @@ public class DBFillerInterface {
                     errTokenEndIndex = i -1;
                     break;
                 }
+            }
+            if (errTokenEndIndex < 1) {
+                errTokenEndIndex = errFileTokens.size()-1;
             }
 
             // Determining which caracters in the tokens are in the target lines
@@ -327,6 +330,9 @@ public class DBFillerInterface {
                     fixTokenEndIndex = i -1;
                     break;
                 }
+            }
+            if (fixTokenEndIndex < 1) {
+                fixTokenEndIndex = fixFileTokens.size()-1;
             }
 
             /*System.out.println("File A: " + errCode);

@@ -148,6 +148,7 @@ public class BlackBoxConnection {
           //System.out.println(fix);
         } catch(Exception e) {
           System.out.println("Missing data in blackbox: " + e);
+          e.printStackTrace();
         }
         results.next();
       }
