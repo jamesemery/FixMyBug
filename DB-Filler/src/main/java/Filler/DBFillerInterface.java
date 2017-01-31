@@ -103,24 +103,23 @@ public class DBFillerInterface {
         // Processing the list so that the lines are clear
         List<DiffFinderHelper> processed = new ArrayList<>();
         int errline = 1;
-        int endline = 1;
+        int fixline = 1;
         int candidateFixIndex = -1;
         for (DiffMatchPatch.Diff d: edits) {
-
             // Finding the first edit before the change error message;
             if ((errline <= messageLine) && (d.operation != DiffMatchPatch.Operation.EQUAL)) {
                 candidateFixIndex = processed.size();
             }
 
-            processed.add(new DiffFinderHelper(errline, endline, d));
+            processed.add(new DiffFinderHelper(errline, fixline, d));
             int i = d.text.split("\r\n|\r|\n", -1).length - 1;
             if (d.operation == DiffMatchPatch.Operation.EQUAL) {
                 errline += i;
-                endline += i;
+                fixline += i;
             } else if (d.operation == DiffMatchPatch.Operation.DELETE) {
                 errline += i;
             } else {
-                endline += i;
+                fixline += i;
             }
         }
 
@@ -130,29 +129,30 @@ public class DBFillerInterface {
         int errLinesRemaining = MAX_LINES_TO_GRAB;
         int fixLinesRemaining = MAX_LINES_TO_GRAB;
 
+        // If the diff is not the end of the file
         if (candidateFixIndex+1!=processed.size()) {
             errLinesRemaining = MAX_LINES_TO_GRAB - (processed.get(candidateFixIndex+1).errStartLine
-                    - processed.get(candidateFixIndex).errStartLine);
+                    - processed.get(candidateFixIndex).errStartLine) - 1;
 
             // Currently not used in processing
             fixLinesRemaining = MAX_LINES_TO_GRAB - (processed.get(candidateFixIndex+1).fixStartLine
-                    - processed.get(candidateFixIndex).fixStartLine);
+                    - processed.get(candidateFixIndex).fixStartLine) - 1;
 
-        }
+        // If it is the last line of the file TODO?
+      }
 
 
-        int errLineEnd = errLineStart + MAX_LINES_TO_GRAB - errLinesRemaining + TRAILING_LINES;
-        int fixLineEnd = fixLineStart + MAX_LINES_TO_GRAB - fixLinesRemaining + TRAILING_LINES;
+        int errLineEnd = errLineStart + MAX_LINES_TO_GRAB - errLinesRemaining - 1 + TRAILING_LINES;
+        int fixLineEnd = fixLineStart + MAX_LINES_TO_GRAB - fixLinesRemaining - 1 + TRAILING_LINES;
         int curIndex = candidateFixIndex;
 
         // Loop through until we eat our entire fix line allowence on a deletion
-        while (curIndex >= 0 && errLinesRemaining > 0) {
+        while (curIndex > 0 && errLinesRemaining > 0) {
             curIndex--;
             DiffFinderHelper h = processed.get(curIndex);
             if (h.diff.operation== DiffMatchPatch.Operation.EQUAL) {
-
                 //IF an equals eats all of our allowence, don't add any lines
-                if(h.errStartLine - errLineStart > errLinesRemaining) {
+                if(errLineStart - h.errStartLine > errLinesRemaining) {
                     errLineStart = errLineStart - PRECEEDING_LINES;
                     fixLineStart = fixLineStart - PRECEEDING_LINES;
                     break;
@@ -160,7 +160,7 @@ public class DBFillerInterface {
 
             } else {
                 // Case where it eats all the remaining lines
-                if (h.errStartLine - errLineStart > errLinesRemaining)  {
+                if (errLineStart - h.errStartLine >= errLinesRemaining)  {
                     errLineStart = errLineStart - errLinesRemaining - PRECEEDING_LINES;
                     fixLineStart = h.fixStartLine - PRECEEDING_LINES;
                     break;
@@ -174,7 +174,7 @@ public class DBFillerInterface {
             }
         }
 
-
+        System.out.println("Trying to split files, errlineStart: " + errLineStart + "  errLineEnd: " + errLineEnd + "  fixLineStart: "+fixLineStart+"   fixLineEnd: "+fixLineEnd);
         Insert(createDatabaseEntry(file1, file2, errLineStart, errLineEnd, fixLineStart, fixLineEnd));
         return true;
     }
