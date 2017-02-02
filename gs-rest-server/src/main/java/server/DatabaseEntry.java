@@ -4,6 +4,7 @@ package server;
 /* THIS MUST BE IDENTICAL TO ITS COUNTERPART IN THE CLIENT. IF YOU CHANGE ONE, CHANGE BOTH */
 
 import server.javaparser.DBAscii;
+import server.DatabaseServer;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -110,8 +111,8 @@ public class DatabaseEntry {
 	public DatabaseEntry escape() {
 		StringBuilder b = new StringBuilder();
 		for(int i = 0; i < buggy_code.length(); i++) {
-			if (DBFillerInterface.ESCAPE_CHARACTERS.containsKey(buggy_code.charAt(i))) {
-				b.append("\\" + DBFillerInterface.ESCAPE_CHARACTERS.get(buggy_code.charAt(i)));
+			if (DatabaseServer.ESCAPE_CHARACTERS.containsKey(buggy_code.charAt(i))) {
+				b.append("\\" + DatabaseServer.ESCAPE_CHARACTERS.get(buggy_code.charAt(i)));
 			} else {
 				b.append(buggy_code.charAt(i));
 			}
@@ -120,8 +121,8 @@ public class DatabaseEntry {
 		b = new StringBuilder();
 
 		for(int i = 0; i < buggy_code_assignments.length(); i++) {
-			if (DBFillerInterface.ESCAPE_CHARACTERS.containsKey(buggy_code_assignments.charAt(i))) {
-				b.append("\\" + DBFillerInterface.ESCAPE_CHARACTERS.get(buggy_code_assignments
+			if (DatabaseServer.ESCAPE_CHARACTERS.containsKey(buggy_code_assignments.charAt(i))) {
+				b.append("\\" + DatabaseServer.ESCAPE_CHARACTERS.get(buggy_code_assignments
 						.charAt(i)));
 			} else {
 				b.append(buggy_code_assignments.charAt(i));
@@ -131,8 +132,8 @@ public class DatabaseEntry {
 		b = new StringBuilder();
 
 		for(int i = 0; i < fixed_code_assignments.length(); i++) {
-			if (DBFillerInterface.ESCAPE_CHARACTERS.containsKey(fixed_code_assignments.charAt(i))) {
-				b.append("\\" + DBFillerInterface.ESCAPE_CHARACTERS.get(fixed_code_assignments
+			if (DatabaseServer.ESCAPE_CHARACTERS.containsKey(fixed_code_assignments.charAt(i))) {
+				b.append("\\" + DatabaseServer.ESCAPE_CHARACTERS.get(fixed_code_assignments
 						.charAt(i)));
 			} else {
 				b.append(fixed_code_assignments.charAt(i));
@@ -142,8 +143,8 @@ public class DatabaseEntry {
 		b = new StringBuilder();
 
 		for(int i = 0; i < fixed_code.length(); i++) {
-			if (DBFillerInterface.ESCAPE_CHARACTERS.containsKey(fixed_code.charAt(i))) {
-				b.append("\\"+ DBFillerInterface.ESCAPE_CHARACTERS.get(fixed_code.charAt(i)));
+			if (DatabaseServer.ESCAPE_CHARACTERS.containsKey(fixed_code.charAt(i))) {
+				b.append("\\"+ DatabaseServer.ESCAPE_CHARACTERS.get(fixed_code.charAt(i)));
 			} else {
 				b.append(fixed_code.charAt(i));
 			}
@@ -168,7 +169,7 @@ public class DatabaseEntry {
 		for(int i = 0; i < s.length(); i++) {
 			if ('\\'==s.charAt(i)) {
 				i++; //TODO check pathological case
-				b.append(DBFillerInterface.SRETCARAHC_EPASCE.get(s.charAt(i)));
+				b.append(DatabaseServer.SRETCARAHC_EPASCE.get(s.charAt(i)));
 			} else {
 				b.append(s.charAt(i));
 			}

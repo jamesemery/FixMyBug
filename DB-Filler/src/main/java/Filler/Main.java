@@ -66,10 +66,10 @@ public class Main {
                     (Collectors.joining(" ")).toString());
             e.setFixedCode(e.getFixedCodeAsList().stream().map(Object::toString).collect
                     (Collectors.joining(" ")).toString());
-            e.setBuggyCode(e.getBuggyCodeAsList().stream().map(Object::toString).collect
+            e.setBuggyCodeAssignments(e.getBuggyAssignmentsAsList().stream().map(Object::toString).collect
                     (Collectors.joining(" ")).toString());
-            e.setBuggyCode(e.getBuggyCodeAsList().stream().map(Object::toString).collect
-                    (Collectors.joining(" ")).toString());
+            e.setFixedCodeAssignments(e.getFixedAssignmentsAsList().stream().map
+                    (Object::toString).collect(Collectors.joining(" ")).toString());
             System.out.println(e);
             System.out.println("=========================");
 

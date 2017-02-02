@@ -68,8 +68,7 @@ public class FixMyBugController {
             System.out.println("Error message received: " + serverRequest.getErrorMessage() + "\n");
             System.out.println("Echoing back the received data...\n\n\n");
 
-            return DatabaseServer.sanitizeForJsonTransmission(new DatabaseEntryListWrapper(new DatabaseEntry(-1, -2,
-                    serverRequest.getBuggyCode(), serverRequest.getErrorMessage(), -5))); //TODO fix this outdated method
+            return DatabaseServer.sanitizeForJsonTransmission(new DatabaseEntryListWrapper(new DatabaseEntry(-1, "crap", "sdf", "squid", "Sdf"))); //TODO fix this outdated method
 
 
         } catch (JsonGenerationException e) {
