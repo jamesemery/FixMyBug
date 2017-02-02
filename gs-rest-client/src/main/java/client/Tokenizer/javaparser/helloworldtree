@@ -1,0 +1,7 @@
+# To use: source helloworldtree
+
+#!/bin/sh
+
+antlr4 Java.g4
+javac *.java
+grun Java compilationUnit HelloWorld.java -tree
