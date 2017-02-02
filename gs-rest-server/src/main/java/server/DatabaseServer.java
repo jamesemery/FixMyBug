@@ -15,7 +15,6 @@ import server.javaparser.LevScorer;
 import java.sql.*;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /*class DatabaseServer holds all of the methods
 and parameters for creating a database, creating
@@ -378,13 +377,13 @@ public class DatabaseServer {
     public static DatabaseEntryListWrapper sanitizeForJsonTransmission(DatabaseEntryListWrapper
                                                                                wrapper) {
         for (DatabaseEntry e : wrapper.getEntryList()) {
-            e.setBuggyCode(e.getBuggyCodeAsList().stream().map(Object::toString).collect
+            e.setBuggyCode(e.buggyCodeAsList().stream().map(Object::toString).collect
                     (Collectors.joining(" ")).toString());
-            e.setFixedCode(e.getFixedCodeAsList().stream().map(Object::toString).collect
+            e.setFixedCode(e.fixedCodeAsList().stream().map(Object::toString).collect
                     (Collectors.joining(" ")).toString());
-            e.setBuggyCodeAssignments(e.getBuggyAssignmentsAsList().stream().map(Object::toString).collect
+            e.setBuggyCodeAssignments(e.buggyAssignmentsAsList().stream().map(Object::toString).collect
                     (Collectors.joining(" ")).toString());
-            e.setFixedCodeAssignments(e.getFixedAssignmentsAsList().stream().map
+            e.setFixedCodeAssignments(e.fixedAssignmentsAsList().stream().map
                     (Object::toString).collect(Collectors.joining(" ")).toString());
 
         }

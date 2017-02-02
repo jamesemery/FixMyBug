@@ -62,19 +62,19 @@ public class DatabaseEntry {
 	public double getSimilarity() { return this.similarity; }
 
 	//Classes for ease of ascii interface use
-	public List<Integer> getBuggyCodeAsList() {
+	public List<Integer> buggyCodeAsList() {
 		// return DBAscii.toIntegerListFromAscii(this.buggy_code);
 		return null;
 	}
-	public List<Integer> getBuggyAssignmentsAsList() {
+	public List<Integer> buggyAssignmentsAsList() {
 		// return DBAscii.toIntegerListFromAscii(this.buggy_code_assignments);
 		return null;
 	}
-	public List<Integer> getFixedCodeAsList() {
+	public List<Integer> fixedCodeAsList() {
 		// return DBAscii.toIntegerListFromAscii(this.fixed_code);
 		return null;
 	}
-	public List<Integer> getFixedAssignmentsAsList() {
+	public List<Integer> fixedAssignmentsAsList() {
 		// return DBAscii.toIntegerListFromAscii(this.fixed_code_assignments);
 		return null;
 	}
