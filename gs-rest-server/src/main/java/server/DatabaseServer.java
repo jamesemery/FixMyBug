@@ -232,15 +232,15 @@ public class DatabaseServer {
         //Map<Integer, Integer> masterRow = new HashMap<>();
 
         Connection indConnection = dataSource.getConnection();
-        Statement indStatement = indConnection.createStatement();
 
         //Creating an index table if none exists
-        // ResultSet s = indConnection.getMetaData().getTables(null, null, indexTableName, new String[]{"TABLE"});
-        // if (!s.next()) {
-        //     System.out.println("Creating ngram index for database");
-        //     createIndex(DEFAULT_NGRAM_SIZE, DATABASE_TABLE_NAME);
-        // }
-        // s.close();TODO figure out this logic nicely
+        ResultSet s = indConnection.getMetaData().getTables(null, null, indexTableName, new String[]{"TABLE"});
+        if (!s.next()) {
+            System.out.println("Creating ngram index for database");
+            createIndex(DEFAULT_NGRAM_SIZE, DATABASE_TABLE_NAME);
+        }
+        s.close();//;TODO figure out this logic nicely
+        Statement indStatement = indConnection.createStatement();
 
         indStatement.executeUpdate("DROP TABLE" +
                 " IF EXISTS " + table + "_" + ngramsize + "comparison;");
