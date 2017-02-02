@@ -47,7 +47,7 @@ public class DatabaseServer {
         String url = "jdbc:sqlite:" + fileName;
         tableName = DATABASE_TABLE_NAME;
         boolean initialize = false;
-        
+
         //try to connect to the DB
         try {
             initialize = SQLiteJDBCLoader.initialize();
@@ -111,26 +111,28 @@ public class DatabaseServer {
     }
 
     /**
-     * select all method that generates an sql query in the form of:
+     * select all method that generates an sql query in the form of: TODO TEMPORARY
      * SELECT * FROM table WHERE buggy_code = input;
      * Mainly used for testing.
      */
-    public final DatabaseEntry SelectAll(String inputStr) {
+    public final DatabaseEntry SelectAll(int id) {
         DatabaseEntry queryResult = new DatabaseEntry();
 
         try {
-            System.out.println("Input String: " + inputStr + ".");
-            ResultSet rs = dataSource.getConnection()
-                    .createStatement().executeQuery("select * from \"" + tableName + "\" where buggy_code = \"" + inputStr + "\";");
+            System.out.println("ID String: " + id + ".");
+            Connection connection = dataSource.getConnection();
+            ResultSet rs = connection.createStatement().executeQuery("select * from \"" + tableName + "\" where " +
+                    "id = \"" + id + "\";");
 
             rs.next();
             if (rs.isAfterLast()) {//ID starts at 1, so 0 marks a null return value (i.e.
-            // no results)
+                // no results)
                 System.out.println("No results found\n");
                 return queryResult;
             }
 
             queryResult = new DatabaseEntry(rs);
+            connection.close();
         }
         catch (Exception ex) { //SQLException ex) {
             System.out.println(ex.getMessage());
@@ -139,22 +141,6 @@ public class DatabaseServer {
         return queryResult;
     }
 
-    
-    /**
-     * Insert method that takes in parameters that match the master_table columns
-     * This method then connects to the database and adds the data to the master_table
-     */
-    public final void Insert(int id, int bug_type, String buggy_code, String fixed_code, int count) {
-        try {
-            int rs = dataSource.getConnection().createStatement()
-                .executeUpdate("INSERT INTO \"" + tableName + "\" VALUES ("
-                + id + ", " + bug_type + ", \"" + buggy_code + "\", \"" + fixed_code + "\", " + count + ");");
-        }
-        catch (Exception ex) { //SQLException ex) {
-            System.out.println(ex.getMessage());
-        }
-
-    }
 
     /**
      * RemoveByID method simply removes a tuple from the default table
@@ -189,7 +175,7 @@ public class DatabaseServer {
     }
 
     /**
-     * Mehtod that builds a database index table of the supllied table argument in the string 
+     * Mehtod that builds a database index table of the supllied table argument in the string
      * based on the Ngrams for error_code in the given table. The size of the Ngrams is determined
      * by the ngramSize argument.
      *
@@ -216,7 +202,7 @@ public class DatabaseServer {
         while (true) {
             if (rows.next()) {
                 int id = rows.getInt("id");
-                String errCode = rows.getString("buggy_code");
+                String errCode = DatabaseEntry.unescapeString(rows.getString("buggy_code"));
 
                 // populate the the array with each ngram
                 for (int i = ngramsize; i <= errCode.length(); i++) {
@@ -250,7 +236,7 @@ public class DatabaseServer {
     public List<Integer> querySearch(String query, int ngramsize, String table) throws SQLException {
         String indexTableName = table + "_" + ngramsize + "gramindex";
         //Map<Integer, Integer> masterRow = new HashMap<>();
-        
+
         Connection indConnection = dataSource.getConnection();
         Statement indStatement = indConnection.createStatement();
 
@@ -260,7 +246,7 @@ public class DatabaseServer {
         // Create new table for comparisons
         indStatement.executeUpdate("CREATE TABLE " + table + "_"
                 + ngramsize + "comparison (id INTEGER, fix VARCHAR(128));");
-        
+
 
         String qTokens = DBAscii.toAsciiFormat(Arrays.asList(query.split(" ")).stream().map(Integer::parseInt)
                 .collect(Collectors.toList()));
@@ -297,10 +283,10 @@ public class DatabaseServer {
             int fixedid = fixedSet.getInt("id");
             results.add(fixedid);
         }
-        
+
         indStatement.executeUpdate("DROP TABLE" +
                 " IF EXISTS "+ table+"_"+ngramsize+"comparison;");
-        
+
         return results;
     }
 
@@ -319,7 +305,7 @@ public class DatabaseServer {
 
         // Pull the rows that are most prevalent
         List<Integer> rowsToPull =  querySearch(userQuery, DEFAULT_NGRAM_SIZE, DATABASE_TABLE_NAME);
-        
+
         // Create a query to pull all the rows from the table
         StringJoiner j = new StringJoiner(",", "SELECT * FROM " +
                 ""+DATABASE_TABLE_NAME+" WHERE id IN (", ");");
@@ -347,10 +333,10 @@ public class DatabaseServer {
     }
 
     /**
-     * A secondary similarity scoring algoirhtm that will be run in order to sort database entires 
+     * A secondary similarity scoring algoirhtm that will be run in order to sort database entires
      * after they are pulled based on their ngram similarity
-     * 
-     * @return a similarity score between the userQuery and Database Entry code represented as a double 
+     *
+     * @return a similarity score between the userQuery and Database Entry code represented as a double
      */
     private double computeSecondarySimilarity(String userQuery, DatabaseEntry entry) {
         List<Integer> q = new ArrayList<>();
@@ -381,5 +367,26 @@ public class DatabaseServer {
     //     //addToTable(args[0], 4, 2, "somebug2", "somefix2", 2);
     //     //addToTable(args[0], 5, 4, "somebug3", "somefix3", 2);
 //    }
+
+    /**
+     * GROSS METHOD ALERT: Due to obnoxiousness involving the spring framework and needing to
+     * have hmologous classes, several methods need to be pulled into here, specifically the
+     * sanitization program output
+     **/
+    public static DatabaseEntryListWrapper sanitizeForJsonTransmission(DatabaseEntryListWrapper
+                                                                              wrapper) {
+        for (DatabaseEntry e: wrapper.getEntryList()) {
+            e.setBuggyCode(e.getBuggyCodeAsList().stream().map(Object::toString).collect
+                    (Collectors.joining(" ")).toString());
+            e.setFixedCode(e.getFixedCodeAsList().stream().map(Object::toString).collect
+                    (Collectors.joining(" ")).toString());
+            e.setBuggyCode(e.getBuggyCodeAsList().stream().map(Object::toString).collect
+                    (Collectors.joining(" ")).toString());
+            e.setBuggyCode(e.getBuggyCodeAsList().stream().map(Object::toString).collect
+                    (Collectors.joining(" ")).toString());
+
+        }
+        return wrapper;
+    }
 
 }

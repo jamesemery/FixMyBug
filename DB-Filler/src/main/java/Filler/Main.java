@@ -13,6 +13,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import java.io.IOException;
+import java.util.stream.Collectors;
 
 /*
  * Checks if the TokenizerBuilder class works.
@@ -57,9 +58,19 @@ public class Main {
                     "}\n";
 
 
-            DBFillerInterface i = new DBFillerInterface("uploadTestDB");
-            i.uploadToDatabase(file1,file2,5);
-//            System.out.println(i.createDatabaseEntry(file1,file1,3,5,3,5).toStringVerbose());
+            DBFillerInterface i = new DBFillerInterface("fake");
+//            i.uploadToDatabase(file1,file2,5);
+            DatabaseEntry e = i.createDatabaseEntry(file1,file1,3,5,3,5);
+
+            e.setBuggyCode(e.getBuggyCodeAsList().stream().map(Object::toString).collect
+                    (Collectors.joining(" ")).toString());
+            e.setFixedCode(e.getFixedCodeAsList().stream().map(Object::toString).collect
+                    (Collectors.joining(" ")).toString());
+            e.setBuggyCode(e.getBuggyCodeAsList().stream().map(Object::toString).collect
+                    (Collectors.joining(" ")).toString());
+            e.setBuggyCode(e.getBuggyCodeAsList().stream().map(Object::toString).collect
+                    (Collectors.joining(" ")).toString());
+            System.out.println(e);
             System.out.println("=========================");
 
             DiffMatchPatch differ = new DiffMatchPatch();

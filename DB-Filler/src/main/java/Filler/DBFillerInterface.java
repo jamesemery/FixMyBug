@@ -98,7 +98,7 @@ public class DBFillerInterface {
         if (edits.size()>15) {
             return false;
         }
-
+        
 
         // Processing the list so that the lines are clear
         List<DiffFinderHelper> processed = new ArrayList<>();

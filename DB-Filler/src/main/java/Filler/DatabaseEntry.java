@@ -81,7 +81,11 @@ public class DatabaseEntry {
 	public void setId(int id) { this.id = id; }
 	//public void setErrorType(int error_type) { this.error_type = error_type;	}
 	public void setBuggyCode(String buggy_code) { this.buggy_code = buggy_code;	}
+	public void setBuggyCodeAssignments(String assignment) { this.buggy_code_assignments =
+			assignment;}
 	public void setFixedCode(String fixed_code) { this.fixed_code = fixed_code;	}
+	public void setFixedCodeAssignments(String assignment) { this.fixed_code_assignments =
+			assignment;}
 	public void setSimilarity(double v) { this.similarity = v;}
 
 	public String toString() {
@@ -149,49 +153,25 @@ public class DatabaseEntry {
 
 	// Method that undoes our escape characters
 	public DatabaseEntry unEscape() {
-		StringBuilder b = new StringBuilder();
-		for(int i = 0; i < buggy_code.length(); i++) {
-			if ('\\'==buggy_code.charAt(i)) {
-				i++; //TODO check pathological case
-				b.append(DBFillerInterface.SRETCARAHC_EPASCE.get(buggy_code.charAt(i)));
-			} else {
-				b.append(buggy_code.charAt(i));
-			}
-		}
-		buggy_code = b.toString();
-		b = new StringBuilder();
-
-		for(int i = 0; i < buggy_code_assignments.length(); i++) {
-			if ('\\'==buggy_code_assignments.charAt(i)) {
-				i++; //TODO check pathological case
-				b.append(DBFillerInterface.SRETCARAHC_EPASCE.get(buggy_code_assignments.charAt(i)));
-			} else {
-				b.append(buggy_code_assignments.charAt(i));
-			}
-		}
-		buggy_code_assignments = b.toString();
-		b = new StringBuilder();
-
-		for(int i = 0; i < fixed_code_assignments.length(); i++) {
-			if ('\\'==fixed_code_assignments.charAt(i)) {
-				i++; //TODO check pathological case
-				b.append(DBFillerInterface.SRETCARAHC_EPASCE.get(fixed_code_assignments.charAt(i)));
-			} else {
-				b.append(fixed_code_assignments.charAt(i));
-			}
-		}
-		fixed_code_assignments = b.toString();
-		b = new StringBuilder();
-
-		for(int i = 0; i < fixed_code.length(); i++) {
-			if ('\\'==fixed_code.charAt(i)) {
-				i++; //TODO check pathological case
-				b.append(DBFillerInterface.SRETCARAHC_EPASCE.get(fixed_code.charAt(i)));
-			} else {
-				b.append(fixed_code.charAt(i));
-			}
-		}
-		fixed_code = b.toString();
+		buggy_code = unescapeString(buggy_code);
+		buggy_code_assignments = unescapeString(buggy_code_assignments);
+		fixed_code_assignments = unescapeString(fixed_code_assignments);
+		fixed_code = unescapeString(fixed_code);
 		return this;
+	}
+
+	// Logic that unescapes a single string and returns its form
+	public static String unescapeString(String s) {
+		StringBuilder b = new StringBuilder();
+
+		for(int i = 0; i < s.length(); i++) {
+			if ('\\'==s.charAt(i)) {
+				i++; //TODO check pathological case
+				b.append(DBFillerInterface.SRETCARAHC_EPASCE.get(s.charAt(i)));
+			} else {
+				b.append(s.charAt(i));
+			}
+		}
+		return b.toString();
 	}
 }
