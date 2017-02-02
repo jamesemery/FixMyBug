@@ -1,7 +1,13 @@
 # FixMyBug
 Changelog
 1/13/17
-select distinct M1.id as Fail_id, M2.id as Success_id, CO1.source_file_id, CO1.start_line from ((compile_outputs CO1 join compile_events C1 on CO1.compile_event_id = C1.id) join master_events M1 on C1.id = M1.event_id) join (compile_events C2 join master_events M2 on C2.id = M2.event_id) on C1.id = C2.id-1 where M1.event_type = 'CompileEvent' and M2.event_type = 'CompileEvent' and C1.success = 0 and C2.success = 1 and M1.session_id = M2.session_id and M1.id > 25000 limit 30000;
+select distinct MasterFail.id as Fail_id, MasterSuccess.id as Success_id, CO.source_file_id, CO.start_line from
+((compile_outputs CO join compile_events CompileFail on CO.compile_event_id = CompileFail.id)
+join master_events MasterFail on CompileFail.id = MasterFail.event_id) 
+join (compile_events CompileSuccess join master_events MasterSuccess on CompileSuccess.id = MasterSuccess.event_id) on CompileFail.id = CompileSuccess.id - 1
+where MasterFail.event_type = 'CompileEvent' and MasterSuccess.event_type = 'CompileEvent'
+and CompileFail.success = 0 and CompileSuccess.success = 1
+and MasterFail.session_id = MasterSuccess.session_id and MasterFail.id > 25000 limit 30000;
 
 1/11/17
 select CO1.compile_event_id, C1.id, C2.id, M1.session_id, M2.session_id, CO1.source_file_id from ((compile_outputs CO1 join compile_events C1 on CO1.compile_event_id = C1.id) join master_events M1 on C1.id = M1.event_id) join (compile_events C2 join master_events M2 on C2.id = M2.event_id) where M1.event_type = 'CompileEvent' and M2.event_type = 'CompileEvent' and C1.success = 0 and C1.id = C2.id-1 and C2.success = 1 and M1.session_id = M2.session_id limit 20;
