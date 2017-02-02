@@ -25,7 +25,7 @@ public class FixMyBugController {
     public DatabaseEntryListWrapper fixMyBug(@RequestBody String input) {
         //Setup the JSON object mapper and our DBConnection
     	ObjectMapper mapper = new ObjectMapper();
-        DatabaseServer DBConnection = new DatabaseServer("/FixMyBugDB/TEST_DATABASE");
+        DatabaseServer DBConnection = new DatabaseServer("/Users/fixmybug/FixMyBug/DB-Filler/uploadTestDB");
 
     	try {
     		//Convert JSON string to object
@@ -33,7 +33,7 @@ public class FixMyBugController {
 
 	        System.out.println(serverRequest.getBuggyCode());
 	        System.out.println(serverRequest.getErrorMessage());
-	        
+
 	        // Create a DatabaseEntry and return it.
 	        List<DatabaseEntry> database_entries = DBConnection.getMostSimilarEntries(serverRequest
                     .getBuggyCode());

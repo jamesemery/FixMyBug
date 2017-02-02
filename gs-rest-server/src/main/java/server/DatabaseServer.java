@@ -236,12 +236,12 @@ public class DatabaseServer {
         Statement indStatement = indConnection.createStatement();
 
         //Creating an index table if none exists
-        if (!indConnection.getMetaData().getTables(null, null, indexTableName, new String[]{"TABLE"})
-                .next()) {
-            System.out.println("Creating ngram index for database");
-            createIndex(DEFAULT_NGRAM_SIZE, DATABASE_TABLE_NAME);
-        }
-        ;
+        // ResultSet s = indConnection.getMetaData().getTables(null, null, indexTableName, new String[]{"TABLE"});
+        // if (!s.next()) {
+        //     System.out.println("Creating ngram index for database");
+        //     createIndex(DEFAULT_NGRAM_SIZE, DATABASE_TABLE_NAME);
+        // }
+        // s.close();TODO figure out this logic nicely
 
         indStatement.executeUpdate("DROP TABLE" +
                 " IF EXISTS " + table + "_" + ngramsize + "comparison;");
@@ -253,10 +253,11 @@ public class DatabaseServer {
 
         String qTokens = DBAscii.toAsciiFormat(Arrays.asList(query.split(" ")).stream().map(Integer::parseInt)
                 .collect(Collectors.toList()));
+        System.out.println("UserCodeAscii is: " + qTokens);
         for (int i = ngramsize; i <= qTokens.length(); i++) {
             StringBuilder b = new StringBuilder();
             for (int j = i - ngramsize; j < i; j++) {
-                b.append(qTokens.charAt(i));
+                b.append(qTokens.charAt(j));
             }
             int hash = b.toString().hashCode();
 
@@ -343,15 +344,8 @@ public class DatabaseServer {
      * @return a similarity score between the userQuery and Database Entry code represented as a double
      */
     private double computeSecondarySimilarity(String userQuery, DatabaseEntry entry) {
-        List<Integer> q = new ArrayList<>();
-        List<Integer> e = new ArrayList<>();
-
-        for (String s : userQuery.split(" ")) {
-            q.add(Integer.parseInt(s));
-        }
-        for (String s : entry.getBuggyCode().split(" ")) {
-            e.add(Integer.parseInt(s));
-        }
+        List<Integer> q = DBAscii.toIntegerListFromAscii(userQuery);
+        List<Integer> e = DBAscii.toIntegerListFromAscii(entry.getBuggyCode());
         return LevScorer.scoreSimilarity(q, e);
     }
 

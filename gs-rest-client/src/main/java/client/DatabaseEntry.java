@@ -62,18 +62,22 @@ public class DatabaseEntry {
 	public double getSimilarity() { return this.similarity; }
 
 	//Classes for ease of ascii interface use
-//	public List<Integer> getBuggyCodeAsList() {
-//		return DBAscii.toIntegerListFromAscii(this.buggy_code);
-//	}
-//	public List<Integer> getBuggyAssignmentsAsList() {
-//		return DBAscii.toIntegerListFromAscii(this.buggy_code_assignments);
-//	}
-//	public List<Integer> getFixedCodeAsList() {
-//		return DBAscii.toIntegerListFromAscii(this.fixed_code);
-//	}
-//	public List<Integer> getFixedAssignmentsAsList() {
-//		return DBAscii.toIntegerListFromAscii(this.fixed_code_assignments);
-//	}
+	public List<Integer> getBuggyCodeAsList() {
+		// return DBAscii.toIntegerListFromAscii(this.buggy_code);
+		return null;
+	}
+	public List<Integer> getBuggyAssignmentsAsList() {
+		// return DBAscii.toIntegerListFromAscii(this.buggy_code_assignments);
+		return null;
+	}
+	public List<Integer> getFixedCodeAsList() {
+		// return DBAscii.toIntegerListFromAscii(this.fixed_code);
+		return null;
+	}
+	public List<Integer> getFixedAssignmentsAsList() {
+		// return DBAscii.toIntegerListFromAscii(this.fixed_code_assignments);
+		return null;
+	}
 
 
 	public void setId(int id) { this.id = id; }
@@ -94,82 +98,84 @@ public class DatabaseEntry {
 				buggy_code_assignments  + ")";
 	}
 
-//	public String toStringVerbose() {
-//		return "(" + id + " | " +
-//				DBAscii.toIntegerListFromAscii(buggy_code)+ " | " +
-//				DBAscii.toIntegerListFromAscii(buggy_code_assignments)+ " | " +
-//				DBAscii.toIntegerListFromAscii(fixed_code)+ " | " +
-//				DBAscii.toIntegerListFromAscii(fixed_code_assignments)+ ")";
-//	}
+	public String toStringVerbose() {
+		return toString();
+		// return "(" + id + " | " +
+		// 		DBAscii.toIntegerListFromAscii(buggy_code)+ " | " +
+		// 		DBAscii.toIntegerListFromAscii(buggy_code_assignments)+ " | " +
+		// 		DBAscii.toIntegerListFromAscii(fixed_code)+ " | " +
+		// 		DBAscii.toIntegerListFromAscii(fixed_code_assignments)+ ")";
+	}
 
 
-//	// Method that escapes dangerous ascii characters from ascii encoded fields for sql transmission
-//	public DatabaseEntry escape() {
-//		StringBuilder b = new StringBuilder();
-//		for(int i = 0; i < buggy_code.length(); i++) {
-//			if (DatabaseServer.ESCAPE_CHARACTERS.containsKey(buggy_code.charAt(i))) {
-//				b.append("\\" + DatabaseServer.ESCAPE_CHARACTERS.get(buggy_code.charAt(i)));
-//			} else {
-//				b.append(buggy_code.charAt(i));
-//			}
-//		}
-//		buggy_code = b.toString();
-//		b = new StringBuilder();
-//
-//		for(int i = 0; i < buggy_code_assignments.length(); i++) {
-//			if (DatabaseServer.ESCAPE_CHARACTERS.containsKey(buggy_code_assignments.charAt(i))) {
-//				b.append("\\" + DatabaseServer.ESCAPE_CHARACTERS.get(buggy_code_assignments
-//						.charAt(i)));
-//			} else {
-//				b.append(buggy_code_assignments.charAt(i));
-//			}
-//		}
-//		buggy_code_assignments = b.toString();
-//		b = new StringBuilder();
-//
-//		for(int i = 0; i < fixed_code_assignments.length(); i++) {
-//			if (DatabaseServer.ESCAPE_CHARACTERS.containsKey(fixed_code_assignments.charAt(i))) {
-//				b.append("\\" + DatabaseServer.ESCAPE_CHARACTERS.get(fixed_code_assignments
-//						.charAt(i)));
-//			} else {
-//				b.append(fixed_code_assignments.charAt(i));
-//			}
-//		}
-//		fixed_code_assignments = b.toString();
-//		b = new StringBuilder();
-//
-//		for(int i = 0; i < fixed_code.length(); i++) {
-//			if (DatabaseServer.ESCAPE_CHARACTERS.containsKey(fixed_code.charAt(i))) {
-//				b.append("\\"+ DatabaseServer.ESCAPE_CHARACTERS.get(fixed_code.charAt(i)));
-//			} else {
-//				b.append(fixed_code.charAt(i));
-//			}
-//		}
-//		fixed_code = b.toString();
-//		return this;
-//	}
-//
-//	// Method that undoes our escape characters
-//	public DatabaseEntry unEscape() {
-//		buggy_code = unescapeString(buggy_code);
-//		buggy_code_assignments = unescapeString(buggy_code_assignments);
-//		fixed_code_assignments = unescapeString(fixed_code_assignments);
-//		fixed_code = unescapeString(fixed_code);
-//		return this;
-//	}
-//
-//	// Logic that unescapes a single string and returns its form
-//	public static String unescapeString(String s) {
-//		StringBuilder b = new StringBuilder();
-//
-//		for(int i = 0; i < s.length(); i++) {
-//			if ('\\'==s.charAt(i)) {
-//				i++; //TODO check pathological case
-//				b.append(DatabaseServer.SRETCARAHC_EPASCE.get(s.charAt(i)));
-//			} else {
-//				b.append(s.charAt(i));
-//			}
-//		}
-//		return b.toString();
-//	}
+	// Method that escapes dangerous ascii characters from ascii encoded fields for sql transmission
+	public DatabaseEntry escape() {
+		// StringBuilder b = new StringBuilder();
+		// for(int i = 0; i < buggy_code.length(); i++) {
+		// 	if (DatabaseServer.ESCAPE_CHARACTERS.containsKey(buggy_code.charAt(i))) {
+		// 		b.append("\\" + DatabaseServer.ESCAPE_CHARACTERS.get(buggy_code.charAt(i)));
+		// 	} else {
+		// 		b.append(buggy_code.charAt(i));
+		// 	}
+		// }
+		// buggy_code = b.toString();
+		// b = new StringBuilder();
+		//
+		// for(int i = 0; i < buggy_code_assignments.length(); i++) {
+		// 	if (DatabaseServer.ESCAPE_CHARACTERS.containsKey(buggy_code_assignments.charAt(i))) {
+		// 		b.append("\\" + DatabaseServer.ESCAPE_CHARACTERS.get(buggy_code_assignments
+		// 				.charAt(i)));
+		// 	} else {
+		// 		b.append(buggy_code_assignments.charAt(i));
+		// 	}
+		// }
+		// buggy_code_assignments = b.toString();
+		// b = new StringBuilder();
+		//
+		// for(int i = 0; i < fixed_code_assignments.length(); i++) {
+		// 	if (DatabaseServer.ESCAPE_CHARACTERS.containsKey(fixed_code_assignments.charAt(i))) {
+		// 		b.append("\\" + DatabaseServer.ESCAPE_CHARACTERS.get(fixed_code_assignments
+		// 				.charAt(i)));
+		// 	} else {
+		// 		b.append(fixed_code_assignments.charAt(i));
+		// 	}
+		// }
+		// fixed_code_assignments = b.toString();
+		// b = new StringBuilder();
+		//
+		// for(int i = 0; i < fixed_code.length(); i++) {
+		// 	if (DatabaseServer.ESCAPE_CHARACTERS.containsKey(fixed_code.charAt(i))) {
+		// 		b.append("\\"+ DatabaseServer.ESCAPE_CHARACTERS.get(fixed_code.charAt(i)));
+		// 	} else {
+		// 		b.append(fixed_code.charAt(i));
+		// 	}
+		// }
+		// fixed_code = b.toString();
+		return this;
+	}
+
+	// Method that undoes our escape characters
+	public DatabaseEntry unEscape() {
+		// buggy_code = unescapeString(buggy_code);
+		// buggy_code_assignments = unescapeString(buggy_code_assignments);
+		// fixed_code_assignments = unescapeString(fixed_code_assignments);
+		// fixed_code = unescapeString(fixed_code);
+		return this;
+	}
+
+	// Logic that unescapes a single string and returns its form
+	public static String unescapeString(String s) {
+		// StringBuilder b = new StringBuilder();
+		//
+		// for(int i = 0; i < s.length(); i++) {
+		// 	if ('\\'==s.charAt(i)) {
+		// 		i++; //TODO check pathological case
+		// 		b.append(DatabaseServer.SRETCARAHC_EPASCE.get(s.charAt(i)));
+		// 	} else {
+		// 		b.append(s.charAt(i));
+		// 	}
+		// }
+		// return b.toString();
+		return "";
+	}
 }
