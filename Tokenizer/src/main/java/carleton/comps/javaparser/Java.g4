@@ -110,6 +110,18 @@ outsideIdentifier
     : Identifier
     ;
 
+variableFunctionIdentifier
+    : Identifier
+    ;
+
+functionVariableClassIdentifier
+    : Identifier
+    ;
+
+variableClassIdentifier
+    : Identifier
+    ;
+
 typeParameters
     :   '<' typeParameter (',' typeParameter)* '>'
     ;
@@ -259,7 +271,7 @@ arrayInitializer
     ;
 
 enumConstantName
-    :   Identifier
+    :   variableFunctionIdentifier
     ;
 
 typeType
@@ -512,7 +524,7 @@ constantExpression
 
 expression
     :   primary
-    |   expression '.' Identifier
+    |   expression '.' functionVariableClassIdentifier
     |   expression '.' 'this'
     |   expression '.' 'new' nonWildcardTypeArguments? innerCreator
     |   expression '.' 'super' superSuffix
@@ -558,7 +570,7 @@ primary
     |   'this'
     |   'super'
     |   literal
-    |   Identifier
+    |   variableClassIdentifier
     |   typeType '.' 'class'
     |   'void' '.' 'class'
     |   nonWildcardTypeArguments (explicitGenericInvocationSuffix | 'this' arguments)
