@@ -1,5 +1,12 @@
 # FixMyBug
 Changelog
+
+2/06/17(ish)
+select Master.id as master_id, Master.event_id, Compile.success, Master.session_id, Master.event_type, Outputs.source_file_id, Outputs.start_line from
+(compile_events Compile join master_events Master on Compile.id = Master.event_id )
+join compile_outputs Outputs on outputs.compile_event_id = Compile.id
+where Master.event_type = 'CompileEvent' order by limit 10;
+
 1/13/17
 select distinct MasterFail.id as Fail_id, MasterSuccess.id as Success_id, CO.source_file_id, CO.start_line from
 ((compile_outputs CO join compile_events CompileFail on CO.compile_event_id = CompileFail.id)
