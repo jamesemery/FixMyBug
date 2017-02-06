@@ -3,7 +3,7 @@ Changelog
 
 2/06/17(ish)
 select distinct 
-Master.event_id, Master.session_id, Master.id as master_id, Compile.success, Outputs.source_file_id Outputs.start_line, Master.event_id from (compile_events Compile join master_events Master on Compile.id = Master.event_id ) left join compile_outputs Outputs on Outputs.compile_event_id = Compile.id where Master.event_type = 'CompileEvent' limit 20;
+Master.event_id, Master.session_id, Master.id as master_id, Compile.success, Outputs.source_file_id, Outputs.start_line, Master.event_id from (compile_events Compile join master_events Master on Compile.id = Master.event_id ) left join compile_outputs Outputs on Outputs.compile_event_id = Compile.id where Master.event_type = 'CompileEvent' limit 20;
 
 1/13/17
 select distinct MasterFail.id as Fail_id, MasterSuccess.id as Success_id, CO.source_file_id, CO.start_line from
