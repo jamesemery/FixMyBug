@@ -13,11 +13,15 @@ package Filler;
 import com.jcraft.jsch.*;
 import java.io.*;
 import java.sql.*;
+import java.util.LinkedList;
 
 public class BlackBoxConnection {
 
-  public static String remoteExec(Session session, int source_file_id, int master_id) throws Exception {
-    String command = "/tools/nccb/bin/print-compile-input /data/compile-inputs " + source_file_id + " " + master_id;
+
+
+  //public static String remoteExec(Session session, int source_file_id, int master_id) throws Exception {
+  //  String command = "/tools/nccb/bin/print-compile-input /data/compile-inputs " + source_file_id + " " + master_id;
+  public static String remoteExec(Session session, String command) throws Exception {
     Channel channel=session.openChannel("exec");
     ((ChannelExec)channel).setCommand(command);
 
@@ -48,11 +52,11 @@ public class BlackBoxConnection {
       }
       if(channel.isClosed()){
         if(in.available()>0) continue;
-        if (channel.getExitStatus() != 0) {
-          channel.disconnect();
-          throw new Exception();
-        }
-        System.out.println("exit-status: "+channel.getExitStatus());
+        //if (channel.getExitStatus() != 0) {
+          //channel.disconnect();
+          //throw new Exception();
+        //}
+        //System.out.println("exit-status: "+channel.getExitStatus());
         break;
       }
       try{Thread.sleep(1000);}catch(Exception ee){}
@@ -70,12 +74,11 @@ public class BlackBoxConnection {
     return passwordString;
   }
 
-
   public static void main(String[] arg){
     try{
       JSch jsch=new JSch();
 
-      jsch.setKnownHosts("/Users/fixmybug/.ssh/known_hosts");
+      //jsch.setKnownHosts("/Users/fixmybug/.ssh/known_hosts");
 
       String host=null;
       if(arg.length>0){
@@ -102,7 +105,7 @@ public class BlackBoxConnection {
       session.setPassword(passwd);
 
       // skip host-key check
-      //session.setConfig("StrictHostKeyChecking", "no");
+      session.setConfig("StrictHostKeyChecking", "no");
 
       session.connect(30000);   // making a connection with timeout.
 
@@ -116,16 +119,14 @@ public class BlackBoxConnection {
       String rhost=foo.substring(0, foo.indexOf(':'));
       int rport=Integer.parseInt(foo.substring(foo.indexOf(':')+1));
       int assigned_port=session.setPortForwardingL(lport, rhost, rport);
-      //System.out.println("localhost:"+assigned_port+" -> "+rhost+":"+rport);
 
       //Get bugs and fixes from BlackBox (exec Query);
       BlackboxSolicitor mysql_interface = new BlackboxSolicitor(passwdDB);
-      ResultSet results = mysql_interface.GetBugIDs(5);
+      ResultSet results = mysql_interface.GetBugIDs(7);
+      BashScriptBuilder scriptBuilder = new BashScriptBuilder(1,session);
       results.first();
 
-
       DBFillerInterface dbFiller = new DBFillerInterface("uploadTestDB");
-
       // Sort through results and get source files
       while(!results.isAfterLast()) {
         int fileId = results.getInt("source_file_id");
@@ -134,28 +135,70 @@ public class BlackBoxConnection {
         int startLine = results.getInt("start_line");
         String bug = "";
         String fix = "";
-        // Run the scripts to get source code
-        try {
-          System.out.println("Getting bug...\nFile ID: " + fileId + " Fail ID: " + failId);
-          bug = remoteExec(session, fileId, failId);
-          System.out.println("Getting fix...\nFile ID: " + fileId + " Success ID: " + successId);
-          fix = remoteExec(session, fileId, successId);
-          System.out.println("Error on line: " + startLine);
-          //PUT IN DB HERE
-          dbFiller.uploadToDatabase(bug,fix,startLine);
+        BugFix temp = new BugFix(failId,successId,fileId,startLine);
+        // System.out.print("SOURCE FILE ID" + fileId + "...");
+        boolean success = scriptBuilder.addToQueue(temp);
+        // System.out.print("ADDING TO QUEUE...");
+        //System.out.println(success);
 
-          //System.out.println(bug);
-          //System.out.println(fix);
-        } catch(Exception e) {
-          //e.getMessage();
-          //System.out.println(e.getStackTrace());
-          System.out.println("Missing data in blackbox: " + e.getMessage());
-          System.out.println(e.getLocalizedMessage());
-          System.out.println(e.getStackTrace());
-          System.out.println(e);
+        // if the queue is full, or we're out of results, get source code
+        if (!success || results.isLast()) {
+          // System.out.println("Ready to gather source code!");
+          String command = scriptBuilder.generateBashScript();
+          //System.out.println(command);
+          try {
+            String resultString = remoteExec(session,command);
+            //System.out.println(resultString);
+            LinkedList<BugFixFile> resultCode = scriptBuilder.parseResultString(resultString);
+            for(BugFixFile result : resultCode)
+            {
+              System.out.println("\n\nBUG INFORMATION...................\n");
+              System.out.print("Bug Code: ");
+              System.out.println(result.bug);
+              System.out.print("Fix Code: ");
+              System.out.println(result.fix);
+              System.out.print("\nStart Line: ");
+              System.out.println(result.startLine);
+              dbFiller.uploadToDatabase(result.bug,result.fix,result.startLine);
+            }
+          } catch (Exception e) {
+            //e.getMessage();
+            //System.out.println(e.getStackTrace());
+            System.out.println("Missing data in blackbox: " + e.getMessage());
+            System.out.println(e.getLocalizedMessage());
+            System.out.println(e.getStackTrace());
+            System.out.println(e);
+          }
+          // DO THINGS
         }
-        results.next();
+        // This isn't just an else case b/c the last data point needs to only
+        // get processed once.
+        if (success) {
+          results.next();
+        }
+
+
+
+        // Put it in the queue and do stuff
+
+        // Run the scripts to get source code
+        // try {
+        //   System.out.println("Getting bug...\nFile ID: " + fileId + " Fail ID: " + failId);
+        //   bug = remoteExec(session, fileId, failId);
+        //   System.out.println("Getting fix...\nFile ID: " + fileId + " Success ID: " + successId);
+        //   fix = remoteExec(session, fileId, successId);
+        //   System.out.println("Error on line: " + startLine);
+        //   //PUT IN DB HERE
+        //   dbFiller.uploadToDatabase(bug,fix,startLine);
+        //
+        //   //System.out.println(bug);
+        //   //System.out.println(fix);
+        // } catch(Exception e) {
+        //
+        // }
+
       }
+
       session.disconnect();
 
     }
