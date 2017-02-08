@@ -327,10 +327,18 @@ public class TokenizerBuilder {
         }
 
         // If the token is not a '(', ')', '[', ']', '{', '}', ';', or '.' then we add a space before it.
-        else if (((token<57 || token > 63) && (token!=65)) && ((previousToken<57 || previousToken > 63 || previousToken == 59 || previousToken == 62) && (previousToken!=65)) && !newLine) {
+        else if (((token < 57 || token > 63) && (token != 65)) && ((previousToken < 57 || previousToken > 63 || previousToken == 59 || previousToken == 62) && (previousToken != 65)) && !newLine) {
             builder.append(" ");
         }
         newLine = false;
         return builder;
+    }
+
+    public static boolean isAmbiguousToken(Token t)
+    {
+        return JavaParser.VOCABULARY.getLiteralName(t.getType())==null;
+    }
+    public static boolean isAmbiuousToken(int t) {
+        return JavaParser.VOCABULARY.getLiteralName(t)==null;
     }
 }

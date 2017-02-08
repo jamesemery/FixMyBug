@@ -191,37 +191,6 @@ public class DBFillerInterface {
         }
     }
 
-    /**
-     * select all method that generates an sql query in the form of: TODO TEMPORARY
-     * SELECT * FROM table WHERE buggy_code = input;
-     * Mainly used for testing.
-     */
-    public final DatabaseEntry SelectAll(int id) {
-        DatabaseEntry queryResult = new DatabaseEntry();
-
-        try {
-            System.out.println("ID String: " + id + ".");
-            Connection connection = dataSource.getConnection();
-            ResultSet rs = connection.createStatement().executeQuery("select * from \"" + tableName + "\" where " +
-                            "id = \"" + id + "\";");
-
-            rs.next();
-            if (rs.isAfterLast()) {//ID starts at 1, so 0 marks a null return value (i.e.
-                // no results)
-                System.out.println("No results found\n");
-                return queryResult;
-            }
-
-            queryResult = new DatabaseEntry(rs);
-            connection.close();
-        }
-        catch (Exception ex) { //SQLException ex) {
-            System.out.println(ex.getMessage());
-            return queryResult;
-        }
-        return queryResult;
-    }
-
 
     /**
      * Insert method that takes in parameters that match the master_table columns
@@ -272,7 +241,7 @@ public class DBFillerInterface {
 
             // Assigning disamibuation to tokens of the err file
             for (Token t: errFileTokens) {
-                if (isAmbiguousToken(t)) {
+                if (TokenizerBuilder.isAmbiguousToken(t)) {
                     if (ambigousAssignments.containsKey(t.getText())) {
                         errFileAssignments.add(ambigousAssignments.get(t.getText()));
                     } else {
@@ -287,7 +256,7 @@ public class DBFillerInterface {
 
             // Assigning disamibuation to tokens of the err file
             for (Token t: fixFileTokens) {
-                if (isAmbiguousToken(t)) {
+                if (TokenizerBuilder.isAmbiguousToken(t)) {
                     if (ambigousAssignments.containsKey(t.getText())) {
                         fixFileAssignments.add(ambigousAssignments.get(t.getText()));
                     } else {
@@ -376,16 +345,5 @@ public class DBFillerInterface {
             System.out.println("Could not read file");
         }
         return null;
-    }
-
-    /**
-     * Method that tests whether a given token is type ambiguous
-     */
-    public static boolean isAmbiguousToken(Token t)
-    {
-        return JavaParser.VOCABULARY.getLiteralName(t.getType())==null;
-    }
-    public static boolean isAmbiuousToken(int t) {
-        return JavaParser.VOCABULARY.getLiteralName(t)==null;
     }
 }
