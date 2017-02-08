@@ -1,6 +1,10 @@
 # FixMyBug
 Changelog
 
+2/08/17
+to get all bugs and fixes from our sqlite database:
+select S1.session_id as bug_session, S1.master_id as bug_master, S1.success as bug_success, S1.source_file_id as bug_source, S1.start_line as bug_start, S2.master_id as fix_master, S2.session_id as fix_session, S2.success as fix_success, S2.source_file_id as fix_source from (session1 S1 JOIN session2 S2 on S1.id = S2.id) where S1.success = 0 and S2.success = 1 and S1.session_id = S2.session_id;
+
 2/06/17(ish)
 select Master.id as master_id, Master.event_id, Compile.success, Master.session_id, Master.event_type, Outputs.source_file_id, Outputs.start_line from
 (compile_events Compile join master_events Master on Compile.id = Master.event_id )
