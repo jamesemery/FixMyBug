@@ -46,4 +46,14 @@ public class BlackboxSolicitor {
                               "and M1.id > 25000 limit" + " " + numResults + ";");
         return rs;
     }
+
+    // Run the query! Return a resultset containing the results.
+    public final ResultSet GetRawData() throws SQLException{
+
+        ResultSet rs = dataSource.getConnection().createStatement()
+                .executeQuery("select distinct Master.event_id, Master.session_id, Master.id as master_id, Compile.success," +
+                " Outputs.source_file_id, Outputs.start_line from (compile_events Compile join master_events Master" +
+                " on Compile.id = Master.event_id ) left join compile_outputs Outputs on Outputs.compile_event_id = Compile.id where Master.event_type = 'CompileEvent' limit 5000000;");
+        return rs;
+    }
 }

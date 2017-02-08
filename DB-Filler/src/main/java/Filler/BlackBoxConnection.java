@@ -13,7 +13,9 @@ package Filler;
 import com.jcraft.jsch.*;
 import java.io.*;
 import java.sql.*;
-import java.util.LinkedList;
+import java.util.*;
+import org.sqlite.SQLiteDataSource;
+import org.sqlite.SQLiteJDBCLoader;
 
 public class BlackBoxConnection {
 
@@ -65,6 +67,9 @@ public class BlackBoxConnection {
     return inputString.toString();
   }
 
+
+
+
   public static String getPassword(String prompt)
   {
     Console console = System.console();
@@ -73,6 +78,74 @@ public class BlackBoxConnection {
     String passwordString = new String(passwordChars);
     return passwordString;
   }
+
+
+  /**
+   * Creating a new database
+   */
+  // public static void createNewDatabase(String fileName) {
+  //     String url = "jdbc:sqlite:./" + fileName;
+  //
+  //     try (Connection conn = DriverManager.getConnection(url)) {
+  //         if (conn != null) {
+  //             DatabaseMetaData meta = conn.getMetaData();
+  //             System.out.println("The driver name is: " + meta.getDriverName());
+  //
+  //             System.out.println("A new database has been created.");
+  //         }
+  //
+  //     } catch (SQLException e) {
+  //         System.out.println(e.getMessage());
+  //     }
+  // }
+
+  /**
+   * Insert method that takes in parameters that match the master_table columns
+   * This method then connects to the database and adds the data to the master_table
+   */
+  public static void Insert(ResultSet results, String fileName) {
+      System.out.println("Starting to add results to local DB...");
+      String url = "jdbc:sqlite:./" + fileName;
+      String tableName = "BLACKBOX_ENTRIES";
+      boolean initialize = false;
+
+      //try to connect to the DB
+      try {
+          initialize = SQLiteJDBCLoader.initialize();
+          if (!initialize) throw new Exception("SQLite Library Not Loaded\n");
+          SQLiteDataSource dataSource = new SQLiteDataSource();
+          dataSource.setUrl(url);
+
+          results.first();
+          int currentID = 0;
+          Connection connection = dataSource.getConnection();
+          while(!results.isAfterLast())
+          {
+              currentID++;
+              if(currentID % 5000 == 0) {
+                  System.out.println("Adding entry number: " + currentID);
+              }
+              int rs = connection.createStatement()
+                      .executeUpdate("INSERT INTO " + tableName + " VALUES (" +
+                       results.getInt(1) + "," +
+                       results.getInt(2) + "," +
+                       results.getInt(3) + "," +
+                       results.getInt(4) + "," +
+                       results.getInt(5) + "," +
+                       results.getInt(6) + ");");
+              /*System.out.println("INSERT INTO \"" + tableName + "\" VALUES ("
+                      + currentID++ + ", \"" + entry.getBuggyCode() + "\" , \"" + entry
+                      .getBuggyCodeAssignments() + "\", \"" + entry.getFixedCode() + "\", \"" +
+                      entry.getFixedCodeAssignments() + "\");");*/
+
+              results.next();
+          }
+          connection.close();
+      } catch (Exception ex) { //SQLException ex) {
+          System.out.println(ex.getMessage());
+      }
+  }
+
 
   public static void main(String[] arg){
     try{
@@ -122,10 +195,16 @@ public class BlackBoxConnection {
 
       //Get bugs and fixes from BlackBox (exec Query);
       BlackboxSolicitor mysql_interface = new BlackboxSolicitor(passwdDB);
-      ResultSet results = mysql_interface.GetBugIDs(7);
+      ResultSet results = mysql_interface.GetRawData();
+      //ResultSet results = mysql_interface.GetBugIDs(7);
+      //CreateNewDatabase("BLACKBOX_DATA")
+      Insert(results, "blackboxDataDB");
+
+      /*
+      // Executable Calls
       BashScriptBuilder scriptBuilder = new BashScriptBuilder(1,session);
       results.first();
-
+      //TODO call to the sqlite database rather than blackbox
       DBFillerInterface dbFiller = new DBFillerInterface("uploadTestDB");
       // Sort through results and get source files
       while(!results.isAfterLast()) {
@@ -198,7 +277,7 @@ public class BlackBoxConnection {
         // }
 
       }
-
+*/
       session.disconnect();
 
     }
