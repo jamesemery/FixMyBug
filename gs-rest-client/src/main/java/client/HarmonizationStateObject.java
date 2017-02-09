@@ -61,6 +61,6 @@ public class HarmonizationStateObject {
      * @return
      */
     public String harmonize(DatabaseEntry e) {
-        return tokenizedCode.harmonize(e.getFixedCode(), originalCode);
+        return tokenizedCode.harmonize(e.getFixedCode());
     }
 }

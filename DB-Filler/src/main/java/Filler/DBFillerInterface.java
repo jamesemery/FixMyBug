@@ -1,6 +1,7 @@
 package Filler;
 
 import Filler.Tokenizer.DBAscii;
+import Filler.Tokenizer.EdiToken;
 import Filler.Tokenizer.TokenizerBuilder;
 import Filler.Tokenizer.javaparser.*;
 import org.antlr.v4.runtime.Token;
@@ -228,8 +229,8 @@ public class DBFillerInterface {
             // SOME CODE
 
             // Reading each file into tokens
-            List<Token> errFileTokens = (new TokenizerBuilder(errCode, "String")).getTokens();
-            List<Token> fixFileTokens = (new TokenizerBuilder(fixCode, "String")).getTokens();
+            List<EdiToken> errFileTokens = (new TokenizerBuilder(errCode, "String")).getTokens();
+            List<EdiToken> fixFileTokens = (new TokenizerBuilder(fixCode, "String")).getTokens();
 
             List<Integer> errFileAssignments = new ArrayList<Integer>(errFileTokens.size());
             List<Integer> fixFileAssignments = new ArrayList<Integer>(fixFileTokens.size());
@@ -240,7 +241,7 @@ public class DBFillerInterface {
             int assignedVariables = 0;
 
             // Assigning disamibuation to tokens of the err file
-            for (Token t: errFileTokens) {
+            for (EdiToken t: errFileTokens) {
                 if (TokenizerBuilder.isAmbiguousToken(t)) {
                     if (ambigousAssignments.containsKey(t.getText())) {
                         errFileAssignments.add(ambigousAssignments.get(t.getText()));
@@ -255,7 +256,7 @@ public class DBFillerInterface {
             }
 
             // Assigning disamibuation to tokens of the err file
-            for (Token t: fixFileTokens) {
+            for (EdiToken t: fixFileTokens) {
                 if (TokenizerBuilder.isAmbiguousToken(t)) {
                     if (ambigousAssignments.containsKey(t.getText())) {
                         fixFileAssignments.add(ambigousAssignments.get(t.getText()));
