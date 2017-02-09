@@ -140,6 +140,13 @@ public class TokenizerBuilder {
     }
 
     /*
+     * Returns the tokenized code between the specified lines
+     */
+    public String getString(int start, int stop) {
+        return tokensToString(betweenLines(start, stop));
+    }
+
+    /*
      * Returns the tokenized code as a string.
      * @Return: the string version of the tokenized code.
      */
@@ -222,7 +229,7 @@ public class TokenizerBuilder {
      * @Param: code, holds the tokenized code.
      * @Return: detokenizedCode, holds the de-tokenized code.
      */
-    public String harmonize(String code) {
+    public String harmonize(String code, String wholeFileCode) {
 
         // Splits the string by spaces, as these separate the individual tokens.
         String[] tokens = code.split(" ");
@@ -311,8 +318,41 @@ public class TokenizerBuilder {
         // Converts builder into an actual string.
         String detokenizedCode = builder.toString().replace("\'","");
 
-
+        //TODO jamie goddammit remember to mention in hte meeting tomorrow the issue about the
+        //TODO interface and grabbing fancy stuff
         return detokenizedCode;
+    }
+
+    /**
+     * Method that generates the name association list for a string of tokens
+     * @param tokenizedCode
+     * @return
+     * TODO: note the fact that this must be kept in step with DBFILLER INTERFACE
+     */
+    public static List<Integer> generateDisambiguationList(List<Token> tokenizedCode) {
+
+        List<Integer> assignments = new ArrayList<Integer>(tokenizedCode.size());
+
+        //Dictionary that holds the string token assignments
+        HashMap<String, Integer> ambigousAssignments = new HashMap<String, Integer>();
+
+        int assignedVariables = 0;
+
+        // Assigning disamibuation to tokens of the err file
+        for (Token t: tokenizedCode) {
+            if (isAmbiguousToken(t)) {
+                if (ambigousAssignments.containsKey(t.getText())) {
+                    assignments.add(ambigousAssignments.get(t.getText()));
+                } else {
+                    ambigousAssignments.put(t.getText(), ++assignedVariables);
+                    assignments.add(assignedVariables);
+                }
+            }
+            else {
+                assignments.add(0);
+            }
+        }
+        return assignments;
     }
 
     /*
@@ -336,5 +376,17 @@ public class TokenizerBuilder {
         }
         newLine = false;
         return builder;
+    }
+
+    /**
+     * Method that tests whether a given token is type ambiguous
+     * TODO: note the fact that this must be kept in step with DBFILLER INTERFACE
+     */
+    public static boolean isAmbiguousToken(Token t)
+    {
+        return JavaParser.VOCABULARY.getLiteralName(t.getType())==null;
+    }
+    public static boolean isAmbiuousToken(int t) {
+        return JavaParser.VOCABULARY.getLiteralName(t)==null;
     }
 }
