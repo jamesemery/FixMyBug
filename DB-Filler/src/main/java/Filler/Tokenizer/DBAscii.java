@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 public class DBAscii {
 
     // Converts tokens or integers to ascii characters in a string
-    public static String tokensToAsciiFormat(List<Token> tokens) {
+    public static String tokensToAsciiFormat(List<EdiToken> tokens) {
         return toAsciiFormat(tokens.stream().map(token -> token.getType()).collect(Collectors.toList
                 ()));
     }

@@ -1,5 +1,6 @@
 // Generated from Java.g4 by ANTLR 4.5.3
 package client.Tokenizer.javaparser;
+
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
 /**
@@ -128,15 +129,15 @@ public interface JavaListener extends ParseTreeListener {
 	 */
 	void exitOutsideIdentifier(JavaParser.OutsideIdentifierContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link JavaParser#variableFuntionIdentifier}.
+	 * Enter a parse tree produced by {@link JavaParser#variableFunctionIdentifier}.
 	 * @param ctx the parse tree
 	 */
-	void enterVariableFuntionIdentifier(JavaParser.VariableFuntionIdentifierContext ctx);
+	void enterVariableFunctionIdentifier(JavaParser.VariableFunctionIdentifierContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link JavaParser#variableFuntionIdentifier}.
+	 * Exit a parse tree produced by {@link JavaParser#variableFunctionIdentifier}.
 	 * @param ctx the parse tree
 	 */
-	void exitVariableFuntionIdentifier(JavaParser.VariableFuntionIdentifierContext ctx);
+	void exitVariableFunctionIdentifier(JavaParser.VariableFunctionIdentifierContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link JavaParser#functionVariableClassIdentifier}.
 	 * @param ctx the parse tree

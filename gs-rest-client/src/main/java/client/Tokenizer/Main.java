@@ -2,12 +2,13 @@
 
 package client.Tokenizer;
 
-import carleton.comps.javaparser.JavaLexer;
-import carleton.comps.javaparser.JavaParser;
-import carleton.comps.IdentifierListener;
+import client.Tokenizer.javaparser.JavaLexer;
+import client.Tokenizer.javaparser.JavaParser;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
+
+import java.io.IOException;
 
 /*
  * Checks if the TokenizerBuilder class works.
@@ -18,34 +19,32 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 public class Main {
 
     public static void main(String[] args) {
-        printIdentifiers();
-        //try {
+        //printClassIdentifier();
+        try {
 
-        // Testing the file type of the constructor.
+            // Testing the file type of the constructor.
 
-        // Creates a new instance of TokenizerBuilder.
-        //TokenizerBuilder t = new TokenizerBuilder("./Tokenizer/src/main/java/carleton/comps/javaparser/examples/HelloWorld.java","File");
+            // Creates a new instance of TokenizerBuilder.
+            TokenizerBuilder t = new TokenizerBuilder("./Tokenizer/src/main/java/carleton/comps/javaparser/HelloWorld.java","File");
+            System.out.println(t.ediTokensToString());
+            //ParseTreeWalker.DEFAULT.walk(extractor, tree);
+            // Prints the tokenized version of HelloWorld.java.
+            //System.out.println(t.getString());
 
+            //List<Token> tokens = t.getTokens();
+            //System.out.println(t.tokensToString(tokens));
 
-        // Prints the tokenized version of HelloWorld.java.
-        //System.out.println(t.getString());
+            // Gets a list of Tokens that come from the HelloWorld.java file between lines 1 and 6.
+            //List<Token> l = t.betweenLines(0,4);
 
-        //List<Token> tokens = t.getTokens();
-        //System.out.println(t.tokensToString(tokens));
+            // Prints out the list of Tokens in lines 1 to 6 in the HelloWorld.java file.
+            //System.out.println(t.tokensToString(l));
 
-        // Gets a list of Tokens that come from the HelloWorld.java file between lines 1 and 6.
-        //List<Token> l = t.betweenLines(0,4);
-
-        // Prints out the list of Tokens in lines 1 to 6 in the HelloWorld.java file.
-        //System.out.println(t.tokensToString(l));
-
-        // Prints out the detokenized, tokenized code.
-        //System.out.println(t.harmonize(t.getString()));
 
             /*========================================================================================================*/
 
 
-        // Testing the String type of constructor.
+            // Testing the String type of constructor.
 
 
             /*TokenizerBuilder x = new TokenizerBuilder("package carleton.comps.javaparser.examples;\n" +
@@ -55,10 +54,15 @@ public class Main {
                     "      System.out.println(\"Hello, World\");\n" +
                     "   }\n" +
                     "}","String");
-
+            */
             // Prints the tokenized version of HelloWorld.java.
             //System.out.println(t.getString());
 
+            /*System.out.println(t.harmonize("PACKAGE Identifier DOT Identifier DOT Identifier DOT Identifier SEMI EOF EOF " +
+                    "PUBLIC CLASS Identifier LBRACE EOF PUBLIC STATIC VOID Identifier LPAREN Identifier LBRACK RBRACK " +
+                    "Identifier RPAREN LBRACE EOF Identifier DOT Identifier DOT Identifier LPAREN StringLiteral RPAREN " +
+                    "SEMI EOF RBRACE EOF RBRACE EOF EOF"));
+            */
             //List<Token> tokens = t.getTokens();
             //System.out.println(t.tokensToString(tokens));
 
@@ -69,10 +73,10 @@ public class Main {
             //System.out.println(t.tokensToString(l));
         } catch (IOException e) {
             e.printStackTrace();
-        }*/
+        }
     }
 
-    private static void printIdentifiers() {
+    private static void printClassIdentifier() {
         // Get our lexer
         JavaLexer lexer = new JavaLexer(new ANTLRInputStream("package carleton.comps.javaparser;\n" +
                 "\n" +
@@ -95,37 +99,5 @@ public class Main {
         ParseTreeWalker walker = new ParseTreeWalker();
         IdentifierListener listener = new IdentifierListener();
         walker.walk(listener, compilationUnitContext);
-
-        System.out.println("=============OUTSIDE====================");
-        for (String o : listener.outside) {
-            System.out.println(o);
-        }
-
-        System.out.println("=============CLASS====================");
-        for (String c : listener.classIds) {
-            System.out.println(c);
-        }
-
-        System.out.println("=============FUNCTION====================");
-        for (String f : listener.function) {
-            System.out.println(f);
-        }
-
-        System.out.println("=============VARIABLE====================");
-        for (String v : listener.variable) {
-            System.out.println(v);
-        }
-        System.out.println("=============VARIABLECLASS====================");
-        for (String v : listener.variableClass) {
-            System.out.println(v);
-        }
-        System.out.println("=============VARIABLEFUNCTION====================");
-        for (String v : listener.variableFunction) {
-            System.out.println(v);
-        }
-        System.out.println("=============FUNCTIONVARIABLECLASS====================");
-        for (String v : listener.functionVariableClass) {
-            System.out.println(v);
-        }
     }
 }

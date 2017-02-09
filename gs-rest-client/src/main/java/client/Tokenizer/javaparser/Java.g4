@@ -110,7 +110,7 @@ outsideIdentifier
     : Identifier
     ;
 
-variableFuntionIdentifier
+variableFunctionIdentifier
     : Identifier
     ;
 
@@ -271,7 +271,7 @@ arrayInitializer
     ;
 
 enumConstantName
-    :   variableFuntionIdentifier
+    :   variableFunctionIdentifier
     ;
 
 typeType

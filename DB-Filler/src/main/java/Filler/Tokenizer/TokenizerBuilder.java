@@ -2,16 +2,16 @@ package Filler.Tokenizer;
 
 import Filler.Tokenizer.javaparser.JavaLexer;
 import Filler.Tokenizer.javaparser.JavaParser;
-
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.*;
-
-import java.lang.IndexOutOfBoundsException;
-import java.lang.IllegalArgumentException;
 
 /**
  * Takes in code as a string or as a file, tokenizes and stores the code.
@@ -22,7 +22,8 @@ import java.lang.IllegalArgumentException;
 public class TokenizerBuilder {
 
     // Holds the tokenized lines of code.
-    private List<Token> tokenizedCode;
+    //private List<Token> tokenizedCode;
+    private List<EdiToken> ediTokenizedCode;
 
     // Holds the specific names of all null tokens.
     private Queue<String> integerTokens;
@@ -41,9 +42,8 @@ public class TokenizerBuilder {
      * @Param: Type, what type of information the code is stored as.
      */
     public TokenizerBuilder(String code, String type) throws IOException {
-
         // Initializes tokenizedCode of code.
-        tokenizedCode = new ArrayList<Token>();
+        ediTokenizedCode = new ArrayList<EdiToken>();
 
         // Initializes all the queues that hold the values for specific code.
         integerTokens = new LinkedList<String>();
@@ -63,7 +63,7 @@ public class TokenizerBuilder {
                 FileInputStream codeReader = new FileInputStream(new File(code));
 
                 // Goes through each line of code and converts it into tokenized code.
-                tokenizedCode = generateTokens(new JavaLexer(new ANTLRInputStream(codeReader)));
+                ediTokenizedCode = generateTokens(new JavaLexer(new ANTLRInputStream(codeReader)));
             } catch (FileNotFoundException fe) {
                 throw new FileNotFoundException("That is not a valid file!");
             }
@@ -71,7 +71,7 @@ public class TokenizerBuilder {
         } else if (type.equals("String")) {
 
             // Tokenizes the code
-            tokenizedCode = generateTokens(new JavaLexer(new ANTLRInputStream(code)));
+            ediTokenizedCode = generateTokens(new JavaLexer(new ANTLRInputStream(code)));
         } else {
             throw new IllegalArgumentException("TokenizerBuilder requires a String or File.");
         }
@@ -82,7 +82,7 @@ public class TokenizerBuilder {
      * @Param: lexedLine, a line of lexed code.
      * @Return: tokenizedLine, the lexed code is now returned as a tokenized line.
      */
-    private List<Token> generateTokens(JavaLexer lexedLine) {
+    private List<EdiToken> generateTokens(JavaLexer lexedLine) {
 
         // Converts the lexed line into a token steam and gets the tokens.
         CommonTokenStream stream = new CommonTokenStream(lexedLine);
@@ -91,41 +91,85 @@ public class TokenizerBuilder {
         // Unclear as to why this line is needed, but if it is not called the token stream seemingly returns no tokens
         // and nothing can be printed out.
         stream.getNumberOfOnChannelTokens();
-        holdNullTokens(tokenizedLine);
+
+        List <EdiToken> tokenLine = generateIdentifiers(tokenizedLine, stream);
+
+        //holdNullTokens(tokenizedLine);
 
         // Removes the EOF token.
-        tokenizedLine.remove(tokenizedLine.size()-1);
+        tokenLine.remove(tokenLine.size()-1);
 
-        return tokenizedLine;
+        return tokenLine;
     }
 
-    /*
-     * Holds the identifiers names so they can be used during
-     * @Param: tokenizedLine, tokens that may be identifiers, which means we need to store their function names for
-     *                        later use.
-     */
-    private void holdNullTokens(List<Token> tokenizedLine) {
+    private List<EdiToken> generateIdentifiers(List<Token> tokenizedLine, CommonTokenStream tokens) {
+        List<EdiToken> ediTokens = new ArrayList<EdiToken>();
 
+        // Pass the tokens to the parser
+        JavaParser parser = new JavaParser(tokens);
 
-        // Goes through all the tokens in the line and adds them into varNames.
+        // Specify our entry point
+        JavaParser.CompilationUnitContext compilationUnitContext = parser.compilationUnit();
+
+        // Walk it and attach our listener
+        ParseTreeWalker walker = new ParseTreeWalker();
+        IdentifierListener listener = new IdentifierListener();
+        walker.walk(listener, compilationUnitContext);
+        int identifier = 0;
+        int[] types = new int[7];
         for (Token t : tokenizedLine) {
-            if (t.getType() == 51) {
-                integerTokens.add(t.getText());
-            } else if (t.getType() == 52) {
-                floatingTokens.add(t.getText());
-            } else if (t.getType() == 53) {
-                booleanTokens.add(t.getText());
-            } else if (t.getType() == 54) {
-                characterTokens.add(t.getText());
-            } else if (t.getType() == 55) {
-                stringTokens.add(t.getText());
-            } else if (t.getType() == 56) {
-                nullTokens.add(t.getText());
-            } else if (t.getType() == 100) {
-                identifierTokens.add(t.getText());
+            EdiToken token = new EdiToken(t);
+            if (token.getType() == 100) {
+                System.out.println("The Type IdentifierListener expects: " + listener.identifierPosition.get(identifier));
+                if (listener.identifierPosition.get(identifier) == "class") {
+                    token.setType(110);
+                    System.out.println("The position IdentifierListener expects: " + listener.classIds.get(types[0]));
+                    types[0]++;
+                } else if (listener.identifierPosition.get(identifier) == "function") {
+                    token.setType(111);
+                    System.out.println("The position IdentifierListener expects: " + listener.function.get(types[1]));
+                    types[1]++;
+                } else if (listener.identifierPosition.get(identifier) == "variable") {
+                    token.setType(112);
+                    System.out.println("The position IdentifierListener expects: " + listener.variable.get(types[2]));
+                    types[2]++;
+                } else if (listener.identifierPosition.get(identifier) == "outside") {
+                    token.setType(113);
+                    System.out.println("The position IdentifierListener expects: " + listener.outside.get(types[3]));
+                    types[3]++;
+                } else if (listener.identifierPosition.get(identifier) == "variableClass") {
+                    token.setType(114);
+                    System.out.println("The position IdentifierListener expects: " + listener.variableClass.get(types[4]));
+                    types[4]++;
+                } else if (listener.identifierPosition.get(identifier) == "variableFunction") {
+                    token.setType(115);
+                    System.out.println("The position IdentifierListener expects: " + listener.variableFunction.get(types[5]));
+                    types[5]++;
+                } else if (listener.identifierPosition.get(identifier) == "functionVariableClass") {
+                    token.setType(115);
+                    System.out.println("The position IdentifierListener expects: " + listener.functionVariableClass.get(types[6]));
+                    types[6]++;
+                }
+                System.out.println("The current position of the token: " + t.getTokenIndex());
+                identifier++;
             }
+            ediTokens.add(token);
         }
+        return ediTokens;
     }
+
+
+    public String ediTokensToString() {
+        StringBuilder tokens = new StringBuilder();
+        StringBuilder program = new StringBuilder();
+        for (EdiToken et : ediTokenizedCode) {
+            tokens.append(et.getType() + " ");
+            program.append(et.getText() + " ");
+        }
+        System.out.println(program.toString());
+        return tokens.toString();
+    }
+
 
     /*
      * Returns the tokenized code as a space separated string of ints. Defaults verbose to false.
@@ -136,19 +180,26 @@ public class TokenizerBuilder {
     }
 
     /*
+     * Returns the tokenized code between the specified lines
+     */
+    public String getString(int start, int stop) {
+        return tokensToString(betweenLines(start, stop));
+    }
+
+    /*
      * Returns the tokenized code as a string.
      * @Return: the string version of the tokenized code.
      */
     public String getString(Boolean verbose) {
-        return tokensToString(tokenizedCode, verbose);
+        return tokensToString(ediTokenizedCode, verbose);
     }
 
     /*
      * Returns a list of all the tokens.
      * @Return: allTokens, list of all tokens in code.
      */
-    public List<Token> getTokens() {
-        return tokenizedCode;
+    public List<EdiToken> getTokens() {
+        return ediTokenizedCode;
     }
 
 
@@ -157,7 +208,7 @@ public class TokenizerBuilder {
      * @Param: tokens, a list of tokens to be converted into a string.
      * @Return: tokens as a string.
      */
-    public static String tokensToString(List<Token> tokens) {
+    public static String tokensToString(List<EdiToken> tokens) {
         return tokensToString(tokens, false);
     }
 
@@ -167,12 +218,12 @@ public class TokenizerBuilder {
      * @Param: verbose,.
      * @Return: tokens as a string.
      */
-    public static String tokensToString(List<Token> tokens, boolean verbose) {
+    public static String tokensToString(List<EdiToken> tokens, boolean verbose) {
 
         StringBuilder builder = new StringBuilder();
 
         // Goes through each token, converts it into a string and adds it to builder.
-        for (Token t : tokens) {
+        for (EdiToken t : tokens) {
             if (verbose) {
                 builder.append(t.getType() +"(" + JavaParser.VOCABULARY
                         .getSymbolicName(t.getType()) + ") " + "(" + t.getText() + ") \n");
@@ -190,21 +241,21 @@ public class TokenizerBuilder {
      * @Param: stop, last line of tokenized code to be returned.
      * @Return: tokens, all tokens between start line and stop line.
      */
-    public List<Token> betweenLines(int start, int stop) {
+    public List<EdiToken> betweenLines(int start, int stop) {
 
-        if (start < 1 || stop > tokenizedCode.size()) {
+        if (start < 1 || stop > ediTokenizedCode.size()) {
             throw new IndexOutOfBoundsException("The lines you specified are out of range.");
         }
 
 
         // Holds all the tokenized code.
-        List<Token> tokens = new ArrayList<Token>();
+        List<EdiToken> tokens = new ArrayList<EdiToken>();
 
         // Searches through the caracter stream for which tokens correspond to the correct line
         for (int i = start; i<=stop; i++) {
-            int curLine = tokenizedCode.get(i).getLine();
+            int curLine = ediTokenizedCode.get(i).getLine();
             if (curLine >= start && curLine < stop) {
-                tokens.add(tokenizedCode.get(i));
+                tokens.add(ediTokenizedCode.get(i));
             }
         }
         return tokens;
@@ -333,4 +384,76 @@ public class TokenizerBuilder {
         newLine = false;
         return builder;
     }
+
+    /*
+     * Holds the identifiers names so they can be used during
+     * @Param: tokenizedLine, tokens that may be identifiers, which means we need to store their function names for
+     *                        later use.
+     */
+    /*private void holdNullTokens(List<Token> tokenizedLine) {
+
+
+        // Goes through all the tokens in the line and adds them into varNames.
+        for (Token t : tokenizedLine) {
+            if (t.getType() == 51) {
+                integerTokens.add(t.getText());
+            } else if (t.getType() == 52) {
+                floatingTokens.add(t.getText());
+            } else if (t.getType() == 53) {
+                booleanTokens.add(t.getText());
+            } else if (t.getType() == 54) {
+                characterTokens.add(t.getText());
+            } else if (t.getType() == 55) {
+                stringTokens.add(t.getText());
+            } else if (t.getType() == 56) {
+                nullTokens.add(t.getText());
+            } else if (t.getType() == 100) {
+                identifierTokens.add(t.getText());
+            }
+        }
+    }
+
+    /**
+     * Method that generates the name association list for a string of tokens
+     * @param tokenizedCode
+     * @return
+     * TODO: note the fact that this must be kept in step with DBFILLER INTERFACE
+     */
+    public static List<Integer> generateDisambiguationList(List<EdiToken> tokenizedCode) {
+
+        List<Integer> assignments = new ArrayList<Integer>(tokenizedCode.size());
+
+        //Dictionary that holds the string token assignments
+        HashMap<String, Integer> ambigousAssignments = new HashMap<String, Integer>();
+
+        int assignedVariables = 0;
+
+        // Assigning disamibuation to tokens of the err file
+        for (EdiToken t: tokenizedCode) {
+            if (isAmbiguousToken(t)) {
+                if (ambigousAssignments.containsKey(t.getText())) {
+                    assignments.add(ambigousAssignments.get(t.getText()));
+                } else {
+                    ambigousAssignments.put(t.getText(), ++assignedVariables);
+                    assignments.add(assignedVariables);
+                }
+            }
+            else {
+                assignments.add(0);
+            }
+        }
+        return assignments;
+    }
+
+    /**
+     * Method that tests whether a given token is type ambiguous
+     */
+    public static boolean isAmbiguousToken(EdiToken t)
+    {
+        return JavaParser.VOCABULARY.getLiteralName(t.getType())==null;
+    }
+    public static boolean isAmbiuousToken(int t) {
+        return JavaParser.VOCABULARY.getLiteralName(t)==null;
+    }
+
 }

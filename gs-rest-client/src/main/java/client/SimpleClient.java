@@ -58,7 +58,7 @@ public class SimpleClient {
      *
      * @param fileName: a text file
      * @param firstLine: the starting line number of the desired code block
-     * @param lastLine: the end line number of the desired code block
+     * @param lastLine: the end line number of the desired code block, set to -1 for all lines
      * @return A String containing the lines from the text file we interpret to contain
      * buggy code. 
      */
@@ -72,7 +72,7 @@ public class SimpleClient {
         try {
             while((line = reader.readLine()) != null) {
                 lineNum += 1;
-                if (firstLine <=lineNum && lineNum <= lastLine) {
+                if (firstLine <=lineNum && ((lineNum == -1)||(lineNum <= lastLine))) {
                     stringBuilder.append(line);
                     stringBuilder.append(ls);
                 }
@@ -89,10 +89,16 @@ public class SimpleClient {
     * as a JSON string and processes its response.
     */
     public static void makeRequest(ServerRequest serverRequest, String method) {
-        makeRequest(serverRequest, null, method);
+        makeRequest(serverRequest, null, null, method);
     }
 
-    public static void makeRequest(ServerRequest serverRequest, TokenizerBuilder tokenBuilder, String method) {
+    public static void makeRequest(ServerRequest serverRequest, TokenizerBuilder tokenBuilder,
+                                   String sourceFile, String method) {
+        makeRequest(serverRequest, new HarmonizationStateObject(tokenBuilder, sourceFile, 0, 0),
+                method);
+    }
+
+    public static void makeRequest(ServerRequest serverRequest, HarmonizationStateObject harmonizationStateObject, String method) {
         System.out.println("Sending tokenized code: " + serverRequest.getBuggyCode() + "\nWith the error message: " + serverRequest.getErrorMessage() + "\n\n\n");
 
         try {
@@ -131,7 +137,7 @@ public class SimpleClient {
             String returnedJsonString = returnedJsonStringBuilder.toString();
 
             //Handle the server's response based on the requested method.
-            handleResponse(returnedJsonString, tokenBuilder, method);
+            handleResponse(returnedJsonString, harmonizationStateObject, method);
             conn.disconnect();
 
         } catch (MalformedURLException e) {
@@ -141,6 +147,8 @@ public class SimpleClient {
         }
     }
 
+
+
     /*
     * Handles the response from gs REST server.
     * @param json: a JSON string returned from the server
@@ -149,7 +157,8 @@ public class SimpleClient {
     * 
     * @return void: Simply print returned data so that the user can see it.
     */
-    public static void handleResponse(String json, TokenizerBuilder tokenBuilder, String method) {
+    public static void handleResponse(String json, HarmonizationStateObject stateObject,
+                                      String method) {
         //Setup a new object mapper for converting json to POJO
         ObjectMapper mapper = new ObjectMapper();
 
@@ -165,7 +174,8 @@ public class SimpleClient {
 
                 for (DatabaseEntry e : dbEntries.getEntryList()) {
                     System.out.println("\nFixed Code:");
-                    System.out.println(tokenBuilder.harmonize(e.getFixedCode()));
+                    System.out.println(stateObject.harmonize(e));
+                            //tokenBuilder.harmonize(e.getFixedCode(),sourceFile));
                 }
                 break;
             case "echo":
@@ -181,7 +191,7 @@ public class SimpleClient {
 
                 for (DatabaseEntry e : dbEntries.getEntryList()) {
                     System.out.println("\nFixed Code:");
-                    System.out.println(tokenBuilder.harmonize(e.getFixedCode()));
+                    System.out.println(stateObject.harmonize(e));
                 }
                 break;
             }
@@ -213,10 +223,12 @@ public class SimpleClient {
         ServerRequest serverRequest;
 
 
-        //Identify the buggy code block within the provided file.
-        String buggyCodeBlock = "";
+        //Identify the buggy code block within the provided file
+        String buggyCodeBlock = "";// NOTE: THIS ISN't ACTUALLY USED
+        String wholeFileCode = "";
         try {
             buggyCodeBlock = getLinesFromFile(fileName, startLine, endLine);
+            wholeFileCode = getLinesFromFile(fileName, -1,-1);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -225,7 +237,7 @@ public class SimpleClient {
         //Tokenize the buggy code block and return as a TokenizerBuilder
         TokenizerBuilder tokenBuilder = null;
         try {
-            tokenBuilder = tokenize(buggyCodeBlock);
+            tokenBuilder = tokenize(wholeFileCode);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -234,18 +246,19 @@ public class SimpleClient {
         //Generate the serverRequest from the provided tokenized code
         //and the input error message.
         StringBuilder tokenizedCodeBlock = new StringBuilder();
-        tokenizedCodeBlock.append(tokenBuilder.getString());
+        tokenizedCodeBlock.append(tokenBuilder.getString(startLine, endLine));
         serverRequest = new ServerRequest(tokenizedCodeBlock.toString(), errorMessage);
 
         //Make the request to the server for the desired method (fix, echo, index)        
         switch (method) {
             case "fix":
                 System.out.println("\nFixing your bug...\n\n\n");
-                makeRequest(serverRequest, tokenBuilder, method);
+                makeRequest(serverRequest, new HarmonizationStateObject(tokenBuilder,
+                        wholeFileCode,startLine,endLine), method);
                 break;
             case "echo":
                 System.out.println("\nEchoing your request...\n\n\n");
-                makeRequest(serverRequest, tokenBuilder, method);
+                makeRequest(serverRequest, tokenBuilder, null, method);
                 break;
             default:
                 System.out.println("Invalid method provided.");
