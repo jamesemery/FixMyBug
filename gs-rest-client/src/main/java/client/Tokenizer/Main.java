@@ -25,7 +25,7 @@ public class Main {
             // Testing the file type of the constructor.
 
             // Creates a new instance of TokenizerBuilder.
-            TokenizerBuilder t = new TokenizerBuilder("./Tokenizer/src/main/java/carleton/comps/javaparser/HelloWorld.java","File");
+            TokenizerBuilder t = new TokenizerBuilder("./gs-rest-client/src/main/java/client/Tokenizer/javaparser/examples/HelloWorld.java","File");
             System.out.println(t.ediTokensToString());
             //ParseTreeWalker.DEFAULT.walk(extractor, tree);
             // Prints the tokenized version of HelloWorld.java.

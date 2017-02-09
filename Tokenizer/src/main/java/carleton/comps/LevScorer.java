@@ -20,7 +20,7 @@ public class LevScorer implements SimilarityScorer{
      * @return
      */
     @Override
-    public List<Integer> rankSimilarity(List<Token> queryString, List<List<Token>> tokens) {
+    public List<Integer> rankSimilarity(List<EdiToken> queryString, List<List<EdiToken>> tokens) {
         //Integer[][] scores = new int[queryString.size()][tokens]
         return null;
     }
@@ -33,7 +33,7 @@ public class LevScorer implements SimilarityScorer{
      * @return
      */
     //@Override
-    public static double scoreSimilarity(List<Token> queryString, List<Token>
+    public static double scoreSimilarity(List<EdiToken> queryString, List<EdiToken>
             tokens) {
         if (queryString.size() == 0 || tokens.size() == 0) return 0;
 

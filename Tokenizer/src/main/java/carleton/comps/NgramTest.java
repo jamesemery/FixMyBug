@@ -12,10 +12,10 @@ public class NgramTest {
 
     public static void main(String [] args) {
         try {
-            List<Token> c1 = new TokenizerBuilder
+            List<EdiToken> c1 = new TokenizerBuilder
                     ("./Tokenizer/src/main/java/carleton/comps/javaparser" +
                     "/examples/HelloWorld.java","File").getTokens();
-            List<Token> c2 = new TokenizerBuilder
+            List<EdiToken> c2 = new TokenizerBuilder
                     ("./Tokenizer/src/main/java/carleton/comps/javaparser" +
                             "/examples/HelloWorld.java","file").betweenLines
                     (1,7);

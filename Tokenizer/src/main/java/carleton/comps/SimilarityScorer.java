@@ -7,8 +7,8 @@ import java.util.List;
 
 public interface SimilarityScorer {
 
-    List<Integer> rankSimilarity(List<Token> queryString,
-                                        List<List<Token>> tokens);
+    List<Integer> rankSimilarity(List<EdiToken> queryString,
+                                        List<List<EdiToken>> tokens);
 
     /**
      * Returns a double value corresponding to the ranking between two stirngs
@@ -16,6 +16,6 @@ public interface SimilarityScorer {
      * @param otherString
      * @return
      */
-    static double scoreSimilarity(List<Token> queryString, List<Token>
+    static double scoreSimilarity(List<EdiToken> queryString, List<EdiToken>
             otherString) {return 0;}
 }

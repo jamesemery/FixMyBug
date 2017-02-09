@@ -18,8 +18,8 @@ public class NgramScorer implements SimilarityScorer {
     static final int DEFAULT_N = 5;
 
     @Override
-    public List<Integer> rankSimilarity(List<Token> queryString,
-                                         List<List<Token>> strings) {
+    public List<Integer> rankSimilarity(List<EdiToken> queryString,
+                                         List<List<EdiToken>> strings) {
 //        for (List<TOkens>)
 //        // Looping through the other string adding everything to a set
 //        for (int i = n; i <= otherString.size(); i++) {
@@ -47,7 +47,7 @@ public class NgramScorer implements SimilarityScorer {
     }
 
     //@Override
-    public static double scoreSimilarity(List<Token> queryString, List<Token>
+    public static double scoreSimilarity(List<EdiToken> queryString, List<EdiToken>
             otherString) {
         return scoreSimilarity(queryString, otherString, DEFAULT_N);
     }
@@ -61,7 +61,7 @@ public class NgramScorer implements SimilarityScorer {
      * @param n
      * @return
      */
-    public static double scoreSimilarity(List<Token> queryString, List<Token>
+    public static double scoreSimilarity(List<EdiToken> queryString, List<EdiToken>
             otherString, int n) {
         Set<String> tokenSet = new HashSet<>();
         if (queryString.size()<n || otherString.size()<n) {
