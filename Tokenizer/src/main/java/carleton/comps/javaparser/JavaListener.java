@@ -1,4 +1,5 @@
-package carleton.comps.javaparser;// Generated from /Users/jamie/Documents/College/Senior/Comps/grammars-v4/java/Java.g4 by ANTLR 4.5
+// Generated from Java.g4 by ANTLR 4.5.3
+package carleton.comps.javaparser;
 
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
@@ -87,6 +88,76 @@ public interface JavaListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitClassDeclaration(JavaParser.ClassDeclarationContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link JavaParser#classIdentifier}.
+	 * @param ctx the parse tree
+	 */
+	void enterClassIdentifier(JavaParser.ClassIdentifierContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link JavaParser#classIdentifier}.
+	 * @param ctx the parse tree
+	 */
+	void exitClassIdentifier(JavaParser.ClassIdentifierContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link JavaParser#functionIdentifier}.
+	 * @param ctx the parse tree
+	 */
+	void enterFunctionIdentifier(JavaParser.FunctionIdentifierContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link JavaParser#functionIdentifier}.
+	 * @param ctx the parse tree
+	 */
+	void exitFunctionIdentifier(JavaParser.FunctionIdentifierContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link JavaParser#variableIdentifier}.
+	 * @param ctx the parse tree
+	 */
+	void enterVariableIdentifier(JavaParser.VariableIdentifierContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link JavaParser#variableIdentifier}.
+	 * @param ctx the parse tree
+	 */
+	void exitVariableIdentifier(JavaParser.VariableIdentifierContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link JavaParser#outsideIdentifier}.
+	 * @param ctx the parse tree
+	 */
+	void enterOutsideIdentifier(JavaParser.OutsideIdentifierContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link JavaParser#outsideIdentifier}.
+	 * @param ctx the parse tree
+	 */
+	void exitOutsideIdentifier(JavaParser.OutsideIdentifierContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link JavaParser#variableFunctionIdentifier}.
+	 * @param ctx the parse tree
+	 */
+	void enterVariableFunctionIdentifier(JavaParser.VariableFunctionIdentifierContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link JavaParser#variableFunctionIdentifier}.
+	 * @param ctx the parse tree
+	 */
+	void exitVariableFunctionIdentifier(JavaParser.VariableFunctionIdentifierContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link JavaParser#functionVariableClassIdentifier}.
+	 * @param ctx the parse tree
+	 */
+	void enterFunctionVariableClassIdentifier(JavaParser.FunctionVariableClassIdentifierContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link JavaParser#functionVariableClassIdentifier}.
+	 * @param ctx the parse tree
+	 */
+	void exitFunctionVariableClassIdentifier(JavaParser.FunctionVariableClassIdentifierContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link JavaParser#variableClassIdentifier}.
+	 * @param ctx the parse tree
+	 */
+	void enterVariableClassIdentifier(JavaParser.VariableClassIdentifierContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link JavaParser#variableClassIdentifier}.
+	 * @param ctx the parse tree
+	 */
+	void exitVariableClassIdentifier(JavaParser.VariableClassIdentifierContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link JavaParser#typeParameters}.
 	 * @param ctx the parse tree
