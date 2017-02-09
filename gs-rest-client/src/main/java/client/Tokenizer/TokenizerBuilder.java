@@ -7,6 +7,7 @@ import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Token;
 
+import java.io.FileInputStream;
 import java.util.*;
 
 import java.io.FileNotFoundException;
@@ -25,7 +26,7 @@ import java.lang.IllegalArgumentException;
 public class TokenizerBuilder {
 
     // Holds the tokenized lines of code.
-    private List<List<Token>> tokenizedLines;
+    private List<Token> tokenizedCode;
 
     // Holds the specific names of all null tokens.
     private Queue<String> integerTokens;
@@ -45,8 +46,8 @@ public class TokenizerBuilder {
      */
     public TokenizerBuilder(String code, String type) throws IOException {
 
-        // Initializes tokenizedLines of code.
-        tokenizedLines = new ArrayList<List<Token>>();
+        // Initializes tokenizedCode of code.
+        tokenizedCode = new ArrayList<Token>();
 
         // Initializes all the queues that hold the values for specific code.
         integerTokens = new LinkedList<String>();
@@ -63,23 +64,18 @@ public class TokenizerBuilder {
             // Checks to see if the file provided is a valid file.
             Scanner scanner;
             try {
-                scanner = new Scanner(new File(code));
+                FileInputStream codeReader = new FileInputStream(new File(code));
 
                 // Goes through each line of code and converts it into tokenized code.
-                while (scanner.hasNextLine()) {
-                    tokenizedLines.add(generateTokens(new JavaLexer(new ANTLRInputStream(scanner.nextLine()))));
-                }
+                tokenizedCode = generateTokens(new JavaLexer(new ANTLRInputStream(codeReader)));
             } catch (FileNotFoundException fe) {
                 throw new FileNotFoundException("That is not a valid file!");
             }
 
         } else if (type.equals("String")) {
 
-            // Splits each string by line and then tokenizes it.
-            String[] lines = code.split("\n");
-            for (String line: lines) {
-                tokenizedLines.add(generateTokens(new JavaLexer(new ANTLRInputStream(line))));
-            }
+            // Tokenizes the code
+            tokenizedCode = generateTokens(new JavaLexer(new ANTLRInputStream(code)));
         } else {
             throw new IllegalArgumentException("TokenizerBuilder requires a String or File.");
         }
@@ -148,16 +144,7 @@ public class TokenizerBuilder {
      * @Return: the string version of the tokenized code.
      */
     public String getString(Boolean verbose) {
-
-        // StringBuilder makes it easy to concatenate strings together.
-        StringBuilder builder = new StringBuilder();
-
-        // Goes through each tokenized line in tokenizedLines and gets the error type, token type and its value.
-        // It then adds them to builder.
-        for (List<Token> tokenizedLine: tokenizedLines) {
-            builder.append(tokensToString(tokenizedLine, verbose));
-        }
-        return builder.toString();
+        return tokensToString(tokenizedCode, verbose);
     }
 
     /*
@@ -165,17 +152,7 @@ public class TokenizerBuilder {
      * @Return: allTokens, list of all tokens in code.
      */
     public List<Token> getTokens() {
-
-        // Holds all the tokens in the code.
-        List<Token> allTokens = new ArrayList<Token>();
-
-        // Goes through each line and token and adds them to allTokens.
-        for (List<Token> tokenizedLine: tokenizedLines) {
-            for (Token t: tokenizedLine) {
-                allTokens.add(t);
-            }
-        }
-        return allTokens;
+        return tokenizedCode;
     }
 
 
@@ -219,22 +196,19 @@ public class TokenizerBuilder {
      */
     public List<Token> betweenLines(int start, int stop) {
 
-        if (start < 1 || stop > tokenizedLines.size()) {
+        if (start < 1 || stop > tokenizedCode.size()) {
             throw new IndexOutOfBoundsException("The lines you specified are out of range.");
         }
 
-        // Holds the current line of tokenized code.
-        List<Token> line;
 
         // Holds all the tokenized code.
         List<Token> tokens = new ArrayList<Token>();
 
-        // Goes through each line of tokenized code specified and adds it to tokens.
+        // Searches through the caracter stream for which tokens correspond to the correct line
         for (int i = start; i<=stop; i++) {
-            line = tokenizedLines.get(i);
-
-            for (Token t : line) {
-                tokens.add(t);
+            int curLine = tokenizedCode.get(i).getLine();
+            if (curLine >= start && curLine < stop) {
+                tokens.add(tokenizedCode.get(i));
             }
         }
         return tokens;

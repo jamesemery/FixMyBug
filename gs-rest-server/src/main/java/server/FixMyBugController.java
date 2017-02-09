@@ -25,7 +25,7 @@ public class FixMyBugController {
     public DatabaseEntryListWrapper fixMyBug(@RequestBody String input) {
         //Setup the JSON object mapper and our DBConnection
     	ObjectMapper mapper = new ObjectMapper();
-        DatabaseServer DBConnection = new DatabaseServer("/FixMyBugDB/TEST_DATABASE");
+        DatabaseServer DBConnection = new DatabaseServer("/Users/fixmybug/FixMyBug/DB-Filler/uploadTestDB");
 
     	try {
     		//Convert JSON string to object
@@ -33,12 +33,13 @@ public class FixMyBugController {
 
 	        System.out.println(serverRequest.getBuggyCode());
 	        System.out.println(serverRequest.getErrorMessage());
-	        
+
 	        // Create a DatabaseEntry and return it.
 	        List<DatabaseEntry> database_entries = DBConnection.getMostSimilarEntries(serverRequest
                     .getBuggyCode());
             System.out.println(database_entries);
-	        return new DatabaseEntryListWrapper(database_entries);
+	        return DatabaseServer.sanitizeForJsonTransmission(new DatabaseEntryListWrapper
+                    (database_entries));
 
     	} catch (JsonGenerationException e) {
             e.printStackTrace();
@@ -51,6 +52,7 @@ public class FixMyBugController {
         }
 
         return new DatabaseEntryListWrapper(new ArrayList<>());
+        // TODO this needs to convert back from dangerous stings
     }
 
     @RequestMapping("/echo")
@@ -66,8 +68,7 @@ public class FixMyBugController {
             System.out.println("Error message received: " + serverRequest.getErrorMessage() + "\n");
             System.out.println("Echoing back the received data...\n\n\n");
 
-            return new DatabaseEntryListWrapper(new DatabaseEntry(-1, -2, serverRequest.getBuggyCode(),
-                    serverRequest.getErrorMessage(), -5));
+            return DatabaseServer.sanitizeForJsonTransmission(new DatabaseEntryListWrapper(new DatabaseEntry(-1, "crap", "sdf", "squid", "Sdf"))); //TODO fix this outdated method
 
 
         } catch (JsonGenerationException e) {
@@ -78,7 +79,9 @@ public class FixMyBugController {
             e.printStackTrace();
         }
 
-        return new DatabaseEntryListWrapper(new DatabaseEntry(-1, -2, "crap", "squid", -5));
+        return new DatabaseEntryListWrapper(new DatabaseEntry(-1, "crap", "sdf", "squid", "Sdf"))
+                ; //
+        // TODO fix this outdated method
     }
 
     // THIS IS 100% a hack, I am using the ServerRequest object to send arguments for the
