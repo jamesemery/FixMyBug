@@ -1,18 +1,14 @@
-package client.Tokenizer;
+package Filler.Tokenizer;
 
-import client.Tokenizer.javaparser.JavaLexer;
-import client.Tokenizer.javaparser.JavaParser;
+import Filler.Tokenizer.javaparser.JavaLexer;
+import Filler.Tokenizer.javaparser.JavaParser;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Token;
 
-import java.io.FileInputStream;
+import java.io.*;
 import java.util.*;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.File;
 
 import java.lang.IndexOutOfBoundsException;
 import java.lang.IllegalArgumentException;
