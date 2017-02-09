@@ -4,4 +4,4 @@
 
 antlr4 Java.g4
 javac *.java
-grun Java compilationUnit examples/HelloWorld.java -tree
+grun Java compilationUnit HelloWorld.java -tree

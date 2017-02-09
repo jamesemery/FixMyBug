@@ -27,7 +27,7 @@ import java.lang.IllegalArgumentException;
 public class TokenizerBuilder {
 
     // Holds the tokenized lines of code.
-    private List<Token> tokenizedCode;
+    //private List<Token> tokenizedCode;
     private List<EdiToken> ediTokenizedCode;
 
     // Holds the specific names of all null tokens.
@@ -48,7 +48,7 @@ public class TokenizerBuilder {
      */
     public TokenizerBuilder(String code, String type) throws IOException {
         // Initializes tokenizedCode of code.
-        tokenizedCode = new ArrayList<Token>();
+        ediTokenizedCode = new ArrayList<EdiToken>();
 
         // Initializes all the queues that hold the values for specific code.
         integerTokens = new LinkedList<String>();
@@ -185,19 +185,26 @@ public class TokenizerBuilder {
     }
 
     /*
+     * Returns the tokenized code between the specified lines
+     */
+    public String getString(int start, int stop) {
+        return tokensToString(betweenLines(start, stop));
+    }
+
+    /*
      * Returns the tokenized code as a string.
      * @Return: the string version of the tokenized code.
      */
     public String getString(Boolean verbose) {
-        return tokensToString(tokenizedCode, verbose);
+        return tokensToString(ediTokenizedCode, verbose);
     }
 
     /*
      * Returns a list of all the tokens.
      * @Return: allTokens, list of all tokens in code.
      */
-    public List<Token> getTokens() {
-        return tokenizedCode;
+    public List<EdiToken> getTokens() {
+        return ediTokenizedCode;
     }
 
 
@@ -206,7 +213,7 @@ public class TokenizerBuilder {
      * @Param: tokens, a list of tokens to be converted into a string.
      * @Return: tokens as a string.
      */
-    public static String tokensToString(List<Token> tokens) {
+    public static String tokensToString(List<EdiToken> tokens) {
         return tokensToString(tokens, false);
     }
 
@@ -216,12 +223,12 @@ public class TokenizerBuilder {
      * @Param: verbose,.
      * @Return: tokens as a string.
      */
-    public static String tokensToString(List<Token> tokens, boolean verbose) {
+    public static String tokensToString(List<EdiToken> tokens, boolean verbose) {
 
         StringBuilder builder = new StringBuilder();
 
         // Goes through each token, converts it into a string and adds it to builder.
-        for (Token t : tokens) {
+        for (EdiToken t : tokens) {
             if (verbose) {
                 builder.append(t.getType() +"(" + JavaParser.VOCABULARY
                         .getSymbolicName(t.getType()) + ") " + "(" + t.getText() + ") \n");
@@ -239,21 +246,21 @@ public class TokenizerBuilder {
      * @Param: stop, last line of tokenized code to be returned.
      * @Return: tokens, all tokens between start line and stop line.
      */
-    public List<Token> betweenLines(int start, int stop) {
+    public List<EdiToken> betweenLines(int start, int stop) {
 
-        if (start < 1 || stop > tokenizedCode.size()) {
+        if (start < 1 || stop > ediTokenizedCode.size()) {
             throw new IndexOutOfBoundsException("The lines you specified are out of range.");
         }
 
 
         // Holds all the tokenized code.
-        List<Token> tokens = new ArrayList<Token>();
+        List<EdiToken> tokens = new ArrayList<EdiToken>();
 
         // Searches through the caracter stream for which tokens correspond to the correct line
         for (int i = start; i<=stop; i++) {
-            int curLine = tokenizedCode.get(i).getLine();
+            int curLine = ediTokenizedCode.get(i).getLine();
             if (curLine >= start && curLine < stop) {
-                tokens.add(tokenizedCode.get(i));
+                tokens.add(ediTokenizedCode.get(i));
             }
         }
         return tokens;
@@ -267,7 +274,7 @@ public class TokenizerBuilder {
      * @Param: code, holds the tokenized code.
      * @Return: detokenizedCode, holds the de-tokenized code.
      */
-    /*public String harmonize(String code) {
+    public String harmonize(String code) {
 
         // Splits the string by spaces, as these separate the individual tokens.
         String[] tokens = code.split(" ");
@@ -366,7 +373,7 @@ public class TokenizerBuilder {
      * @Param: token, the current token.
      * @Return: builder, the sanitized, detokenized code.
      */
-    /*private StringBuilder sanitize(StringBuilder builder, int token, int previousToken) {
+    private StringBuilder sanitize(StringBuilder builder, int token, int previousToken) {
 
         // If the token is a semicolon, then the there is a new line.
         if (token == 63) {
@@ -381,7 +388,7 @@ public class TokenizerBuilder {
         }
         newLine = false;
         return builder;
-    }*/
+    }
 
     /*
      * Holds the identifiers names so they can be used during
@@ -409,6 +416,49 @@ public class TokenizerBuilder {
                 identifierTokens.add(t.getText());
             }
         }
-    }*/
+    }
+
+    /**
+     * Method that generates the name association list for a string of tokens
+     * @param tokenizedCode
+     * @return
+     * TODO: note the fact that this must be kept in step with DBFILLER INTERFACE
+     */
+    public static List<Integer> generateDisambiguationList(List<EdiToken> tokenizedCode) {
+
+        List<Integer> assignments = new ArrayList<Integer>(tokenizedCode.size());
+
+        //Dictionary that holds the string token assignments
+        HashMap<String, Integer> ambigousAssignments = new HashMap<String, Integer>();
+
+        int assignedVariables = 0;
+
+        // Assigning disamibuation to tokens of the err file
+        for (EdiToken t: tokenizedCode) {
+            if (isAmbiguousToken(t)) {
+                if (ambigousAssignments.containsKey(t.getText())) {
+                    assignments.add(ambigousAssignments.get(t.getText()));
+                } else {
+                    ambigousAssignments.put(t.getText(), ++assignedVariables);
+                    assignments.add(assignedVariables);
+                }
+            }
+            else {
+                assignments.add(0);
+            }
+        }
+        return assignments;
+    }
+
+    /**
+     * Method that tests whether a given token is type ambiguous
+     */
+    public static boolean isAmbiguousToken(EdiToken t)
+    {
+        return JavaParser.VOCABULARY.getLiteralName(t.getType())==null;
+    }
+    public static boolean isAmbiuousToken(int t) {
+        return JavaParser.VOCABULARY.getLiteralName(t)==null;
+    }
 
 }

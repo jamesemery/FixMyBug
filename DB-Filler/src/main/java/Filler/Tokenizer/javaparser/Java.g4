@@ -88,10 +88,38 @@ variableModifier
     ;
 
 classDeclaration
-    :   'class' ClassIdentifier typeParameters?
+    :   'class' classIdentifier typeParameters?
         ('extends' typeType)?
         ('implements' typeList)?
         classBody
+    ;
+
+classIdentifier
+    : Identifier
+    ;
+
+functionIdentifier
+    : Identifier
+    ;
+
+variableIdentifier
+    : Identifier
+    ;
+
+outsideIdentifier
+    : Identifier
+    ;
+
+variableFunctionIdentifier
+    : Identifier
+    ;
+
+functionVariableClassIdentifier
+    : Identifier
+    ;
+
+variableClassIdentifier
+    : Identifier
     ;
 
 typeParameters
@@ -99,7 +127,7 @@ typeParameters
     ;
 
 typeParameter
-    :   Identifier ('extends' typeBound)?
+    :   classIdentifier ('extends' typeBound)?
     ;
 
 typeBound
@@ -116,7 +144,7 @@ enumConstants
     ;
 
 enumConstant
-    :   annotation* Identifier arguments? classBody?
+    :   annotation* classIdentifier arguments? classBody?
     ;
 
 enumBodyDeclarations
@@ -124,7 +152,7 @@ enumBodyDeclarations
     ;
 
 interfaceDeclaration
-    :   'interface' Identifier typeParameters? ('extends' typeList)? interfaceBody
+    :   'interface' classIdentifier typeParameters? ('extends' typeList)? interfaceBody
     ;
 
 typeList
@@ -163,7 +191,7 @@ memberDeclaration
    for invalid return type after parsing.
  */
 methodDeclaration
-    :   (typeType|'void') Identifier formalParameters ('[' ']')*
+    :   (typeType|'void') functionIdentifier formalParameters ('[' ']')*
         ('throws' qualifiedNameList)?
         (   methodBody
         |   ';'
@@ -175,7 +203,7 @@ genericMethodDeclaration
     ;
 
 constructorDeclaration
-    :   Identifier formalParameters ('throws' qualifiedNameList)?
+    :   classIdentifier formalParameters ('throws' qualifiedNameList)?
         constructorBody
     ;
 
@@ -207,12 +235,12 @@ constDeclaration
     ;
 
 constantDeclarator
-    :   Identifier ('[' ']')* '=' variableInitializer
+    :   variableIdentifier ('[' ']')* '=' variableInitializer
     ;
 
 // see matching of [] comment in methodDeclaratorRest
 interfaceMethodDeclaration
-    :   (typeType|'void') Identifier formalParameters ('[' ']')*
+    :   (typeType|'void') functionIdentifier formalParameters ('[' ']')*
         ('throws' qualifiedNameList)?
         ';'
     ;
@@ -230,7 +258,7 @@ variableDeclarator
     ;
 
 variableDeclaratorId
-    :   Identifier ('[' ']')*
+    :   variableIdentifier ('[' ']')*
     ;
 
 variableInitializer
@@ -243,7 +271,7 @@ arrayInitializer
     ;
 
 enumConstantName
-    :   Identifier
+    :   variableFunctionIdentifier
     ;
 
 typeType
@@ -252,7 +280,7 @@ typeType
     ;
 
 classOrInterfaceType
-    :   Identifier typeArguments? ('.' Identifier typeArguments? )*
+    :   classIdentifier typeArguments? ('.' classIdentifier typeArguments? )*
     ;
 
 primitiveType
@@ -305,7 +333,7 @@ constructorBody
     ;
 
 qualifiedName
-    :   Identifier ('.' Identifier)*
+    :   outsideIdentifier ('.' outsideIdentifier)*
     ;
 
 literal
@@ -330,7 +358,7 @@ elementValuePairs
     ;
 
 elementValuePair
-    :   Identifier '=' elementValue
+    :   variableIdentifier '=' elementValue
     ;
 
 elementValue
@@ -344,7 +372,7 @@ elementValueArrayInitializer
     ;
 
 annotationTypeDeclaration
-    :   '@' 'interface' Identifier annotationTypeBody
+    :   '@' 'interface' classIdentifier annotationTypeBody
     ;
 
 annotationTypeBody
@@ -370,7 +398,7 @@ annotationMethodOrConstantRest
     ;
 
 annotationMethodRest
-    :   Identifier '(' ')' defaultValue?
+    :   variableIdentifier '(' ')' defaultValue?
     ;
 
 annotationConstantRest
@@ -414,15 +442,15 @@ statement
     |   'synchronized' parExpression block
     |   'return' expression? ';'
     |   'throw' expression ';'
-    |   'break' Identifier? ';'
-    |   'continue' Identifier? ';'
+    |   'break' variableIdentifier? ';'
+    |   'continue' variableIdentifier? ';'
     |   ';'
     |   statementExpression ';'
-    |   Identifier ':' statement
+    |   variableIdentifier ':' statement
     ;
 
 catchClause
-    :   'catch' '(' variableModifier* catchType Identifier ')' block
+    :   'catch' '(' variableModifier* catchType variableIdentifier ')' block
     ;
 
 catchType
@@ -496,7 +524,7 @@ constantExpression
 
 expression
     :   primary
-    |   expression '.' Identifier
+    |   expression '.' functionVariableClassIdentifier
     |   expression '.' 'this'
     |   expression '.' 'new' nonWildcardTypeArguments? innerCreator
     |   expression '.' 'super' superSuffix
@@ -542,7 +570,7 @@ primary
     |   'this'
     |   'super'
     |   literal
-    |   Identifier
+    |   variableClassIdentifier
     |   typeType '.' 'class'
     |   'void' '.' 'class'
     |   nonWildcardTypeArguments (explicitGenericInvocationSuffix | 'this' arguments)
@@ -554,12 +582,12 @@ creator
     ;
 
 createdName
-    :   Identifier typeArgumentsOrDiamond? ('.' Identifier typeArgumentsOrDiamond?)*
+    :   classIdentifier typeArgumentsOrDiamond? ('.' classIdentifier typeArgumentsOrDiamond?)*
     |   primitiveType
     ;
 
 innerCreator
-    :   Identifier nonWildcardTypeArgumentsOrDiamond? classCreatorRest
+    :   classIdentifier nonWildcardTypeArgumentsOrDiamond? classCreatorRest
     ;
 
 arrayCreatorRest
@@ -593,12 +621,12 @@ nonWildcardTypeArgumentsOrDiamond
 
 superSuffix
     :   arguments
-    |   '.' Identifier arguments?
+    |   '.' classIdentifier arguments?
     ;
 
 explicitGenericInvocationSuffix
     :   'super' superSuffix
-    |   Identifier arguments
+    |   classIdentifier arguments
     ;
 
 arguments
@@ -971,9 +999,11 @@ URSHIFT_ASSIGN  : '>>>=';
 
 // §3.8 Identifiers (must appear after all keywords in the grammar)
 
+
 Identifier
     :   JavaLetter JavaLetterOrDigit*
     ;
+
 
 fragment
 JavaLetter
@@ -996,13 +1026,6 @@ JavaLetterOrDigit
         [\uD800-\uDBFF] [\uDC00-\uDFFF]
         {Character.isJavaIdentifierPart(Character.toCodePoint((char)_input.LA(-2), (char)_input.LA(-1)))}?
     ;
-
-// §3.81 ClassIdentifiers are a creative copy of Identifier
-
-ClassIdentifier
-    :   JavaLetter JavaLetterOrDigit*
-    ;
-
 
 //
 // Additional symbols not defined in the lexical specification

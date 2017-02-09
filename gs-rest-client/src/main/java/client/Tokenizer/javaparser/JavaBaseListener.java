@@ -159,13 +159,13 @@ public class JavaBaseListener implements JavaListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterVariableFuntionIdentifier(JavaParser.VariableFuntionIdentifierContext ctx) { }
+	@Override public void enterVariableFunctionIdentifier(JavaParser.VariableFunctionIdentifierContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitVariableFuntionIdentifier(JavaParser.VariableFuntionIdentifierContext ctx) { }
+	@Override public void exitVariableFunctionIdentifier(JavaParser.VariableFunctionIdentifierContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
