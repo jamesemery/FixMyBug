@@ -4,7 +4,6 @@ import java.sql.*;
 import java.util.*;
 import com.mysql.jdbc.jdbc2.optional.*;
 
-
 public class BlackboxSolicitor {
 
     MysqlDataSource dataSource;

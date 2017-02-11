@@ -13,14 +13,62 @@ package Filler;
 import com.jcraft.jsch.*;
 import java.io.*;
 import java.sql.*;
-import java.util.LinkedList;
+import java.util.*;
+import org.sqlite.SQLiteDataSource;
+import org.sqlite.SQLiteJDBCLoader;
 
 public class BlackBoxConnection {
 
+/**
+ * Queries the local blackbox database.
+ *    startID: adds a "where id > x" clause to avoid duplication
+ *    maxVals: adds a "limit x" clause for testing
+ * Both values can be set to -1 to not put the clause in at all.
+ */
+public static ResultSet LocalQuery(int startID, int maxVals) {
+    System.out.println("Starting to query local DB...");
+    String url = "jdbc:sqlite:./blackboxDataDB";
+    String tableName = "BLACKBOX_ENTRIES";
+    boolean initialize = false;
 
+    //try to connect to the DB
+    try {
+        initialize = SQLiteJDBCLoader.initialize();
+        if (!initialize) throw new Exception("SQLite Library Not Loaded\n");
+        SQLiteDataSource dataSource = new SQLiteDataSource();
+        dataSource.setUrl(url);
+
+        Connection connection = dataSource.getConnection();
+        String query = "select * from (session1 S1 JOIN session2 S2 on S1.id = S2.id)" +
+                      "where S1.success = 0 and S2.success = 1 and S1.session_id = S2.session_id";
+        String qualifier = " and S1.id > " + startID;
+        String limit = " limit " + maxVals;
+        //String min = "where "
+        StringBuilder finalQuery = new StringBuilder(query);
+        if(startID > 0) {
+          finalQuery.append(qualifier);
+        }
+        if(maxVals > 0) {
+          finalQuery.append(limit);
+        }
+        finalQuery.append(";");
+        System.out.println("Executing query: ..." + finalQuery.toString() + "...");
+        ResultSet rs = connection.createStatement().executeQuery(finalQuery.toString());
+        //connection.close();
+        return rs;
+    } catch (Exception ex) { //SQLException ex) {
+        System.out.println(ex.getMessage());
+        return null;
+    }
+}
 
   //public static String remoteExec(Session session, int source_file_id, int master_id) throws Exception {
   //  String command = "/tools/nccb/bin/print-compile-input /data/compile-inputs " + source_file_id + " " + master_id;
+
+/**
+ *  Calls an executable on the blackbox server. Opens a new channel within the
+ *  session, runs the command it's given, and returns the result.
+ */
   public static String remoteExec(Session session, String command) throws Exception {
     Channel channel=session.openChannel("exec");
     ((ChannelExec)channel).setCommand(command);
@@ -65,6 +113,10 @@ public class BlackBoxConnection {
     return inputString.toString();
   }
 
+
+  /**
+   * A simple function to get a password from the user.
+   */
   public static String getPassword(String prompt)
   {
     Console console = System.console();
@@ -74,92 +126,80 @@ public class BlackBoxConnection {
     return passwordString;
   }
 
+
+
+
+  /**
+   * Main method. Grabs data from our local database, then runs the executable
+   * to get the corresponding source files from blackbox.
+   */
   public static void main(String[] arg){
-    try{
+    // Starting constants
+    final int QUEUE_SIZE = 10;
+    final int START_ID = 25000;
+    final int LIMIT = 20;
+
+    if(arg.length > 0 && arg[0].equals("test")){
+        Main.main(arg);
+        System.exit(0);
+    }
+
+
+    try {
+      // GET RESULTSET FROM OUR DATABASE
+      ResultSet results = LocalQuery(START_ID,LIMIT); // (-1,-1) for no constraints on data
+
+      // CONNECT TO BLACKBOX
+      Scanner input = new Scanner(System.in);
+      System.out.print("SSH Username: ");
+      String user = input.next();
+      String host = "white.kent.ac.uk";
       JSch jsch=new JSch();
-
-      //jsch.setKnownHosts("/Users/fixmybug/.ssh/known_hosts");
-
-      String host=null;
-      if(arg.length>0){
-          host=arg[0];
-      } else if (arg[0].equals("test")){
-          Main.main(arg);
-      } else {
-          System.out.println("Needs an argument, in the form username@white.kent.ac.uk");
-          System.exit(0);
-      }
-
-
-      String user=host.substring(0, host.indexOf('@'));
-      host=host.substring(host.indexOf('@')+1);
-
+      jsch.setKnownHosts("/Users/fixmybug/.ssh/known_hosts");
       Session session=jsch.getSession(user, host, 22);
-
-      // Get password from user
-      System.out.println("User: " + user);
       String passwd = getPassword("SSH Password: ");
-
-      //String passwd = arg[1];
-      //System.out.println("Password: " + passwd);
       session.setPassword(passwd);
-
-      // skip host-key check
-      session.setConfig("StrictHostKeyChecking", "no");
-
+      // skip host-key check - we don't need to do this here, but on Windows
+      // it's a nice alternative to figuring the known hosts
+      //session.setConfig("StrictHostKeyChecking", "no");
       session.connect(30000);   // making a connection with timeout.
 
-      // Get database password in preparation for setting that up
-      String passwdDB = getPassword("Database Password: ");
-
-      //Port Forwarding
-      String foo="3307:localhost:3306";
-      int lport=Integer.parseInt(foo.substring(0, foo.indexOf(':')));
-      foo=foo.substring(foo.indexOf(':')+1);
-      String rhost=foo.substring(0, foo.indexOf(':'));
-      int rport=Integer.parseInt(foo.substring(foo.indexOf(':')+1));
-      int assigned_port=session.setPortForwardingL(lport, rhost, rport);
-
-      //Get bugs and fixes from BlackBox (exec Query);
-      BlackboxSolicitor mysql_interface = new BlackboxSolicitor(passwdDB);
-      ResultSet results = mysql_interface.GetBugIDs(7);
-      BashScriptBuilder scriptBuilder = new BashScriptBuilder(1,session);
-      results.first();
-
+      // GO THROUGH DATABASE RESULTS
+      BashScriptBuilder scriptBuilder = new BashScriptBuilder(QUEUE_SIZE,session);
       DBFillerInterface dbFiller = new DBFillerInterface("uploadTestDB");
-      // Sort through results and get source files
-      while(!results.isAfterLast()) {
-        int fileId = results.getInt("source_file_id");
-        int failId = results.getInt("Fail_id");
-        int successId = results.getInt("Success_id");
-        int startLine = results.getInt("start_line");
-        String bug = "";
-        String fix = "";
+      // SQLite doesn't have any sort of isLast() capability, and because we
+      // sometimes need to run the loop twice for a single result, we can't
+      // simply do while(results.next()) as is customary.
+      boolean stillIterating = results.next();
+      while(stillIterating) {
+        int failId = results.getInt(4);
+        int successId = results.getInt(11);
+        int fileId = results.getInt(6);
+        int startLine = results.getInt(7);
         BugFix temp = new BugFix(failId,successId,fileId,startLine);
-        // System.out.print("SOURCE FILE ID" + fileId + "...");
-        boolean success = scriptBuilder.addToQueue(temp);
-        // System.out.print("ADDING TO QUEUE...");
-        //System.out.println(success);
 
+        boolean success = scriptBuilder.addToQueue(temp);
         // if the queue is full, or we're out of results, get source code
-        if (!success || results.isLast()) {
-          // System.out.println("Ready to gather source code!");
+        // Note that this doesn't do anything to the result currently in
+        if (!success) {
+          //System.out.println("Ready to gather source code!");
           String command = scriptBuilder.generateBashScript();
           //System.out.println(command);
           try {
+            //System.out.println("Running remoteExec!\n");
             String resultString = remoteExec(session,command);
             //System.out.println(resultString);
             LinkedList<BugFixFile> resultCode = scriptBuilder.parseResultString(resultString);
             for(BugFixFile result : resultCode)
             {
-              System.out.println("\n\nBUG INFORMATION...................\n");
-              System.out.print("Bug Code: ");
-              System.out.println(result.bug);
-              System.out.print("Fix Code: ");
-              System.out.println(result.fix);
-              System.out.print("\nStart Line: ");
-              System.out.println(result.startLine);
-              dbFiller.uploadToDatabase(result.bug,result.fix,result.startLine);
+              System.out.println("BUG!");
+              //System.out.print("Bug Code: ");
+              //System.out.println(result.bug);
+              //System.out.print("Fix Code: ");
+              //System.out.println(result.fix);
+              //System.out.print("\nStart Line: ");
+              //System.out.println(result.startLine);
+              //dbFiller.uploadToDatabase(result.bug,result.fix,result.startLine);
             }
           } catch (Exception e) {
             //e.getMessage();
@@ -169,38 +209,51 @@ public class BlackBoxConnection {
             System.out.println(e.getStackTrace());
             System.out.println(e);
           }
-          // DO THINGS
         }
-        // This isn't just an else case b/c the last data point needs to only
-        // get processed once.
-        if (success) {
-          results.next();
+        // Iterate to next result if the queue was full.
+        // (if it's the last entry, we still need to iterate so that the program
+        // can know that it's past the end of the resultset and end the loop)
+        else {
+          stillIterating = results.next();
         }
-
-
-
-        // Put it in the queue and do stuff
-
-        // Run the scripts to get source code
-        // try {
-        //   System.out.println("Getting bug...\nFile ID: " + fileId + " Fail ID: " + failId);
-        //   bug = remoteExec(session, fileId, failId);
-        //   System.out.println("Getting fix...\nFile ID: " + fileId + " Success ID: " + successId);
-        //   fix = remoteExec(session, fileId, successId);
-        //   System.out.println("Error on line: " + startLine);
-        //   //PUT IN DB HERE
-        //   dbFiller.uploadToDatabase(bug,fix,startLine);
-        //
-        //   //System.out.println(bug);
-        //   //System.out.println(fix);
-        // } catch(Exception e) {
-        //
-        // }
-
       }
 
-      session.disconnect();
+      ////////////////
+      // Duplicated code to process any leftovers in the queue.
+      // TODO make this nicer - put it all into a method?
+      ////////////////
+      String command = scriptBuilder.generateBashScript();
+      //System.out.println(command);
+      try {
+        //System.out.println("Running remoteExec!\n");
+        String resultString = remoteExec(session,command);
+        //System.out.println(resultString);
+        LinkedList<BugFixFile> resultCode = scriptBuilder.parseResultString(resultString);
+        for(BugFixFile result : resultCode)
+        {
+          System.out.println("BUG!");
+          // System.out.print("Bug Code: ");
+          // System.out.println(result.bug);
+          // System.out.print("Fix Code: ");
+          // System.out.println(result.fix);
+          // System.out.print("\nStart Line: ");
+          // System.out.println(result.startLine);
+          // dbFiller.uploadToDatabase(result.bug,result.fix,result.startLine);
+        }
+      } catch (Exception e) {
+        //e.getMessage();
+        //System.out.println(e.getStackTrace());
+        System.out.println("Missing data in blackbox: " + e.getMessage());
+        System.out.println(e.getLocalizedMessage());
+        System.out.println(e.getStackTrace());
+        System.out.println(e);
+      }
+      ////////////////
+      // End duplicated code
+      ////////////////
 
+
+      session.disconnect();
     }
     catch(Exception e){
       System.out.println(e);
