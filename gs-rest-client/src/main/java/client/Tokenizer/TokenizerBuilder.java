@@ -155,7 +155,7 @@ public class TokenizerBuilder {
         for (EdiToken t: ediTokens) {
             if (t.getType()>113) {
                 for (EdiToken to: tokens) {
-                    if (to.getText().equals(t.getText())) {
+                    if (to.getText().equals(t.getText()) && to.getType()<114) {
                         t.setType(to.getType());
                         break;
                     }
