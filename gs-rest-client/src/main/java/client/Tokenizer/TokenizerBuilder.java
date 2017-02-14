@@ -134,7 +134,6 @@ public class TokenizerBuilder {
                     types[3]++;
                 } else if (listener.identifierPosition.get(identifier) == "variableClass") {
                     token.setType(114);
-                    //yes
                     types[4]++;
                 } else if (listener.identifierPosition.get(identifier) == "variableFunction") {
                     token.setType(115);
