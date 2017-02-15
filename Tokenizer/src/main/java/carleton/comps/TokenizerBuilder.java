@@ -125,45 +125,50 @@ public class TokenizerBuilder {
         for (Token t : tokenizedLine) {
             EdiToken token = new EdiToken(t);
             if (token.getType() == 100) {
-                System.out.println("The Type IdentifierListener expects: " + listener.identifierPosition.get(identifier));
                 if (listener.identifierPosition.get(identifier) == "class") {
                     token.setType(110);
-                    System.out.println("The position IdentifierListener expects: " + listener.classIds.get(types[0]));
                     types[0]++;
                 } else if (listener.identifierPosition.get(identifier) == "function") {
                     token.setType(111);
-                    System.out.println("The position IdentifierListener expects: " + listener.function.get(types[1]));
                     types[1]++;
                 } else if (listener.identifierPosition.get(identifier) == "variable") {
                     token.setType(112);
-                    System.out.println("The position IdentifierListener expects: " + listener.variable.get(types[2]));
                     types[2]++;
                 } else if (listener.identifierPosition.get(identifier) == "outside") {
                     token.setType(113);
-                    System.out.println("The position IdentifierListener expects: " + listener.outside.get(types[3]));
                     types[3]++;
                 } else if (listener.identifierPosition.get(identifier) == "variableClass") {
                     token.setType(114);
-                    System.out.println("The position IdentifierListener expects: " + listener.variableClass.get(types[4]));
                     types[4]++;
                 } else if (listener.identifierPosition.get(identifier) == "variableFunction") {
                     token.setType(115);
-                    System.out.println("The position IdentifierListener expects: " + listener.variableFunction.get(types[5]));
                     types[5]++;
                 } else if (listener.identifierPosition.get(identifier) == "functionVariableClass") {
-                    token.setType(115);
-                    System.out.println("The position IdentifierListener expects: " + listener.functionVariableClass.get(types[6]));
+                    token.setType(116);
                     types[6]++;
                 }
-                System.out.println("The current position of the token: " + t.getTokenIndex());
                 identifier++;
             }
             ediTokens.add(token);
         }
+        ediTokens = identifierCheck(ediTokens);
         return ediTokens;
     }
 
-
+    private List<EdiToken> identifierCheck(List<EdiToken> ediTokens) {
+        List<EdiToken> tokens = ediTokens;
+        for (EdiToken t: ediTokens) {
+            if (t.getType()>113) {
+                for (EdiToken to: tokens) {
+                    if (to.getText().equals(t.getText()) && to.getType()<114) {
+                        t.setType(to.getType());
+                        break;
+                    }
+                }
+            }
+        }
+        return ediTokens;
+    }
     public String ediTokensToString() {
         StringBuilder tokens = new StringBuilder();
         StringBuilder program = new StringBuilder();
