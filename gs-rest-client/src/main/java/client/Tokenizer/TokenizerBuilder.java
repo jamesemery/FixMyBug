@@ -146,7 +146,9 @@ public class TokenizerBuilder {
                 }
                 identifier++;
             }
-            ediTokens.add(token);
+            if (token.getType()!= 104 || token.getType()!= 105) {
+                ediTokens.add(token);
+            }
         }
         ediTokens = identifierCheck(ediTokens);
         return ediTokens;
