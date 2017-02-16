@@ -120,7 +120,9 @@ public class TokenizerBuilder {
         for (Token t : tokenizedLine) {
             EdiToken token = new EdiToken(t);
             if (token.getType() == 100) {
-                if (listener.identifierPosition.get(identifier) == "class") {
+                if (listener.identifierPosition.size()<=identifier) {
+                    
+                } else if (listener.identifierPosition.get(identifier) == "class") {
                     token.setType(110);
                     types[0]++;
                 } else if (listener.identifierPosition.get(identifier) == "function") {
