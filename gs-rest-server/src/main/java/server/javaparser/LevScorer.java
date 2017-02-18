@@ -11,7 +11,8 @@ import java.util.List;
  * NOTE: a higher score indicates a greater degree of similarity
  */
 public class LevScorer {
-
+    private static int TOKEN_MATCH = 5;
+    private static int IDENTIFIER_MATCH = 3;
     /**
      * Uses a Levenstein distance calculation algorith in order to clalculate
      * the edit distance between two strings
@@ -40,7 +41,10 @@ public class LevScorer {
         for (int i = 1; i < scores.length; i++) {
             for (int j = 1; j < scores[0].length; j++) {
                 int match = scores[i-1][j-1];
-                if (queryString.get(i-1) == tokens.get(j-1)) match++;
+                if (queryString.get(i-1) == tokens.get(j-1)) match+=TOKEN_MATCH;
+                else if (((queryString.get(i-1)==100)||(queryString.get(i-1)
+                        >109))&&((tokens.get(j-1)==100)||(tokens.get(i-1)
+                        >109))) match+=IDENTIFIER_MATCH;
                 int left = scores[i-1][j];
                 int right = scores [i][j-1];
                 int max = Math.max(match, Math.max(left, right));

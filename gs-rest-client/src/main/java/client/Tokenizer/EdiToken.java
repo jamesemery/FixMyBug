@@ -47,4 +47,7 @@ public class EdiToken {
     public int getType() {
         return type;
     }
+    public String toString() {
+        return token.toString();
+    }
 }

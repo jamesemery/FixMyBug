@@ -1,4 +1,4 @@
-package carleton.comps.javaparser.examples;
+package client.Tokenizer.javaparser.examples;
 
 public class HelloWorld {
    public static void main(String[] args) { 
