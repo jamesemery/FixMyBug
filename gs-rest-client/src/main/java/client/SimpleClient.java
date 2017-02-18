@@ -43,6 +43,7 @@ public class SimpleClient {
      */
     public static TokenizerBuilder tokenize(String string) throws IOException {
         try {
+            System.out.print(string);
           TokenizerBuilder t = new TokenizerBuilder(string, "String");
           return t;
         } catch (IOException ex) {
