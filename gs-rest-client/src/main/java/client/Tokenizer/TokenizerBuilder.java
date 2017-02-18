@@ -253,7 +253,8 @@ public class TokenizerBuilder {
     public List<EdiToken> betweenLines(int start, int stop) {
 
         if (start < 1 || stop > ediTokenizedCode.size()) {
-            throw new IndexOutOfBoundsException("The lines you specified are out of range.");
+            throw new IndexOutOfBoundsException("The lines you specified are out of range. " +
+                    "Start:"+start+"   Stop:"+stop);
         }
 
 
