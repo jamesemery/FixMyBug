@@ -463,8 +463,55 @@ public class TokenizerBuilder {
     {
         return JavaParser.VOCABULARY.getLiteralName(t.getType())==null;
     }
-    public static boolean isAmbiuousToken(int t) {
+    public static boolean isAmbiguousToken(int t) {
         return JavaParser.VOCABULARY.getLiteralName(t)==null;
     }
 
+    /**
+     * Method that returns true if the polled token is part of the identifier tree
+     */
+    public static boolean isIdentifier(int token) {
+        if ((token==100)||(token>109)) return true;
+        return false;
+    }
+
+    /**
+     * Method that takes two integers and returns true if they are degenerate
+     */
+    public static boolean isDegenerate(int token1, int token2) {
+        if (token1==token2);
+        if (isIdentifier(token1)&&isIdentifier(token2)) {
+            // if one is a super token, return true;
+            if ((token1==116)||(token2==116)) return true;
+
+
+            // if one is a class, check for class degeneracy
+            if ((token1==100)||(token2==100)) {
+                if ((token1==114)||(token2==114)) {
+                    return true;
+                }
+                return false;
+            }
+
+            // if one is a fucntion, check for possible degeneracy
+            else if ((token1==111)||(token2==111)) {
+                if ((token1==115)||(token2==115)) {
+                    return true;
+                }
+                return false;
+            }
+
+            // if one is a variable, check for possible degeneracy
+            else if ((token1==112)||(token2==112)) {
+                if ((token1>113)||(token2==113)) {
+                    return true;
+                }
+                return false;
+            }
+
+            // At this point, either the two cant be the same OR both are 114 and 115
+            else if (((token1==114)&&(token2==115))||((token1==115)&&(token2==114))) return true;
+        }
+        return false;
+    }
 }
