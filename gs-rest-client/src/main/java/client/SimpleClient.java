@@ -18,9 +18,13 @@ public class SimpleClient {
     private static final String BASE_URL = "http://localhost:8080/";
 
     /*
-    * Reads in a text file and returns it as a string.
-    */
+     * Reads in a text file and returns it as a string.
+     */
     public static String fileToString(String fileName) throws IOException {
+        //  //////  //////  ////    //////
+        //    //    //  //  //  //  //  //    This is never used.
+        //    //    //  //  //  //  //  //
+        //    //    //////  ////    //////
         BufferedReader reader = new BufferedReader(new FileReader(fileName));
         String line = null;
         StringBuilder stringBuilder = new StringBuilder();
@@ -48,11 +52,15 @@ public class SimpleClient {
         } catch (IOException ex) {
           ex.printStackTrace();
         }
+        //  //////  //////  ////    //////
+        //    //    //  //  //  //  //  //    This should just throw an error and quit, I think? The program isn't going to run if we
+        //    //    //  //  //  //  //  //    can't actually tokenize, and now that it's programatic, we don't care about prints.
+        //    //    //////  ////    //////
         System.out.println("Error while tokenizing... returning an empty string.");
         return new TokenizerBuilder("","String");
     }
 
-    /*
+    /**
      * A function that returns the lines of a file between provided starting and ending
      * line numbers. 
      *
@@ -63,6 +71,10 @@ public class SimpleClient {
      * buggy code. 
      */
     public static String getLinesFromFile(String fileName, int firstLine, int lastLine) throws IOException {
+        //  //////  //////  ////    //////
+        //    //    //  //  //  //  //  //    Do we want this to take in the file here? Would it be easier or better for the plugin to
+        //    //    //  //  //  //  //  //    pass it a list of lines, or something? Worth considering.
+        //    //    //////  ////    //////
         BufferedReader reader = new BufferedReader(new FileReader(fileName));
         String line = null;
         int lineNum = 0;
@@ -199,6 +211,10 @@ public class SimpleClient {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+    
+    public String prf() {
+    	return "it worked~it worked~it worked~it worked";
     }
 
     public static void main(String[] args) {

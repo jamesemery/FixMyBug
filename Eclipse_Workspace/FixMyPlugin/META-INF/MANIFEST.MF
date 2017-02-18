@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Echo
+Bundle-Name: FixMyPlugin
 Bundle-SymbolicName: FixMyPlugin;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: fixmyplugin.Activator
@@ -14,3 +14,5 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.jface.text;bundle-version="3.11.1"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
+Bundle-ClassPath: .,
+ libs/gs-client-0.1.0-jar-with-dependencies.jar

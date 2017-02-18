@@ -6,25 +6,25 @@
 	     point="org.eclipse.ui.commands">
       <category
             name="Sample Category"
-            id="Echo.commands.category">
+            id="FixMyPlugin.commands.category">
       </category>
       <command
             name="Sample Command"
-            categoryId="Echo.commands.category"
-            id="Echo.commands.sampleCommand">
+            categoryId="FixMyPlugin.commands.category"
+            id="FixMyPlugin.commands.sampleCommand">
       </command>
    </extension>
    <extension
          point="org.eclipse.ui.handlers">
       <handler
-            commandId="Echo.commands.sampleCommand"
-            class="echo.handlers.SampleHandler">
+            commandId="FixMyPlugin.commands.sampleCommand"
+            class="fixmyplugin.handlers.SampleHandler">
       </handler>
    </extension>
    <extension
          point="org.eclipse.ui.bindings">
       <key
-            commandId="Echo.commands.sampleCommand"
+            commandId="FixMyPlugin.commands.sampleCommand"
             contextId="org.eclipse.ui.contexts.window"
             sequence="M1+6"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration">
@@ -37,23 +37,23 @@
          <menu
                label="Sample Menu"
                mnemonic="M"
-               id="Echo.menus.sampleMenu">
+               id="FixMyPlugin.menus.sampleMenu">
             <command
-                  commandId="Echo.commands.sampleCommand"
+                  commandId="FixMyPlugin.commands.sampleCommand"
                   mnemonic="S"
-                  id="Echo.menus.sampleCommand">
+                  id="FixMyPlugin.menus.sampleCommand">
             </command>
          </menu>
       </menuContribution>
       <menuContribution
             locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
          <toolbar
-               id="Echo.toolbars.sampleToolbar">
+               id="FixMyPlugin.toolbars.sampleToolbar">
             <command
-                  commandId="Echo.commands.sampleCommand"
+                  commandId="FixMyPlugin.commands.sampleCommand"
                   icon="icons/Lure.png"
                   tooltip="Fix My Bug!"
-                  id="Echo.toolbars.sampleCommand">
+                  id="FixMyPlugin.toolbars.sampleCommand">
             </command>
          </toolbar>
       </menuContribution>
@@ -62,7 +62,7 @@
    <extension point="org.eclipse.ui.views">
       <view
       		name="Bug Fixes"
-            class="echo.FixMyBugView"
+            class="fixmyplugin.FixMyBugView"
             id="BugFixerView"
             icon="icons/Lure.png"
             >
