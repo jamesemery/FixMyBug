@@ -15,6 +15,7 @@ import java.sql.ResultSet;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * A Class that handles the process of filling the database given input of two files
@@ -31,9 +32,9 @@ public class DBFillerInterface {
     public static final String DATABASE_TABLE_NAME = "master_table";
 
     //CONSTANTS ABOUT PROCESSING
-    private static int MAX_LINES_TO_GRAB = 2;
-    private static int PRECEEDING_LINES = 1;
-    private static int TRAILING_LINES = 1;
+    private static int MAX_LINES_TO_GRAB = 4;
+    private static int PRECEEDING_LINES = 2;
+    private static int TRAILING_LINES = 2;
 
 
     // constructior (takes database name as the argument)
@@ -99,7 +100,7 @@ public class DBFillerInterface {
         if (edits.size()>15) {
             return false;
         }
-        
+
 
         // Processing the list so that the lines are clear
         List<DiffFinderHelper> processed = new ArrayList<>();
@@ -108,8 +109,10 @@ public class DBFillerInterface {
         int candidateFixIndex = -1;
         for (DiffMatchPatch.Diff d: edits) {
             // Finding the first edit before the change error message;
-            if ((errline <= messageLine) && (d.operation != DiffMatchPatch.Operation.EQUAL)) {
-                candidateFixIndex = processed.size();
+            if (errline <= messageLine+1) {
+                if (d.operation != DiffMatchPatch.Operation.EQUAL) {
+                    candidateFixIndex = processed.size();
+                }
             }
 
             processed.add(new DiffFinderHelper(errline, fixline, d));
@@ -123,12 +126,14 @@ public class DBFillerInterface {
                 fixline += i;
             }
         }
-
         // Logic to find lines
         int errLineStart = processed.get(candidateFixIndex).errStartLine;
         int fixLineStart = processed.get(candidateFixIndex).fixStartLine;
         int errLinesRemaining = MAX_LINES_TO_GRAB;
         int fixLinesRemaining = MAX_LINES_TO_GRAB;
+
+        //System.out.println("errline: " + errLineStart);
+        //System.out.println("fixline: " + fixLineStart);
 
         // If the diff is not the end of the file
         if (candidateFixIndex+1!=processed.size()) {
@@ -138,9 +143,12 @@ public class DBFillerInterface {
             // Currently not used in processing
             fixLinesRemaining = MAX_LINES_TO_GRAB - (processed.get(candidateFixIndex+1).fixStartLine
                     - processed.get(candidateFixIndex).fixStartLine) - 1;
-
+        }
         // If it is the last line of the file TODO?
-      }
+        else {
+            System.out.println("candidateFixIndex: " + candidateFixIndex + " and processed size: " + processed.size());
+            System.out.println(edits);
+        }
 
 
         int errLineEnd = errLineStart + MAX_LINES_TO_GRAB - errLinesRemaining - 1 + TRAILING_LINES;
@@ -200,7 +208,7 @@ public class DBFillerInterface {
     public final void Insert(DatabaseEntry entry) {
         try {
             entry.escape();
-            System.out.println("filling to database: " + entry.toString());
+            //System.out.println("filling to database: " + entry.toString());
             Connection connection = dataSource.getConnection();
             int rs = connection.createStatement()
                     .executeUpdate("INSERT INTO \"" + tableName + "\" VALUES ("
@@ -211,6 +219,8 @@ public class DBFillerInterface {
                     + currentID++ + ", \"" + entry.getBuggyCode() + "\" , \"" + entry
                     .getBuggyCodeAssignments() + "\", \"" + entry.getFixedCode() + "\", \"" +
                     entry.getFixedCodeAssignments() + "\");");*/
+                    sanitizeForJsonTransmission(entry);
+                    System.out.println(entry);
                     connection.close();
         } catch (Exception ex) { //SQLException ex) {
             System.out.println(ex.getMessage());
@@ -346,5 +356,20 @@ public class DBFillerInterface {
             System.out.println("Could not read file");
         }
         return null;
+    }
+
+
+    public static DatabaseEntry sanitizeForJsonTransmission(DatabaseEntry e) {
+            e.setBuggyCode(e.buggyCodeAsList().stream().map(Object::toString).collect
+                    (Collectors.joining(" ")).toString());
+            e.setFixedCode(e.fixedCodeAsList().stream().map(Object::toString).collect
+                    (Collectors.joining(" ")).toString());
+            e.setBuggyCodeAssignments(e.buggyAssignmentsAsList().stream().map(Object::toString).collect
+                    (Collectors.joining(" ")).toString());
+            e.setFixedCodeAssignments(e.fixedAssignmentsAsList().stream().map
+                    (Object::toString).collect(Collectors.joining(" ")).toString());
+
+
+        return e;
     }
 }

@@ -16,8 +16,10 @@ import java.sql.*;
 import java.util.*;
 import org.sqlite.SQLiteDataSource;
 import org.sqlite.SQLiteJDBCLoader;
+import org.apache.commons.io.IOUtils;
 
 public class BlackBoxConnection {
+  public static Integer filenumber = 0;
 
 /**
  * Queries the local blackbox database.
@@ -52,7 +54,7 @@ public static ResultSet LocalQuery(int startID, int maxVals) {
           finalQuery.append(limit);
         }
         finalQuery.append(";");
-        System.out.println("Executing query: ..." + finalQuery.toString() + "...");
+        //System.out.println("Executing query: ..." + finalQuery.toString() + "...");
         ResultSet rs = connection.createStatement().executeQuery(finalQuery.toString());
         //connection.close();
         return rs;
@@ -113,7 +115,6 @@ public static ResultSet LocalQuery(int startID, int maxVals) {
     return inputString.toString();
   }
 
-
   /**
    * A simple function to get a password from the user.
    */
@@ -126,6 +127,100 @@ public static ResultSet LocalQuery(int startID, int maxVals) {
     return passwordString;
   }
 
+  /**
+   * Pulls source code from the server and adds it to the database. This isn't
+   * really all that distinct from the main method, but it needs to happen in
+   * two places due to limitations in the main loop's logic (SQLite being a pain),
+   * so it's pulled out into a helper method for the sake of clarity/consistency.
+   */
+  public static void gatherSourceCode(Session session,
+                                      BashScriptBuilder scriptBuilder,
+                                      DBFillerInterface dbfiller)
+  {
+    System.out.println("Getting source code!");
+    String command = scriptBuilder.generateBashScript();
+    //System.out.println(command);
+    try {
+      //System.out.println("Running remoteExec!\n");
+      String resultString = remoteExec(session,command);
+
+      String filepath = "/Users/fixmybug/FixMyBugData/";
+
+      BufferedWriter out = null;
+      try
+      {
+        FileWriter fstream = new FileWriter(filepath + "bugsandfixes" + filenumber.toString() + ".txt", true); //true tells to append data.
+        out = new BufferedWriter(fstream);
+        out.write(resultString);
+      }
+      catch (IOException e)
+      {
+        System.err.println("Error: " + e.getMessage());
+      }
+      finally
+      {
+    if(out != null) {
+        out.close();
+    }
+    System.out.println("Wrote file number " + filenumber.toString());
+    filenumber += 1;
+}
+      //System.out.println(resultString);
+      //LinkedList<BugFixFile> resultCode = scriptBuilder.parseResultString(resultString);
+      //for(BugFixFile result : resultCode)
+      //{
+      //  System.out.println("BUG!");
+        //System.out.print("Bug Code: ");
+        //System.out.println(result.bug);
+        //System.out.print("Fix Code: ");
+        //System.out.println(result.fix);
+        //System.out.print("\nStart Line: ");
+        //System.out.println(result.startLine);
+
+        //dbFiller.uploadToDatabase(result.bug,result.fix,result.startLine);
+      //}
+    } catch (Exception e) {
+      //e.getMessage();
+      //System.out.println(e.getStackTrace());
+      System.out.println("Missing data in blackbox: " + e.getMessage());
+      System.out.println(e.getLocalizedMessage());
+      System.out.println(e.getStackTrace());
+      System.out.println(e);
+    }
+  }
+
+  /**
+   * Reads from files and adds the source code to the database.
+   */
+  public static void readFiles(int num_files) {
+    DBFillerInterface dbFiller = new DBFillerInterface("UploadTestDB");
+
+    for(int i = 0; i <= num_files; i++)
+    {
+      String filepath = "/Users/fixmybug/FixMyBugData/bugsandfixes" + i + ".txt";
+      try(FileInputStream inputStream = new FileInputStream(filepath)) {
+        String resultString = IOUtils.toString(inputStream);
+
+        LinkedList<BugFixFile> results = BashScriptBuilder.parseResultString(resultString);
+        for(BugFixFile result : results)
+        {
+          System.out.println("reading file number " + i + "...");
+          //System.out.print("Bug Code: ");
+          //System.out.println(result.bug);
+          //System.out.print("Fix Code: ");
+          //System.out.println(result.fix);
+          //System.out.print("\nStart Line: ");
+          //System.out.println(result.startLine);
+          dbFiller.uploadToDatabase(result.bug, result.fix, result.startLine);
+        }
+      } catch (Exception e) {
+        System.out.println("Caught exception reading file:" + e.getLocalizedMessage());
+        System.out.println(e.getStackTrace());
+        //System.exit(1);
+      }
+    }
+  }
+
 
 
 
@@ -134,20 +229,31 @@ public static ResultSet LocalQuery(int startID, int maxVals) {
    * to get the corresponding source files from blackbox.
    */
   public static void main(String[] arg){
-    // Starting constants
-    final int QUEUE_SIZE = 10;
-    final int START_ID = 25000;
-    final int LIMIT = 20;
 
+    // Command line flag to go to the test code instead.
     if(arg.length > 0 && arg[0].equals("test")){
         Main.main(arg);
         System.exit(0);
     }
 
 
+    if(arg.length > 0 && arg[0].equals("read"))
+    {
+      //int NUM_FILES = 10900;
+      int NUM_FILES = 20;
+      readFiles(NUM_FILES);
+      System.exit(0);
+    }
+
+    // SET STARTING CONSTANTS
+    final int QUEUE_SIZE = 30; // how many items to get from the server at a time
+    final int START_ID = 4700; // sets lower limit on id (-1 for no limit)
+    final int LIMIT = -1; // sets a max # of results (-1 for no max)
+
     try {
       // GET RESULTSET FROM OUR DATABASE
-      ResultSet results = LocalQuery(START_ID,LIMIT); // (-1,-1) for no constraints on data
+      ResultSet results = LocalQuery(START_ID,LIMIT);
+
 
       // CONNECT TO BLACKBOX
       Scanner input = new Scanner(System.in);
@@ -159,10 +265,11 @@ public static ResultSet LocalQuery(int startID, int maxVals) {
       Session session=jsch.getSession(user, host, 22);
       String passwd = getPassword("SSH Password: ");
       session.setPassword(passwd);
-      // skip host-key check - we don't need to do this here, but on Windows
-      // it's a nice alternative to figuring the known hosts
+      // this line skips host-key check - we don't need to do this here,
+      // but on Windows it's a nice alternative to figuring out the known hosts
       //session.setConfig("StrictHostKeyChecking", "no");
       session.connect(30000);   // making a connection with timeout.
+
 
       // GO THROUGH DATABASE RESULTS
       BashScriptBuilder scriptBuilder = new BashScriptBuilder(QUEUE_SIZE,session);
@@ -176,82 +283,20 @@ public static ResultSet LocalQuery(int startID, int maxVals) {
         int successId = results.getInt(11);
         int fileId = results.getInt(6);
         int startLine = results.getInt(7);
+        int lineId = results.getInt(1);
         BugFix temp = new BugFix(failId,successId,fileId,startLine);
-
+        System.out.println("Line id " + lineId);
         boolean success = scriptBuilder.addToQueue(temp);
-        // if the queue is full, or we're out of results, get source code
-        // Note that this doesn't do anything to the result currently in
-        if (!success) {
-          //System.out.println("Ready to gather source code!");
-          String command = scriptBuilder.generateBashScript();
-          //System.out.println(command);
-          try {
-            //System.out.println("Running remoteExec!\n");
-            String resultString = remoteExec(session,command);
-            //System.out.println(resultString);
-            LinkedList<BugFixFile> resultCode = scriptBuilder.parseResultString(resultString);
-            for(BugFixFile result : resultCode)
-            {
-              System.out.println("BUG!");
-              //System.out.print("Bug Code: ");
-              //System.out.println(result.bug);
-              //System.out.print("Fix Code: ");
-              //System.out.println(result.fix);
-              //System.out.print("\nStart Line: ");
-              //System.out.println(result.startLine);
-              //dbFiller.uploadToDatabase(result.bug,result.fix,result.startLine);
-            }
-          } catch (Exception e) {
-            //e.getMessage();
-            //System.out.println(e.getStackTrace());
-            System.out.println("Missing data in blackbox: " + e.getMessage());
-            System.out.println(e.getLocalizedMessage());
-            System.out.println(e.getStackTrace());
-            System.out.println(e);
-          }
-        }
-        // Iterate to next result if the queue was full.
-        // (if it's the last entry, we still need to iterate so that the program
-        // can know that it's past the end of the resultset and end the loop)
-        else {
+        // if addToQueue returns false, the queue is full - time to empty it.
+        if (!success) { // queue is full - get source code
+
+          gatherSourceCode(session, scriptBuilder, dbFiller);
+        } else { // queue is not full (result was added to it) - keep moving
           stillIterating = results.next();
         }
       }
-
-      ////////////////
-      // Duplicated code to process any leftovers in the queue.
-      // TODO make this nicer - put it all into a method?
-      ////////////////
-      String command = scriptBuilder.generateBashScript();
-      //System.out.println(command);
-      try {
-        //System.out.println("Running remoteExec!\n");
-        String resultString = remoteExec(session,command);
-        //System.out.println(resultString);
-        LinkedList<BugFixFile> resultCode = scriptBuilder.parseResultString(resultString);
-        for(BugFixFile result : resultCode)
-        {
-          System.out.println("BUG!");
-          // System.out.print("Bug Code: ");
-          // System.out.println(result.bug);
-          // System.out.print("Fix Code: ");
-          // System.out.println(result.fix);
-          // System.out.print("\nStart Line: ");
-          // System.out.println(result.startLine);
-          // dbFiller.uploadToDatabase(result.bug,result.fix,result.startLine);
-        }
-      } catch (Exception e) {
-        //e.getMessage();
-        //System.out.println(e.getStackTrace());
-        System.out.println("Missing data in blackbox: " + e.getMessage());
-        System.out.println(e.getLocalizedMessage());
-        System.out.println(e.getStackTrace());
-        System.out.println(e);
-      }
-      ////////////////
-      // End duplicated code
-      ////////////////
-
+      // Catch any leftover results that didn't quite fill up the queue.
+      gatherSourceCode(session, scriptBuilder, dbFiller);
 
       session.disconnect();
     }

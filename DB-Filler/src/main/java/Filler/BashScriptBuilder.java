@@ -9,8 +9,8 @@ import java.util.LinkedList;
 
 public class BashScriptBuilder {
 
-  public String DELIMITER = "--CARLETON-COMPS-2017-BUGDATA--"; // separates between pairs
-  public String DELIMITER2 = "--CARLETON-COMPS-2017-SUBDELIMITER--"; // separates bug code, source code, and startLine
+  public static String DELIMITER = "--CARLETON-COMPS-2017-BUGDATA--"; // separates between pairs
+  public static String DELIMITER2 = "--CARLETON-COMPS-2017-SUBDELIMITER--"; // separates bug code, source code, and startLine
 
     public LinkedList<BugFix> bugFixIds = null;
     public int bufferSize = 0;
@@ -55,10 +55,10 @@ public class BashScriptBuilder {
 
         String fix_header = "echo \"" + DELIMITER2 + "\";\n";
 
-        String bug_command = "/tools/nccb/bin/print-compile-input /data/compile-inputs " +
+        String bug_command = "timeout 2s /tools/nccb/bin/print-compile-input /data/compile-inputs " +
                                               curr_ids.sourceFileId + " " + curr_ids.bugMasterId + ";\n";
 
-        String fix_command = "/tools/nccb/bin/print-compile-input /data/compile-inputs " +
+        String fix_command = "timeout 2s /tools/nccb/bin/print-compile-input /data/compile-inputs " +
                             curr_ids.sourceFileId + " " + curr_ids.fixMasterId + ";\n";
         String footer = ""; // maybe echo something there too?
         script.append(bug_header);
@@ -73,7 +73,7 @@ public class BashScriptBuilder {
      * Clears the queue of ids, returns an array of BugFixFile objects.
      * Each of these contains the files for a bug and its fix.
      */
-    public LinkedList<BugFixFile> parseResultString(String resultString) {
+    public static LinkedList<BugFixFile> parseResultString(String resultString) {
         LinkedList<BugFixFile> results = new LinkedList<BugFixFile>();
         // separate into distinct blocks of data; each contains the source files
         // for a bug and its fix, preceded by the start line.
@@ -86,7 +86,7 @@ public class BashScriptBuilder {
           String[] dataFields = blocks[i].split(DELIMITER2);
           boolean bad_data = false;
           for(String field : dataFields) {
-            if(field.contains("Searching rest")) { bad_data = true;}
+            if(field.contains("Searching rest") || field.equals("\n")) { bad_data = true;}
           }
           if(!bad_data) {results.add(new BugFixFile(dataFields));}
         }

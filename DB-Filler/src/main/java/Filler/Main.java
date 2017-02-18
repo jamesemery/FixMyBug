@@ -62,13 +62,13 @@ public class Main {
 //            i.uploadToDatabase(file1,file2,5);
             DatabaseEntry e = i.createDatabaseEntry(file1,file1,3,5,3,5);
 
-            e.setBuggyCode(e.getBuggyCodeAsList().stream().map(Object::toString).collect
+            e.setBuggyCode(e.buggyCodeAsList().stream().map(Object::toString).collect
                     (Collectors.joining(" ")).toString());
-            e.setFixedCode(e.getFixedCodeAsList().stream().map(Object::toString).collect
+            e.setFixedCode(e.fixedCodeAsList().stream().map(Object::toString).collect
                     (Collectors.joining(" ")).toString());
-            e.setBuggyCodeAssignments(e.getBuggyAssignmentsAsList().stream().map(Object::toString).collect
+            e.setBuggyCodeAssignments(e.buggyAssignmentsAsList().stream().map(Object::toString).collect
                     (Collectors.joining(" ")).toString());
-            e.setFixedCodeAssignments(e.getFixedAssignmentsAsList().stream().map
+            e.setFixedCodeAssignments(e.fixedAssignmentsAsList().stream().map
                     (Object::toString).collect(Collectors.joining(" ")).toString());
             System.out.println(e);
             System.out.println("=========================");
