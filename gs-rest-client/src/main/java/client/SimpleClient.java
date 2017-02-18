@@ -73,7 +73,7 @@ public class SimpleClient {
         try {
             while((line = reader.readLine()) != null) {
                 lineNum += 1;
-                if (firstLine <=lineNum && ((lineNum == -1)||(lineNum <= lastLine))) {
+                if (firstLine <=lineNum && ((lastLine == -1)||(lineNum <= lastLine))) {
                     stringBuilder.append(line);
                     stringBuilder.append(ls);
                 }
