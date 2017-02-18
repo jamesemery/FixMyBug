@@ -95,7 +95,7 @@ public class DatabaseEntry {
 				buggy_code + " | " +
 				buggy_code_assignments + " | " +
 				fixed_code + " | " +
-				buggy_code_assignments  + ")";
+				fixed_code_assignments  + ")";
 	}
 
 	public String toStringVerbose() {

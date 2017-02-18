@@ -120,9 +120,7 @@ public class TokenizerBuilder {
         for (Token t : tokenizedLine) {
             EdiToken token = new EdiToken(t);
             if (token.getType() == 100) {
-                if (listener.identifierPosition.size()<=identifier) {
-
-                } else if (listener.identifierPosition.get(identifier) == "class") {
+                if (listener.identifierPosition.get(identifier) == "class") {
                     token.setType(110);
                     types[0]++;
                 } else if (listener.identifierPosition.get(identifier) == "function") {
@@ -263,9 +261,9 @@ public class TokenizerBuilder {
         List<EdiToken> tokens = new ArrayList<EdiToken>();
 
         // Searches through the caracter stream for which tokens correspond to the correct line
-        for (int i = start; i<=stop; i++) {
+        for (int i = start; i<ediTokenizedCode.size(); i++) {
             int curLine = ediTokenizedCode.get(i).getLine();
-            if (curLine >= start && curLine < stop) {
+            if (curLine >= start && curLine <= stop) {
                 tokens.add(ediTokenizedCode.get(i));
             }
         }

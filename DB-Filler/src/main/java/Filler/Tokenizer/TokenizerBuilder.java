@@ -252,7 +252,7 @@ public class TokenizerBuilder {
         List<EdiToken> tokens = new ArrayList<EdiToken>();
 
         // Searches through the caracter stream for which tokens correspond to the correct line
-        for (int i = start; i<=stop; i++) {
+        for (int i = start; i<ediTokenizedCode.size(); i++) {
             int curLine = ediTokenizedCode.get(i).getLine();
             if (curLine >= start && curLine < stop) {
                 tokens.add(ediTokenizedCode.get(i));
