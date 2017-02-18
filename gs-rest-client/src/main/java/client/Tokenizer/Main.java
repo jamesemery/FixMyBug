@@ -119,6 +119,8 @@ public class Main {
             System.out.println(object.harmonize(entry));
 
 
+            System.out.println("================================================");
+
 
             System.out.println("STARTING PROCESS");
             String buggedCode2 = "package carleton.comps.javaparser;\n" +

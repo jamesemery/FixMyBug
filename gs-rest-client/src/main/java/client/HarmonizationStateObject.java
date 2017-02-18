@@ -309,7 +309,7 @@ public class HarmonizationStateObject {
         else if (observedAssociations.size() == 1) {
             int key = (int)observedAssociations.toArray()[0];
             if (fixTokenMappedString.containsKey(assignment)) {
-                return fixTokenMappedString.get(key);
+                return fixTokenMappedString.get(assignment);
                 //if (!param.equals(fixTokenMappedString.get(key))) {
 //                    String message = "Mismatch in fixTokenMappedString association list, " +
 //                            "already contained \'"+fixTokenMappedString.get(key)+"\' but tried " +
