@@ -93,7 +93,6 @@ public class HarmonizationStateObject {
 
         HarmonizationAlignment userToBugAlignment = new HarmonizationAlignment(userCode.stream().map(tok
                 -> tok.getType()).collect(Collectors.toList()), userAssignments, buggyCode, buggyCodeAssignments);
-        //TODO maybe not
         HarmonizationAlignment bugToFixAlignment = new HarmonizationAlignment(buggyCode,
                 buggyCodeAssignments, fixedCode, fixedCodeAssignments);
 
@@ -105,16 +104,29 @@ public class HarmonizationStateObject {
 
         int previousToken = 0;
 
+        // Generating the index that holds all of the character seqences between tokens in the
+        // original code for the token index
+//        String[] spacings = getUserSpacing(userCode);
+//        String prependingSpacing = spacings[0];
+//        if(!prependingSpacing.contains("\"")) builder.append(prependingSpacing);
+
         // Loops through the fixed code and tries to print it
         for (int i = 0; i<fixedCode.size(); i++) {
             int token = fixedCode.get(i);
             //Add whatever spacing needs to be added to the previous stuff
-            sanitize(builder, token, previousToken);
+
+
+            fakeUserSpacing(builder, token, previousToken);//, prependingSpacing);
+
+
+
             previousToken = token;
 
             // If its not ambiguous just print as-is
             if (!TokenizerBuilder.isAmbiguousToken(token)) {
-                builder.append(JavaParser.VOCABULARY.getLiteralName(token));
+                // Fixing the issue of adding tokens
+                String display = JavaParser.VOCABULARY.getLiteralName(token);
+                builder.append(display.substring(1, display.length() - 1));
             }
 
             else {
@@ -134,17 +146,95 @@ public class HarmonizationStateObject {
         return builder.toString()+"\n";
     }
 
+    /**
+     * Helper method that handles the logic for determining what the original users whitespacing
+     * was in the vicinity of the specified index location in the users code.
+     *
+     * Returns String array:
+     *        -Array index 0 corresponds to characters preceeding the first token from the frist
+     *        line, specifically its looking for what sort of spacing the user had before the
+     *        first line.
+     *        -Array index 1..j.n corresponding to characters preceeding item j in the array
+     *        -Array index n+1 corrsponding to characters following the last item in the array
+     *        but preceeding the next token from the original code.
+     *
+     * @ param userTokens
+     * @return
+     *
+    private String[] getUserSpacing(List<EdiToken> userTokens) {
+        System.out.println("Genereating user spaicing map");
+        String[] output = new String[userTokens.size()+1];
+        Scanner s = new Scanner(originalCode);
+        String currentLine ="";
+        int curLineNumber = 0;
+        int curCharInLine = 0;
+
+        // Setting this to true to start is a hack i know...
+        boolean inMultiLine = true;
+        String buffer = "";
+        System.out.println(userTokens);
+        for (int i = 0; i<userTokens.size(); i++){
+            System.out.println("for loop index: "+i);
+            System.out.println("inMultiLine: "+inMultiLine);
+            System.out.println("linenumber: "+i);
+            // Ensuring that the current line matches the correct line of the token
+            while(curLineNumber<userTokens.get(i).getLine()) {
+                if (!s.hasNextLine()) {
+                    System.out.println("SOME SERIOUS SHIT is wrong here, the original user code " +
+                            "lines don't match with what we are looking for");
+                }
+                // If in a multiLine, we don't want to add to the builder buffer
+                if (!inMultiLine) {
+                    buffer = buffer + currentLine.substring(curCharInLine) +"\n";
+                    curCharInLine = 0;
+                }
+                currentLine = s.nextLine();
+                curLineNumber++;
+            }
+            inMultiLine = false;
+            System.out.println("new linenumber: "+i);
+            System.out.println("curLine: \'"+currentLine+"\'");
+            System.out.println("getstartindex: "+userTokens.get(i).getStartIndex());
+            System.out.println("getendindex: "+userTokens.get(i).getStopIndex());
+            System.out.println("getCharPositionInLine: "+userTokens.get(i).getTokenIndex());
+
+            output[i] = buffer + currentLine.substring(curCharInLine, userTokens.get(i).getCharPositionInLine());
+            buffer = "";
+
+            //Handling line spanning tokens
+            String tokenText = userTokens.get(i).getText();
+            if (tokenText.contains("\n")||tokenText.contains("\r")) {
+                String[] lines = tokenText.split("\r\n|\r|\n", -1);
+                curCharInLine = lines[lines.length-1].length()+1;
+                inMultiLine = true;
+            } else {
+                curCharInLine = userTokens.get(i).getCharPositionInLine()+tokenText.length();
+            }
+        }
+        // Filling in anything from the last line
+        int lines = userTokens.get(userTokens.size()-1).getText().split("\r\n|\r|\n", -1).length-1;
+        while (lines>0) {
+            currentLine = s.nextLine();
+            lines--;
+        }
+        output[output.length-1] = currentLine.substring(curCharInLine);
+
+        return output;
+
+    }
+
     /*
      * First Pass approach to spacing code.
      * @Param: builder, holds the detokenized code.
      * @Param: token, the current token.
      * @Return: builder, the sanitized, detokenized code.
      */
-    private StringBuilder sanitize(StringBuilder builder, int token, int previousToken) {
+    private StringBuilder fakeUserSpacing(StringBuilder builder, int token, int previousToken) {
+                                            //String prependingSpacing) {
 
         // If the token is a semicolon, then the there is a new line.
-        if (token == 63) {
-            builder.append(";\n");
+        if (previousToken == 63) {
+            builder.append("\n");//+prependingSpacing);
             return builder;
         }
 
@@ -177,6 +267,7 @@ public class HarmonizationStateObject {
             } else {
 
                 String fakeName = "";
+                String extra = "";
                 if (token == 51) {
                     fakeName = "##int";
                 } else if (token == 52) {
@@ -184,9 +275,11 @@ public class HarmonizationStateObject {
                 } else if (token == 53) {
                     fakeName = "##bool";
                 } else if (token == 54) {
-                    fakeName = "##char";
+                    fakeName = "'##char";
+                    extra = "'";
                 } else if (token == 55) {
-                    fakeName = "##String";
+                    fakeName = "\"##String";
+                    extra = "\"";
                 } else if (token == 56) {
                     fakeName = "##null";
                 } else if (token == 100) {
@@ -206,7 +299,7 @@ public class HarmonizationStateObject {
                 } else {
                     fakeName = "##IDENTIFIER";
                 }
-                fakeName = fakeName + "_" + VAR_GRAB_BAG[GLOBAL_VAR_GRAB_INDEX++] + "##";
+                fakeName = fakeName + "_" + VAR_GRAB_BAG[GLOBAL_VAR_GRAB_INDEX++] + "##" + extra;
                 fixTokenMappedString.put(assignment, fakeName);
                 return fakeName;
             }
@@ -215,21 +308,24 @@ public class HarmonizationStateObject {
         // if only one observed association, returns a single value
         else if (observedAssociations.size() == 1) {
             int key = (int)observedAssociations.toArray()[0];
-            String param = userCode.get(userMappings.indexOf(key)).getText();
             if (fixTokenMappedString.containsKey(assignment)) {
-                if (!param.equals(fixTokenMappedString.get(key))) {
+                return fixTokenMappedString.get(key);
+                //if (!param.equals(fixTokenMappedString.get(key))) {
 //                    String message = "Mismatch in fixTokenMappedString association list, " +
 //                            "already contained \'"+fixTokenMappedString.get(key)+"\' but tried " +
 //                            "to associate a new \'"+param+"\'";
 //                    throw new Exception(message);
-                }
+                //}
+            } else {
+                String param = userCode.get(userMappings.indexOf(key)).getText();
+                fixTokenMappedString.put(assignment,param);
+                return param;
             }
-            fixTokenMappedString.put(assignment,param);
-            return param;
         }
 
         // the case if there are multiple observed associations...
         else {
+
             //TODO handle what to do in this case...
         }
         return null;
@@ -390,7 +486,7 @@ public class HarmonizationStateObject {
     }
 
     private enum Alignments {
-        NULL,MATCH, MISMATCH, INSERTION, DELETION
+        NULL,MATCH, MISMATCH, INSERTION, DELETION, ClipINSERTION, ClipDELETION
     }
 
 }
