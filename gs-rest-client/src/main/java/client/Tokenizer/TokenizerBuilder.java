@@ -120,7 +120,10 @@ public class TokenizerBuilder {
         for (Token t : tokenizedLine) {
             EdiToken token = new EdiToken(t);
             if (token.getType() == 100) {
-                if (listener.identifierPosition.get(identifier) == "class") {
+            	if (listener.identifierPosition.size()<=identifier) {
+            		
+            	}
+            	else if (listener.identifierPosition.get(identifier) == "class") {
                     token.setType(110);
                     types[0]++;
                 } else if (listener.identifierPosition.get(identifier) == "function") {
@@ -252,7 +255,7 @@ public class TokenizerBuilder {
      */
     public List<EdiToken> betweenLines(int start, int stop) {
 
-        if (start < 1 || stop >= ediTokenizedCode.size()) {
+        if (start < 1 || stop > ediTokenizedCode.get(ediTokenizedCode.size()-1).getLine()) {
             System.out.println(ediTokenizedCode);
             throw new IndexOutOfBoundsException("The lines you specified are out of range. " +
                     "Start:"+start+"   Stop:"+stop);
@@ -263,10 +266,13 @@ public class TokenizerBuilder {
         List<EdiToken> tokens = new ArrayList<EdiToken>();
 
         // Searches through the caracter stream for which tokens correspond to the correct line
-        for (int i = start; i<ediTokenizedCode.size(); i++) {
-            int curLine = ediTokenizedCode.get(i).getLine();
+        for (int i = 0; i<ediTokenizedCode.size(); i++) {
+//            System.out.println("i:"+i);
+        	int curLine = ediTokenizedCode.get(i).getLine();
+//        	System.out.println("cuyrLine:"+curLine);
             if (curLine >= start && curLine <= stop) {
                 tokens.add(ediTokenizedCode.get(i));
+//                System.out.println("added Token:"+ediTokenizedCode.get(i));
             }
         }
         return tokens;

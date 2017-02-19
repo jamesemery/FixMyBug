@@ -17,7 +17,7 @@ import client.Tokenizer.TokenizerBuilder;
 */
 public class SimpleClient {
 
-    private static final String BASE_URL = "137.22.5.59:8080";
+    private static final String BASE_URL = "http://137.22.5.59:8080/";
 
     /*
      * Reads in a text file and returns it as a string.
@@ -224,10 +224,6 @@ public class SimpleClient {
     public String prf() {
     	return "it worked~it worked~it worked~it worked";
     }
-    
-    public String prf() {
-    	return "it worked~it worked~it worked~it worked";
-    }
 
     public List<String> fixBug(String fileName, String errorMessage, int startLine, int endLine, String method) {
         //Check to see if index method.
@@ -259,18 +255,15 @@ public class SimpleClient {
             wholeFileCode = getLinesFromFile(fileName, -1,-1);
         } catch (IOException e) {
             e.printStackTrace();
-            System.out.println("It's this one.");
         }
-        System.out.println("Buggy code block:\n\n" + buggyCodeBlock + "\n");
-        System.out.println("Whole file code:\n\n" + wholeFileCode);
+//        System.out.println("Buggy code block:\n\n" + buggyCodeBlock + "\n");
 
         //Tokenize the buggy code block and return as a TokenizerBuilder
         TokenizerBuilder tokenBuilder = null;
         try {
-            tokenBuilder = tokenize(wholeFileCode);
+            tokenBuilder = tokenize(wholeFileCode); // IS FAILING
         } catch (Exception ex) {
             ex.printStackTrace();
-            System.out.println("Nope! Danny's right.");
         }
         if (tokenBuilder == null) { System.out.println("NULLITY NULL NULL \n \n \n" ); }
         System.out.println("Tokens:\n\n" + tokenBuilder.getString() + "\n");
@@ -278,8 +271,10 @@ public class SimpleClient {
         //Generate the serverRequest from the provided tokenized code
         //and the input error message.
         StringBuilder tokenizedCodeBlock = new StringBuilder();
+//        System.out.println(tokenBuilder.getString(startLine, endLine));
         tokenizedCodeBlock.append(tokenBuilder.getString(startLine, endLine));
         serverRequest = new ServerRequest(tokenizedCodeBlock.toString(), errorMessage);
+//        System.out.println("\n\n SUPER RELEVANT " + tokenizedCodeBlock.toString() + "\n\n");
 
         //Make the request to the server for the desired method (fix, echo, index)        
         switch (method) {

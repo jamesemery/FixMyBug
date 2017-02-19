@@ -77,7 +77,7 @@ public class SampleHandler extends AbstractHandler {
 		try {
 			HandlerUtil.getActiveWorkbenchWindow(event).getActivePage().showView("BugFixerView");
 			FixMyBugView BFView = (FixMyBugView) HandlerUtil.getActiveWorkbenchWindow(event).getActivePage().findView("BugFixerView");
-			BFView.update(fixedCode.get(0), fixedCode.get(1), fixedCode.get(2), fixedCode.get(3));
+			BFView.update(fixedCode.get(0), fixedCode.get(1), fixedCode.get(2), fixedCode.get(3)); // trycatch this please
 			BFView.setFocus();
 		} catch (PartInitException e) {
 			// TODO Auto-generated catch block

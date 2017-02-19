@@ -391,6 +391,7 @@ public class HarmonizationStateObject {
                 } else if (path==Alignments.INSERTION){
                     j++;
                 } else i++;
+                System.out.println("was "+path+" UserCodeIndex:"+i+"  BuggyCodeIndex:"+j);
             }
             System.out.println(codeMapping);
         }
@@ -470,7 +471,7 @@ public class HarmonizationStateObject {
             int j = scores[0].length-1;
             while ((i != 0) || (j != 0)) {
                 output1.add(last[i][j]);
-                if (last[i][j] == Alignments.MATCH) {
+                if ((last[i][j] == Alignments.MATCH)||(last[i][j] == Alignments.MISMATCH)) {
                     i--;
                     j--;
                 } else if (last[i][j] == Alignments.INSERTION) {
