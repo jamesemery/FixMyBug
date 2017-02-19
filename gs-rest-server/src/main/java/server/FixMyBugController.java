@@ -25,7 +25,7 @@ public class FixMyBugController {
     public DatabaseEntryListWrapper fixMyBug(@RequestBody String input) {
         //Setup the JSON object mapper and our DBConnection
     	ObjectMapper mapper = new ObjectMapper();
-        DatabaseServer DBConnection = new DatabaseServer("/Users/fixmybug/FixMyBug/DB-Filler/uploadTestDB");
+        DatabaseServer DBConnection = new DatabaseServer("/Users/fixmybug/FixMyBug/DB-Filler/BugBox");
 
     	try {
     		//Convert JSON string to object
