@@ -292,4 +292,29 @@ public class SimpleClient {
                 break;
         } return null;
     }
+    
+    public static void main(String[] args) {
+    	SimpleClient sc = new SimpleClient();
+    	
+    	//Check to see if index method.
+//    	if(args.length == 3 && args[2].equals("index")) {
+//            ServerRequest serverRequest = new ServerRequest(args[0], args[1]);
+//            makeRequest(serverRequest, args[2]);
+//            System.exit(0);
+//        }
+        //Grab arguments from the command line and setup variables
+        if(args.length != 5) {
+            System.out.println("Usage: java -jar <jar> <file> <error> <line # start> <line # end> <server" +
+                    " method> | java - jar <jar> <table name> <n> <index>");
+            System.exit(0);
+        }
+
+        String fileName = args[0];
+      	String errorMessage = args[1];
+      	int startLine = Integer.parseInt(args[2]);
+      	int endLine = Integer.parseInt(args[3]);
+      	String method = args[4];
+      	
+      	System.out.println(sc.fixBug(fileName, errorMessage, startLine, endLine, method));
+    }
 }
