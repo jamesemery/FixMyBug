@@ -179,6 +179,7 @@ public class HarmonizationStateObject {
             builder.append(spacings[i]+userCode.get(i).getText());
         }
         System.out.println(fixTokenMappedString);
+        System.out.println("===========\n"+builder.toString()+"\n=========");
 
         GLOBAL_VAR_GRAB_INDEX = 0;
         return builder.toString()+"\n";
