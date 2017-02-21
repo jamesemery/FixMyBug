@@ -424,11 +424,14 @@ public class HarmonizationStateObject {
                         int t2 = buggyCode.get(j);
                         if (TokenizerBuilder.isAmbiguousToken(t1) &&
                                 (TokenizerBuilder.isAmbiguousToken(t2))) {
+                            if (TokenizerBuilder.isDegenerate(t1,t2)){
+                                addMatch(buggyCodeAssignments.get(j), userAssignments.get(i));
+                            } else
+                            System.out.println("Degenracy issue between tokens '"+t1+"' and '"+t2+"'");
 //                        System.out.println(codeMapping);
 //                        System.out.println("add match for tokens:"+t1+" "+t2);
 //                        System.out.println("buggyCodeAssignments:"+buggyCodeAssignments);
 //                        System.out.println("userAssignments:"+userAssignments);
-                            addMatch(buggyCodeAssignments.get(j), userAssignments.get(i));
 //                        System.out.println(codeMapping);
 
                         }
@@ -682,13 +685,15 @@ public class HarmonizationStateObject {
          * TODO make this a local alignment in the future
          */
         public List<Alignments> runLocalAlignment(List<Integer> userCode, List<Integer> buggyCode) {
+            System.out.println("RUNNING LOCAL ALIGNMENT:\n\tuserCode: "+userCode+"\n\tbuggyCode: " +
+                    ""+buggyCode);
             int[][] scores = new int[userCode.size() + 1][buggyCode.size() + 1];
             Alignments[][] last = new Alignments[userCode.size() + 1][buggyCode.size() + 1];
 
             // setting up the initial conditions on the alginment table
-            Arrays.fill(last[0], Alignments.INSERTION);
+            Arrays.fill(last[0], Alignments.NULL);
             for (int i = 0; i < last.length; i++) {
-                last[i][0] = Alignments.DELETION;
+                last[i][0] = Alignments.NULL;
             }
             last[0][0] = Alignments.NULL;
 

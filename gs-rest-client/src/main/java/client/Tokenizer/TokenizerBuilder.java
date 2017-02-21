@@ -485,7 +485,7 @@ public class TokenizerBuilder {
      * Method that takes two integers and returns true if they are degenerate
      */
     public static boolean isDegenerate(int token1, int token2) {
-        if (token1==token2);
+        if (token1==token2) return true;
         if (isIdentifier(token1)&&isIdentifier(token2)) {
             // if one is a super token, return true;
             if ((token1==116)||(token2==116)) return true;

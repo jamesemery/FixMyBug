@@ -123,6 +123,14 @@ public class Main {
 
 
             System.out.println("STARTING PROCESS");
+            String userCode2 = "package carleton.comps.javaparser;\n" +
+                    "\n" +
+                    "public class HelloWorld {\n" +
+                    "   public static void main(String[] args) {\n" +
+                    "       System.out.println(\"Hello, World\")\n" +
+                    "       System.out.print(\"Hello, World\")\n" +
+                    "   }\n" +
+                    "}";
             String buggedCode2 = "package carleton.comps.javaparser;\n" +
                     "\n" +
                     "public class HelloWorld {\n" +
@@ -140,19 +148,19 @@ public class Main {
                     "   }\n" +
                     "}";
 
-            TokenizerBuilder t2 = new TokenizerBuilder(buggedCode2, "String");
+            TokenizerBuilder t2 = new TokenizerBuilder(userCode2, "String");
             System.out.println("MADE TOKENIZERBUILDER");
             System.out.println(t2.betweenLines(4, 7));
             List<Integer> userDisambiguation2 = TokenizerBuilder.generateDisambiguationList(t2
                     .getTokens()).subList(11,29);
             HarmonizationStateObject object2 = new HarmonizationStateObject(new TokenizerBuilder
-                    (buggedCode2, "String"), buggedCode2, 4, 7);
+                    (userCode2, "String"), userCode2, 3, 7);
             System.out.println("MADE Harmonization State Object");
 
             TokenizerBuilder fixedTokens2 = new TokenizerBuilder(fixedCode2, "String");
             List<Integer> disambiguation2 = TokenizerBuilder.generateDisambiguationList(fixedTokens
                     .betweenLines(4, 7));
-            DatabaseEntry entry2 = new DatabaseEntry(100, String.join(" ",t2.betweenLines(4,6)
+            DatabaseEntry entry2 = new DatabaseEntry(100, String.join(" ",t2.betweenLines(4,7)
                     .stream().map(EdiToken::getType).map(Object::toString).collect(Collectors
                             .toList())),
                     String.join(" ",TokenizerBuilder.generateDisambiguationList(t2.betweenLines(4,
@@ -163,7 +171,7 @@ public class Main {
                             (Collectors.toList())));
             System.out.println(entry);
 
-            System.out.println(object2.harmonize(entry));
+            System.out.println(object2.harmonize(entry2));
         } catch (IOException e) {
             e.printStackTrace();
         }
