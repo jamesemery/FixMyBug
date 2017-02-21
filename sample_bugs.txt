@@ -1,0 +1,10 @@
+BUG1|for(i = 0; i < 10; i++) { bludgeons[i] = 0; }
+FIX1|for(int i = 0; i < 10; i++) { bludgeons[i] = 0; }
+BUG2|while(x = 3) { System.out.println("x equals 3"); }
+FIX2|while(x == 3) { System.out.println("x equals 3"); }
+BUG3|x = 5 if(x == 5) { System.out.println("Test"); }
+FIX3|x = 5; if(x == 5) { System.out.println("Test"); }
+BUG4|while (true) { if(false) { String mistake = "I forgot a curly bracket"; }
+FIX4|while (true) { if(false) { String mistake = "I forgot a curly bracket"; }}
+BUG5|public void FunctionDeclaration(String returnType, arguments) { this.arguments = arguments; this.returnType = returnType; }
+FIX5|public void FunctionDeclaration(String returnType, String arguments) { this.arguments = arguments; this.returnType = returnType; }
