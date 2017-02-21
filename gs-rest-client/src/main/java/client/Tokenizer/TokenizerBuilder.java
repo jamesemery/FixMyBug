@@ -170,18 +170,6 @@ public class TokenizerBuilder {
     }
 
 
-    public String ediTokensToString() {
-        StringBuilder tokens = new StringBuilder();
-        StringBuilder program = new StringBuilder();
-        for (EdiToken et : ediTokenizedCode) {
-            tokens.append(et.getType() + " ");
-            program.append(et.getText() + " ");
-        }
-        System.out.println(program.toString());
-        return tokens.toString();
-    }
-
-
     /*
      * Returns the tokenized code as a space separated string of ints. Defaults verbose to false.
      * @Return: string version of space separated string of ints.
