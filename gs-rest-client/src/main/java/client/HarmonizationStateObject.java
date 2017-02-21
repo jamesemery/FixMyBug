@@ -15,6 +15,8 @@ public class HarmonizationStateObject {
     private static int COMPLETEAL_TOKEN_MATCH = 5;
     private static int COMPLETEAL_IDENTIFIER_MATCH = 2;
     private static int COMPLETEAL_POSSIBLE_MATCH = 4;
+    private static int COMPLETEAL_MISMATCH = -4;
+    private static int COMPLETEAL_INDEL = -1;
 
     private static int LOCAL_TOKEN_MATCH = 5;
     private static int LOCAL_IDENTIFIER_MATCH = 2;
@@ -566,16 +568,17 @@ public class HarmonizationStateObject {
         public int getFixEndIndex(int userEndTokenIndex) throws Exception {
             int curUserIndex = userCodeLength;
             int curFixIndex = buggyCodeLength;
-            int lastMatchIndex = buggyCodeLength;
+            int lastFixIndex = buggyCodeLength;
             int matchingIndex = matching.size()-1;
             System.out.println("Getting fix end index:"+userEndTokenIndex);
             while (matchingIndex >= 0) {
                 System.out.println("Matching index is:"+matchingIndex+"  " +
-                        "curUserIndex:"+curUserIndex+"   curFixIndex:"+curFixIndex);
+                        "curUserIndex:"+curUserIndex+"   curFixIndex:"+curFixIndex+"     " +
+                        "lastMatchIndex:"+lastFixIndex);
                 if (curUserIndex <= userEndTokenIndex) {
                     // We keep the last match index because we want to take the last of a run of
                     // insertions and keep it.
-                    return lastMatchIndex -1;
+                    return lastFixIndex -1;
                 }
 
                 // Else, properly increment the index counters
@@ -583,17 +586,30 @@ public class HarmonizationStateObject {
                 if (cur==Alignments.ClipDELETION) {
                     curUserIndex--;
                 } else if (cur==Alignments.DELETION) {
+                    if (curUserIndex-1<=userEndTokenIndex){
+                        return lastFixIndex -1;
+                    } else {
+                        lastFixIndex = curFixIndex;
+                    }
                     curUserIndex--;
                 } else if (cur==Alignments.ClipINSERTION) {
                     curFixIndex--;
                 } else if (cur==Alignments.INSERTION) {
                     curFixIndex--;
                 } else if (cur==Alignments.MATCH) {
-                    lastMatchIndex = curFixIndex;
+                    if (curUserIndex-1<=userEndTokenIndex){
+                        return lastFixIndex -1;
+                    } else {
+                        lastFixIndex = curFixIndex;
+                    }
                     curUserIndex--;
                     curFixIndex--;
                 } else if (cur==Alignments.MISMATCH) {
-                    lastMatchIndex = curFixIndex;
+                    if (curUserIndex-1<=userEndTokenIndex){
+                        return lastFixIndex -1;
+                    } else {
+                        lastFixIndex = curFixIndex;
+                    }
                     curUserIndex--;
                     curFixIndex--;
                 } else {
@@ -647,11 +663,15 @@ public class HarmonizationStateObject {
                             && TokenizerBuilder.isIdentifier(buggyCode.get(j - 1))) {
                         match += COMPLETEAL_IDENTIFIER_MATCH;
                         last[i][j] = Alignments.MATCH;
+
+
+                    } else {
+                        match+= COMPLETEAL_MISMATCH;
                     }
 
                     match++;
-                    int left = scores[i - 1][j];
-                    int right = scores[i][j - 1];
+                    int left = scores[i - 1][j]+COMPLETEAL_INDEL;
+                    int right = scores[i][j - 1]+COMPLETEAL_INDEL;
                     int max = Math.max(match, Math.max(left, right));
 
                     //choose matches over other options
