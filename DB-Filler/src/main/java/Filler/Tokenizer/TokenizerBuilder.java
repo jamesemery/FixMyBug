@@ -55,7 +55,7 @@ public class TokenizerBuilder {
         identifierTokens = new LinkedList<String>();
 
         // This if statement is used to tokenize the code according to its type.
-        if (type.equals("File")) {
+        if (type.equals("File")){
 
             // Checks to see if the file provided is a valid file.
             Scanner scanner;
@@ -92,12 +92,12 @@ public class TokenizerBuilder {
         // and nothing can be printed out.
         stream.getNumberOfOnChannelTokens();
 
-        List<EdiToken> tokenLine = generateIdentifiers(tokenizedLine, stream);
+        List <EdiToken> tokenLine = generateIdentifiers(tokenizedLine, stream);
 
         //holdNullTokens(tokenizedLine);
 
         // Removes the EOF token.
-        tokenLine.remove(tokenLine.size() - 1);
+        tokenLine.remove(tokenLine.size()-1);
 
         return tokenLine;
     }
@@ -120,9 +120,10 @@ public class TokenizerBuilder {
         for (Token t : tokenizedLine) {
             EdiToken token = new EdiToken(t);
             if (token.getType() == 100) {
-                if (listener.identifierPosition.size() <= identifier) {
-
-                } else if (listener.identifierPosition.get(identifier) == "class") {
+            	if (listener.identifierPosition.size()<=identifier) {
+            		
+            	}
+            	else if (listener.identifierPosition.get(identifier) == "class") {
                     token.setType(110);
                     types[0]++;
                 } else if (listener.identifierPosition.get(identifier) == "function") {
@@ -146,7 +147,7 @@ public class TokenizerBuilder {
                 }
                 identifier++;
             }
-            if (token.getType() != 104 || token.getType() != 105) {
+            if (token.getType()!= 104 || token.getType()!= 105) {
                 ediTokens.add(token);
             }
         }
@@ -156,10 +157,10 @@ public class TokenizerBuilder {
 
     private List<EdiToken> identifierCheck(List<EdiToken> ediTokens) {
         List<EdiToken> tokens = ediTokens;
-        for (EdiToken t : ediTokens) {
-            if (t.getType() > 113) {
-                for (EdiToken to : tokens) {
-                    if (to.getText().equals(t.getText()) && to.getType() < 114) {
+        for (EdiToken t: ediTokens) {
+            if (t.getType()>113) {
+                for (EdiToken to: tokens) {
+                    if (to.getText().equals(t.getText()) && to.getType()<114) {
                         t.setType(to.getType());
                         break;
                     }
@@ -168,6 +169,7 @@ public class TokenizerBuilder {
         }
         return ediTokens;
     }
+
 
     public String ediTokensToString() {
         StringBuilder tokens = new StringBuilder();
@@ -235,7 +237,7 @@ public class TokenizerBuilder {
         // Goes through each token, converts it into a string and adds it to builder.
         for (EdiToken t : tokens) {
             if (verbose) {
-                builder.append(t.getType() + "(" + JavaParser.VOCABULARY
+                builder.append(t.getType() +"(" + JavaParser.VOCABULARY
                         .getSymbolicName(t.getType()) + ") " + "(" + t.getText() + ") \n");
             } else {
                 builder.append(t.getType() + " ");
@@ -253,8 +255,12 @@ public class TokenizerBuilder {
      */
     public List<EdiToken> betweenLines(int start, int stop) {
 
-        if (start < 1 || stop > ediTokenizedCode.size()) {
-            throw new IndexOutOfBoundsException("The lines you specified are out of range.");
+        if (start < 1 || stop > ediTokenizedCode.get(ediTokenizedCode.size()-1).getLine()) {
+            System.out.println(ediTokenizedCode);
+            System.out.println("Last line: "+ediTokenizedCode.get(ediTokenizedCode.size()-1)
+                    .getLine() +"\nLast Token:"+ediTokenizedCode.get(0));
+            throw new IndexOutOfBoundsException("The lines you specified are out of range. " +
+                    "Start:"+start+"   Stop:"+stop);
         }
 
 
@@ -262,10 +268,13 @@ public class TokenizerBuilder {
         List<EdiToken> tokens = new ArrayList<EdiToken>();
 
         // Searches through the caracter stream for which tokens correspond to the correct line
-        for (int i = start; i <= stop; i++) {
-            int curLine = ediTokenizedCode.get(i).getLine();
-            if (curLine >= start && curLine < stop) {
+        for (int i = 0; i<ediTokenizedCode.size(); i++) {
+//            System.out.println("i:"+i);
+        	int curLine = ediTokenizedCode.get(i).getLine();
+//        	System.out.println("cuyrLine:"+curLine);
+            if (curLine >= start && curLine <= stop) {
                 tokens.add(ediTokenizedCode.get(i));
+//                System.out.println("added Token:"+ediTokenizedCode.get(i));
             }
         }
         return tokens;
@@ -303,7 +312,7 @@ public class TokenizerBuilder {
         Queue<String> identifierTokenss = new LinkedList<String>(identifierTokens);
 
         // Converts each token into the appropriate grammatical expression.
-        for (String t : tokens) {
+        for (String t: tokens) {
 
             // Turns each token into an int, so we can get its literal name.
             int token = Integer.parseInt(t);
@@ -312,7 +321,7 @@ public class TokenizerBuilder {
             builder = sanitize(builder, token, previousToken);
 
             // If the token is a specific token, gets its literal name.
-            if ((token != 100) && ((token < 51) || (token > 56)) && (token > -1) && (token != 63)) {
+            if ((token != 100) && ((token < 51) || (token > 56)) && (token>-1) && (token!=63)) {
                 builder.append(JavaParser.VOCABULARY.getLiteralName(token));
             }
 
@@ -324,7 +333,7 @@ public class TokenizerBuilder {
                     builder.append("IntegerLiteral");
                 }
             } else if (token == 52) {
-                if (floatingTokenss.peek() != null) {
+                if (floatingTokenss.peek()!= null) {
                     builder.append(floatingTokenss.remove());
                 } else {
                     builder.append("FloatingPointLiteral");
@@ -366,7 +375,7 @@ public class TokenizerBuilder {
 
 
         // Converts builder into an actual string.
-        String detokenizedCode = builder.toString().replace("\'", "");
+        String detokenizedCode = builder.toString().replace("\'","");
 
 
         return detokenizedCode;
@@ -388,7 +397,7 @@ public class TokenizerBuilder {
         }
 
         // If the token is not a '(', ')', '[', ']', '{', '}', ';', or '.' then we add a space before it.
-        else if (((token < 57 || token > 63) && (token != 65)) && ((previousToken < 57 || previousToken > 63 || previousToken == 59 || previousToken == 62) && (previousToken != 65)) && !newLine) {
+        else if (((token<57 || token > 63) && (token!=65)) && ((previousToken<57 || previousToken > 63 || previousToken == 59 || previousToken == 62) && (previousToken!=65)) && !newLine) {
             builder.append(" ");
         }
         newLine = false;
@@ -439,7 +448,7 @@ public class TokenizerBuilder {
         int assignedVariables = 0;
 
         // Assigning disamibuation to tokens of the err file
-        for (EdiToken t : tokenizedCode) {
+        for (EdiToken t: tokenizedCode) {
             if (isAmbiguousToken(t)) {
                 if (ambigousAssignments.containsKey(t.getText())) {
                     assignments.add(ambigousAssignments.get(t.getText()));
@@ -447,7 +456,8 @@ public class TokenizerBuilder {
                     ambigousAssignments.put(t.getText(), ++assignedVariables);
                     assignments.add(assignedVariables);
                 }
-            } else {
+            }
+            else {
                 assignments.add(0);
             }
         }
@@ -457,11 +467,59 @@ public class TokenizerBuilder {
     /**
      * Method that tests whether a given token is type ambiguous
      */
-    public static boolean isAmbiguousToken(EdiToken t) {
-        return JavaParser.VOCABULARY.getLiteralName(t.getType()) == null;
+    public static boolean isAmbiguousToken(EdiToken t)
+    {
+        return JavaParser.VOCABULARY.getLiteralName(t.getType())==null;
+    }
+    public static boolean isAmbiguousToken(int t) {
+        return JavaParser.VOCABULARY.getLiteralName(t)==null;
     }
 
-    public static boolean isAmbiuousToken(int t) {
-        return JavaParser.VOCABULARY.getLiteralName(t) == null;
+    /**
+     * Method that returns true if the polled token is part of the identifier tree
+     */
+    public static boolean isIdentifier(int token) {
+        if ((token==100)||(token>109)) return true;
+        return false;
+    }
+
+    /**
+     * Method that takes two integers and returns true if they are degenerate
+     */
+    public static boolean isDegenerate(int token1, int token2) {
+        if (token1==token2) return true;
+        if (isIdentifier(token1)&&isIdentifier(token2)) {
+            // if one is a super token, return true;
+            if ((token1==116)||(token2==116)) return true;
+
+
+            // if one is a class, check for class degeneracy
+            if ((token1==100)||(token2==100)) {
+                if ((token1==114)||(token2==114)) {
+                    return true;
+                }
+                return false;
+            }
+
+            // if one is a fucntion, check for possible degeneracy
+            else if ((token1==111)||(token2==111)) {
+                if ((token1==115)||(token2==115)) {
+                    return true;
+                }
+                return false;
+            }
+
+            // if one is a variable, check for possible degeneracy
+            else if ((token1==112)||(token2==112)) {
+                if ((token1>113)||(token2==113)) {
+                    return true;
+                }
+                return false;
+            }
+
+            // At this point, either the two cant be the same OR both are 114 and 115
+            else if (((token1==114)&&(token2==115))||((token1==115)&&(token2==114))) return true;
+        }
+        return false;
     }
 }
