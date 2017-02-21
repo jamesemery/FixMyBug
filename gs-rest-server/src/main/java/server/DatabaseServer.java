@@ -306,6 +306,9 @@ public class DatabaseServer {
         // Pull database entries based on ngrams
 //        List<Map.Entry<Integer, Integer>> sortedQuery = querySearch
 //                (userQuery, DEFAULT_NGRAM_SIZE, DATABASE_TABLE_NAME);
+        if (userQuery.equals("")){
+            return new LinkedList<>();
+        }
 
         // Pull the rows that are most prevalent
         List<Integer> rowsToPull = querySearch(userQuery, DEFAULT_NGRAM_SIZE, DATABASE_TABLE_NAME);
