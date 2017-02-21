@@ -1,8 +1,8 @@
 package Filler;
 
 import Filler.Tokenizer.DBAscii;
-import client.Tokenizer.EdiToken;
-import client.Tokenizer.TokenizerBuilder;
+import Filler.Tokenizer.EdiToken;
+import Filler.Tokenizer.TokenizerBuilder;
 import Filler.Tokenizer.javaparser.*;
 import org.antlr.v4.runtime.Token;
 import org.bitbucket.cowwoc.diffmatchpatch.DiffMatchPatch;

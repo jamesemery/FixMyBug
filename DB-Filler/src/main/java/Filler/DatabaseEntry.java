@@ -2,7 +2,7 @@ package Filler;
 
 /* THIS MUST BE IDENTICAL TO ITS COUNTERPART IN THE CLIENT. IF YOU CHANGE ONE, CHANGE BOTH */
 
-import Filler.Tokenizer.DBAscii;
+import server.javaparser.DBAscii;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
