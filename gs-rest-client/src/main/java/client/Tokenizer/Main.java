@@ -163,7 +163,7 @@ public class Main {
                             (Collectors.toList())));
             System.out.println(entry);
 
-            System.out.println(object.harmonize(entry));
+            System.out.println(object2.harmonize(entry));
         } catch (IOException e) {
             e.printStackTrace();
         }
