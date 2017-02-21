@@ -97,11 +97,12 @@ public class HarmonizationStateObject {
         List<Integer > fixedCodeAssignments = Arrays.asList(e.getFixedCodeAssignments().split(" ")).stream()
                 .map(Integer::parseInt).collect(Collectors.toList());
 
-        System.out.println("userCode to buggy code Alignment:");
+        System.out.println("userCode to buggy code Alignment:\nuserCode: "+userCode.stream().map(tok
+                -> tok.getType()).collect(Collectors.toList())+"\nbuggyCode:"+buggyCode);
         HarmonizationAlignment userToBugAlignment = new HarmonizationAlignment(userCode.stream().map(tok
                 -> tok.getType()).collect(Collectors.toList()), userAssignments, buggyCode,
                 buggyCodeAssignments, AlignmentType.LOCAL);
-        System.out.println("buggy to fix code Alignment:");
+        System.out.println("buggy to fix code Alignment:\nbuggyCode:"+buggyCode+"\nfixCode: "+fixedCode);
         HarmonizationAlignment bugToFixAlignment = new HarmonizationAlignment(buggyCode,
                 buggyCodeAssignments, fixedCode, fixedCodeAssignments, AlignmentType.COMPLETE);
 
@@ -685,8 +686,6 @@ public class HarmonizationStateObject {
          * TODO make this a local alignment in the future
          */
         public List<Alignments> runLocalAlignment(List<Integer> userCode, List<Integer> buggyCode) {
-            System.out.println("RUNNING LOCAL ALIGNMENT:\n\tuserCode: "+userCode+"\n\tbuggyCode: " +
-                    ""+buggyCode);
             int[][] scores = new int[userCode.size() + 1][buggyCode.size() + 1];
             Alignments[][] last = new Alignments[userCode.size() + 1][buggyCode.size() + 1];
 
@@ -763,6 +762,9 @@ public class HarmonizationStateObject {
             }
 
             while ((i != 0) || (j != 0)) {
+                if (last[i][j] == Alignments.NULL) {
+                    break;
+                }
                 output1.add(last[i][j]);
                 if ((last[i][j] == Alignments.MATCH)||(last[i][j] == Alignments.MISMATCH)) {
                     i--;
@@ -770,9 +772,6 @@ public class HarmonizationStateObject {
                 } else if (last[i][j] == Alignments.INSERTION) {
                     j--;
                 } else if (last[i][j] == Alignments.DELETION) i--;
-                else if (last[i][j] == Alignments.NULL) {
-                    break;
-                }
             }
 
             // Adding clips to the front of the array and the back

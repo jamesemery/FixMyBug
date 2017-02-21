@@ -257,6 +257,8 @@ public class TokenizerBuilder {
 
         if (start < 1 || stop > ediTokenizedCode.get(ediTokenizedCode.size()-1).getLine()) {
             System.out.println(ediTokenizedCode);
+            System.out.println("Last line: "+ediTokenizedCode.get(ediTokenizedCode.size()-1)
+                    .getLine() +"\nLast Token:"+ediTokenizedCode.get(0));
             throw new IndexOutOfBoundsException("The lines you specified are out of range. " +
                     "Start:"+start+"   Stop:"+stop);
         }

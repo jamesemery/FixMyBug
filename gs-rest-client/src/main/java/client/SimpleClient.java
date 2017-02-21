@@ -6,6 +6,8 @@ import java.net.URL;
 import java.util.List;
 import java.util.ArrayList;
 import java.io.*;
+import java.util.StringJoiner;
+
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -314,7 +316,13 @@ public class SimpleClient {
       	int startLine = Integer.parseInt(args[2]);
       	int endLine = Integer.parseInt(args[3]);
       	String method = args[4];
-      	
-      	System.out.println(sc.fixBug(fileName, errorMessage, startLine, endLine, method));
+
+        List<String> HarmonizeList = sc.fixBug(fileName, errorMessage, startLine, endLine, method);
+        StringJoiner joiner = new StringJoiner
+                ("\n\n===========================================================\n");
+        for (String s: HarmonizeList) joiner.add(s);
+
+
+      	System.out.println(joiner.toString());
     }
 }

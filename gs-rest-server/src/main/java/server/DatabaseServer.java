@@ -275,7 +275,7 @@ public class DatabaseServer {
 //            }
         }
         ResultSet fixedSet = indStatement.executeQuery("SELECT id, count(*) from " + table + "_" + ngramsize +
-                "comparison GROUP BY id ORDER BY count(*) desc LIMIT 20;");
+                "comparison GROUP BY id ORDER BY count(*) desc LIMIT 100;");
 
         // Sort the map and return a list of integers sorted
 //        List<Map.Entry<Integer,Integer>> results = new ArrayList(masterRow.entrySet());
@@ -330,7 +330,8 @@ public class DatabaseServer {
         for (DatabaseEntry e : entryList) {
             e.setSimilarity(computeSecondarySimilarity(userQuery, e));
         }
-        Collections.sort(entryList, (DatabaseEntry a, DatabaseEntry b) -> (int) (b.getSimilarity() - a.getSimilarity()));
+        Collections.sort(entryList, (DatabaseEntry a, DatabaseEntry b) -> (int) (a.getSimilarity
+                () - b.getSimilarity()));
 
         //Cull the list to keep down outbound traffic to the client
         if (entryList.size() > MAX_USER_RETURN) {
