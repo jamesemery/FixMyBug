@@ -521,12 +521,13 @@ public class HarmonizationStateObject {
          * @param userStartTokenIndex
          */
         public int getFixStartIndex(int userStartTokenIndex) throws Exception {
-            int curUserIndex = 0;
-            int curFixIndex = 0;
+            int curUserIndex = -1;
+            int curFixIndex = -1;
             int matchingIndex = 0;
+            System.out.println("Getting fix start index:"+userStartTokenIndex);
             while (matchingIndex < matching.size()) {
                 if (curUserIndex>=userStartTokenIndex) {
-                    return curFixIndex;
+                    return (curFixIndex>=0?curFixIndex:0);
                 }
 
                 // Else, properly increment the index counters
@@ -563,11 +564,14 @@ public class HarmonizationStateObject {
          * @param userEndTokenIndex
          */
         public int getFixEndIndex(int userEndTokenIndex) throws Exception {
-            int curUserIndex = userCodeLength-1;
-            int curFixIndex = buggyCodeLength-1;
+            int curUserIndex = userCodeLength;
+            int curFixIndex = buggyCodeLength;
             int lastMatchIndex = buggyCodeLength;
             int matchingIndex = matching.size()-1;
+            System.out.println("Getting fix end index:"+userEndTokenIndex);
             while (matchingIndex >= 0) {
+                System.out.println("Matching index is:"+matchingIndex+"  " +
+                        "curUserIndex:"+curUserIndex+"   curFixIndex:"+curFixIndex);
                 if (curUserIndex <= userEndTokenIndex) {
                     // We keep the last match index because we want to take the last of a run of
                     // insertions and keep it.
@@ -758,7 +762,7 @@ public class HarmonizationStateObject {
             for (int x = i;  x < scores.length-1; x++) {
                 output1.add(Alignments.ClipDELETION);
             }
-            for (int y = i;  y < scores.length-1; y++) {
+            for (int y = j;  y < scores[0].length-1; y++) {
                 output1.add(Alignments.ClipINSERTION);
             }
 
