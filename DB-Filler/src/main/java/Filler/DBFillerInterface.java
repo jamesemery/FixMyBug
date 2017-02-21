@@ -144,10 +144,14 @@ public class DBFillerInterface {
             fixLinesRemaining = MAX_LINES_TO_GRAB - (processed.get(candidateFixIndex+1).fixStartLine
                     - processed.get(candidateFixIndex).fixStartLine) - 1;
         }
-        // If it is the last line of the file TODO?
+        // If it is the last line of the file TODO
         else {
-            System.out.println("candidateFixIndex: " + candidateFixIndex + " and processed size: " + processed.size());
-            System.out.println(edits);
+            DiffFinderHelper diff = processed.get(processed.size()-1);
+            int newlines = diff.diff.text.split("\r\n|\r|\n", -1).length-1;
+            errLinesRemaining = MAX_LINES_TO_GRAB - (diff.diff.operation== DiffMatchPatch
+                    .Operation.DELETE?newlines:0) -1;
+            fixLinesRemaining = MAX_LINES_TO_GRAB - (diff.diff.operation== DiffMatchPatch
+                    .Operation.INSERT?newlines:0) -1;
         }
 
 
