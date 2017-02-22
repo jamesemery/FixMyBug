@@ -594,6 +594,7 @@ public class HarmonizationStateObject {
                     curUserIndex--;
                 } else if (cur==Alignments.ClipINSERTION) {
                     curFixIndex--;
+                    lastFixIndex = curFixIndex;
                 } else if (cur==Alignments.INSERTION) {
                     curFixIndex--;
                 } else if (cur==Alignments.MATCH) {
