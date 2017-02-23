@@ -75,11 +75,7 @@ public class SimpleClient {
      * @return A String containing the lines from the text file we interpret to contain
      * buggy code.
      */
-    public String getLinesFromFile(String fileName, int firstLine, int lastLine) throws IOException {
-        //  //////  //////  ////    //////
-        //    //    //  //  //  //  //  //    Do we want this to take in the file here? Would it be easier or better for the plugin to
-        //    //    //  //  //  //  //  //    pass it a list of lines, or something? Worth considering.
-        //    //    //////  ////    //////
+    public static String getLinesFromFile(String fileName, int firstLine, int lastLine) throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(fileName));
         String line = null;
         int lineNum = 0;

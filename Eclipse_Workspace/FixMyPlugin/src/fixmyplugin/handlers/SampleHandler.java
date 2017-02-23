@@ -56,28 +56,29 @@ public class SampleHandler extends AbstractHandler {
 		ITextSelection highlighted = getCurrentSelection();
 		String highlightedText = highlighted.getText();
 		
-		// Initialize the string that will contain the output from the client
-		String out_string = "testing~testing~testing~testing";
 		List<String> fixedCode = new ArrayList<String>();
-		// If we aren't testing, access the client and replace it.
 		if (!this.testing) {
 			SimpleClient client = new SimpleClient();
-			String fileName = "/Users/azureillusions/Documents/Academic/Carleton Senior/CS COMPS/FixMyBug/gs-rest-client/Test.java";
-			String errorMessage = "irrelevant";
+//			String fileName = "/Users/azureillusions/Documents/Academic/Carleton Senior/CS COMPS/FixMyBug/gs-rest-client/Test.java";
+//			String errorMessage = "irrelevant";
+			String wholeFileCode = getCurrentEditorContent();
 			int startLine = highlighted.getStartLine() + 1;
 			int endLine = highlighted.getEndLine() + 1;
 			String fixType = "fix";
-			fixedCode = client.fixBug(fileName, errorMessage, startLine, endLine, fixType);
+//			fixedCode = client.fixBug(fileName, errorMessage, startLine, endLine, fixType);
+			fixedCode = client.fixBug(wholeFileCode, startLine, endLine, fixType);
+		} else {
+			fixedCode.add("Testing, testing");
+			fixedCode.add("One");
+			fixedCode.add("Two");
+			fixedCode.add("Three");
 		}
-		
-		// This WILL BE REPLACED, as the client will return a list.
-		String[] fixes = out_string.split("~");
 		
 		// Displays the FixMyBugView, updates it, and sets the focus to it.
 		try {
 			HandlerUtil.getActiveWorkbenchWindow(event).getActivePage().showView("BugFixerView");
 			FixMyBugView BFView = (FixMyBugView) HandlerUtil.getActiveWorkbenchWindow(event).getActivePage().findView("BugFixerView");
-			BFView.update(fixedCode.get(0), fixedCode.get(1), fixedCode.get(2), fixedCode.get(3)); // trycatch this please
+			BFView.update(fixedCode); // trycatch this please
 			BFView.setFocus();
 		} catch (PartInitException e) {
 			// TODO Auto-generated catch block
@@ -87,39 +88,14 @@ public class SampleHandler extends AbstractHandler {
 		return null;
 	}
 	
-	
-	/**
-	 * A getter for the file path. May or may not currently work.
-	 * @return A string corresponding to the file path, on a mac.
-	 */
-	public String getCurrentFilePath() {
-		IWorkbench workbench = PlatformUI.getWorkbench();
-		IWorkbenchWindow window = 
-		        workbench == null ? null : workbench.getActiveWorkbenchWindow();
-		IWorkbenchPage activePage = 
-		        window == null ? null : window.getActivePage();
-
-		IEditorPart editor = 
-		        activePage == null ? null : activePage.getActiveEditor();
-		IEditorInput input = 
-		        editor == null ? null : editor.getEditorInput();
-		IPath path = input instanceof FileEditorInput 
-		        ? ((FileEditorInput)input).getPath()
-		        : null;
-		if (path != null) {
-		    return path.toOSString();
-		}
-		return "";
+	public String getCurrentEditorContent() {
+	    final IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
+	        .getActiveEditor();
+	    if (!(editor instanceof ITextEditor)) return null;
+	    ITextEditor ite = (ITextEditor)editor;
+	    IDocument doc = ite.getDocumentProvider().getDocument(ite.getEditorInput());
+	    return doc.get();
 	}
-	
-//	public String getCurrentEditorContent() {
-//	    final IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
-//	        .getActiveEditor();
-//	    if (!(editor instanceof ITextEditor)) return null;
-//	    ITextEditor ite = (ITextEditor)editor;
-//	    IDocument doc = ite.getDocumentProvider().getDocument(ite.getEditorInput());
-//	    return doc.get();
-//	}
 	
 	/**
 	 * Grabs the highlighted text and returns it as an ITextSelection.
