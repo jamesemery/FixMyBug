@@ -67,13 +67,13 @@ public class SimpleClient {
 
     /**
      * A function that returns the lines of a file between provided starting and ending
-     * line numbers. 
+     * line numbers.
      *
      * @param fileName: a text file
      * @param firstLine: the starting line number of the desired code block
      * @param lastLine: the end line number of the desired code block, set to -1 for all lines
      * @return A String containing the lines from the text file we interpret to contain
-     * buggy code. 
+     * buggy code.
      */
     public String getLinesFromFile(String fileName, int firstLine, int lastLine) throws IOException {
         //  //////  //////  ////    //////
@@ -172,7 +172,7 @@ public class SimpleClient {
     * @param json: a JSON string returned from the server
     * @param tokenBuilder: a TokenizerBuilder object that contains data for harmonizing tokenized data
     * @param method: the method requested from the server
-    * 
+    *
     * @return void: Simply print returned data so that the user can see it.
     */
     public List<String> handleResponse(String json, HarmonizationStateObject stateObject,
@@ -181,7 +181,7 @@ public class SimpleClient {
         ObjectMapper mapper = new ObjectMapper();
 
         List<String> fixedCode = new ArrayList<String>();
-        
+
         //Convert returned JSON string to a list of DatabaseEntry objects.
         try {
             DatabaseEntryListWrapper dbEntries;
@@ -191,7 +191,7 @@ public class SimpleClient {
             case "fix":
                 dbEntries = mapper.readValue(json, DatabaseEntryListWrapper.class);
                 System.out.println(dbEntries.getEntryList());
-                
+
                 for (DatabaseEntry e : dbEntries.getEntryList()) {
                     System.out.println("\nFixed Code:");
                     System.out.println(stateObject.harmonize(e));
@@ -222,63 +222,29 @@ public class SimpleClient {
         }
         return fixedCode;
     }
-    
+
     public String prf() {
     	return "it worked~it worked~it worked~it worked";
     }
 
-    public List<String> fixBug(String fileName, String errorMessage, int startLine, int endLine, String method) {
-        //Check to see if index method.
-//        if(args.length == 3 && args[2].equals("index")) {
-//            ServerRequest serverRequest = new ServerRequest(args[0], args[1]);
-//            makeRequest(serverRequest, args[2]);
-//            System.exit(0);
-//        }
-//        //Grab arguments from the command line and setup variables
-//        if(args.length != 5) {
-//            System.out.println("Usage: java -jar <jar> <file> <error> <line # start> <line # end> <server" +
-//                    " method> | java - jar <jar> <table name> <n> <index>");
-//            System.exit(0);
-//        }
-
-//        String fileName = args[0];
-//        String errorMessage = args[1];
-//        int startLine = Integer.parseInt(args[2]);
-//        int endLine = Integer.parseInt(args[3]);
-//        String method = args[4];
+    public List<String> fixBug(String wholeFileCode, int startLine, int endLine, String method) {
         ServerRequest serverRequest;
-
-
-        //Identify the buggy code block within the provided file
-        String buggyCodeBlock = "";// NOTE: THIS ISN't ACTUALLY USED
-        String wholeFileCode = "";
-        try {
-            buggyCodeBlock = getLinesFromFile(fileName, startLine, endLine);
-            wholeFileCode = getLinesFromFile(fileName, -1,-1);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-//        System.out.println("Buggy code block:\n\n" + buggyCodeBlock + "\n");
 
         //Tokenize the buggy code block and return as a TokenizerBuilder
         TokenizerBuilder tokenBuilder = null;
         try {
-            tokenBuilder = tokenize(wholeFileCode); // IS FAILING
+            tokenBuilder = tokenize(wholeFileCode);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        if (tokenBuilder == null) { System.out.println("NULLITY NULL NULL \n \n \n" ); }
-        System.out.println("Tokens:\n\n" + tokenBuilder.getString() + "\n");
 
         //Generate the serverRequest from the provided tokenized code
         //and the input error message.
         StringBuilder tokenizedCodeBlock = new StringBuilder();
-//        System.out.println(tokenBuilder.getString(startLine, endLine));
         tokenizedCodeBlock.append(tokenBuilder.getString(startLine, endLine));
-        serverRequest = new ServerRequest(tokenizedCodeBlock.toString(), errorMessage);
-//        System.out.println("\n\n SUPER RELEVANT " + tokenizedCodeBlock.toString() + "\n\n");
+        serverRequest = new ServerRequest(tokenizedCodeBlock.toString());
 
-        //Make the request to the server for the desired method (fix, echo, index)        
+        //Make the request to the server for the desired method (fix, echo, index)
         switch (method) {
             case "fix":
                 System.out.println("\nFixing your bug...\n\n\n");
@@ -294,30 +260,37 @@ public class SimpleClient {
                 break;
         } return null;
     }
-    
+
     public static void main(String[] args) {
     	SimpleClient sc = new SimpleClient();
-    	
-    	//Check to see if index method.
-//    	if(args.length == 3 && args[2].equals("index")) {
-//            ServerRequest serverRequest = new ServerRequest(args[0], args[1]);
-//            makeRequest(serverRequest, args[2]);
-//            System.exit(0);
-//        }
-        //Grab arguments from the command line and setup variables
+
+    // 	Check to see if index method.
+   // 	if(args.length == 3 && args[2].equals("index")) {
+    //        ServerRequest serverRequest = new ServerRequest(args[0], args[1]);
+    //        makeRequest(serverRequest, args[2]);
+    //        System.exit(0);
+    //    }
+    //     Grab arguments from the command line and setup variables
         if(args.length != 5) {
-            System.out.println("Usage: java -jar <jar> <file> <error> <line # start> <line # end> <server" +
+            System.out.println("Usage: java -jar <jar> <file> <line # start> <line # end> <server" +
                     " method> | java - jar <jar> <table name> <n> <index>");
             System.exit(0);
         }
 
         String fileName = args[0];
-      	String errorMessage = args[1];
-      	int startLine = Integer.parseInt(args[2]);
-      	int endLine = Integer.parseInt(args[3]);
-      	String method = args[4];
+      	int startLine = Integer.parseInt(args[1]);
+      	int endLine = Integer.parseInt(args[2]);
+      	String method = args[3];
 
-        List<String> HarmonizeList = sc.fixBug(fileName, errorMessage, startLine, endLine, method);
+
+        String wholeFileCode = "";
+        try {
+            wholeFileCode = getLinesFromFile(fileName, -1,-1);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        List<String> HarmonizeList = sc.fixBug(wholeFileCode, startLine, endLine, method);
         StringJoiner joiner = new StringJoiner
                 ("\n\n===========================================================\n");
         for (String s: HarmonizeList) joiner.add(s);
