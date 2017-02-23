@@ -68,7 +68,7 @@ public class SampleHandler extends AbstractHandler {
 //			fixedCode = client.fixBug(fileName, errorMessage, startLine, endLine, fixType);
 			fixedCode = client.fixBug(wholeFileCode, startLine, endLine, fixType);
 		} else {
-			if (Math.random() < .5) {
+			if (Math.random() < .6) {
 				fixedCode.add("Testing, testing");
 				fixedCode.add("One");
 				fixedCode.add("Two");

@@ -65,8 +65,14 @@ public class FixMyBugView extends ViewPart {
 		outerGrid.numColumns = 1;
 		composite.setLayout(outerGrid);
 		
-		Text unusedText = new Text(composite, SWT.WRAP);
-		unusedText.setText("squid");
+		Text unusedText = new Text(composite, SWT.CENTER | SWT.WRAP);
+		GridData unusedData = new GridData(SWT.CENTER, SWT.CENTER, true, true);
+//		unusedData.grabExcessHorizontalSpace = true;
+//		unusedData.grabExcessVerticalSpace = true;
+//		unusedData.horizontalAlignment = SWT.FILL;
+//		unusedData.verticalAlignment = SWT.FILL;
+		unusedText.setLayoutData(unusedData);
+		unusedText.setText("Highlight text and press the Lure Ball!");
 		
 		scrolledComposite.setContent(composite);
     }
@@ -81,7 +87,7 @@ public class FixMyBugView extends ViewPart {
     	for (Control child : composite.getChildren()) {
     		child.dispose();
     	}
-    	
+
     	for (String suggestedFix : fixedCode) {
     		addChildFix(composite, suggestedFix);
     	}
