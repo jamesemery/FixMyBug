@@ -36,7 +36,7 @@ import org.eclipse.jface.viewers.ISelection;
 public class SampleHandler extends AbstractHandler {
 	
 	// When toggled to true, calls a dummy method rather than the actual server.
-	private boolean testing = false;
+	private boolean testing = true;
 	
 	
 	/**
@@ -68,10 +68,20 @@ public class SampleHandler extends AbstractHandler {
 //			fixedCode = client.fixBug(fileName, errorMessage, startLine, endLine, fixType);
 			fixedCode = client.fixBug(wholeFileCode, startLine, endLine, fixType);
 		} else {
-			fixedCode.add("Testing, testing");
-			fixedCode.add("One");
-			fixedCode.add("Two");
-			fixedCode.add("Three");
+			if (Math.random() < .5) {
+				fixedCode.add("Testing, testing");
+				fixedCode.add("One");
+				fixedCode.add("Two");
+				fixedCode.add("Three");
+			} else {
+				fixedCode.add("Doc");
+				fixedCode.add("Dopey");
+				fixedCode.add("Sneezy");
+				fixedCode.add("Grumpy");
+				fixedCode.add("Happy");
+				fixedCode.add("Sleepy");
+				fixedCode.add("Bashful");
+			}
 		}
 		
 		// Displays the FixMyBugView, updates it, and sets the focus to it.
