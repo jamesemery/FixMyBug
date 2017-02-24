@@ -14,6 +14,9 @@ import com.jcraft.jsch.*;
 import java.io.*;
 import java.sql.*;
 import java.util.*;
+
+import org.apache.catalina.Session;
+import org.springframework.boot.autoconfigure.amqp.RabbitProperties;
 import org.sqlite.SQLiteDataSource;
 import org.sqlite.SQLiteJDBCLoader;
 import org.apache.commons.io.IOUtils;
@@ -72,7 +75,7 @@ public static ResultSet LocalQuery(int startID, int maxVals) {
  *  session, runs the command it's given, and returns the result.
  */
   public static String remoteExec(Session session, String command) throws Exception {
-    Channel channel=session.openChannel("exec");
+    RabbitProperties.Cache.Channel channel=session.openChannel("exec");
     ((ChannelExec)channel).setCommand(command);
 
     // X Forwarding
