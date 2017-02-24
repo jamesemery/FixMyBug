@@ -1,7 +1,0 @@
-# To use: source helloworldgui
-
-#!/bin/sh
-
-antlr4 Java.g4
-javac *.java
-grun Java compilationUnit HelloWorld.java -gui
