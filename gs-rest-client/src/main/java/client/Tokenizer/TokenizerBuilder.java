@@ -120,6 +120,10 @@ public class TokenizerBuilder {
         for (Token t : tokenizedLine) {
             EdiToken token = new EdiToken(t);
             if (token.getType() == 100) {
+            	if (listener.identifierPosition.size()<=identifier) {
+            		  token.setType(116);
+            	}
+            	else if (listener.identifierPosition.get(identifier) == "class") {
                     token.setType(110);
                     types[0]++;
                 } else if (listener.identifierPosition.get(identifier) == "function") {
@@ -164,6 +168,18 @@ public class TokenizerBuilder {
             }
         }
         return ediTokens;
+    }
+
+
+    public String ediTokensToString() {
+        StringBuilder tokens = new StringBuilder();
+        StringBuilder program = new StringBuilder();
+        for (EdiToken et : ediTokenizedCode) {
+            tokens.append(et.getType() + " ");
+            program.append(et.getText() + " ");
+        }
+        System.out.println(program.toString());
+        return tokens.toString();
     }
 
 
@@ -263,6 +279,157 @@ public class TokenizerBuilder {
         }
         return tokens;
 
+    }
+
+
+    /*
+     * Harmonizes the tokenized code. Non-buggy tokenized code should be passed in. Will take this and replace tokens
+     * with appropriate variables, syntax, etc. Turns tokenized code into real code.
+     * @Param: code, holds the tokenized code.
+     * @Return: detokenizedCode, holds the de-tokenized code.
+     */
+    public String harmonize(String code) {
+
+        // Splits the string by spaces, as these separate the individual tokens.
+        String[] tokens = code.split(" ");
+
+        // Holds the detokenized, tokenized code.
+        StringBuilder builder = new StringBuilder();
+
+
+        newLine = true;
+
+        int previousToken = 0;
+
+        // De-tokenizes the tokenized code.
+
+        Queue<String> integerTokenss = new LinkedList<String>(integerTokens);
+        Queue<String> floatingTokenss = new LinkedList<String>(floatingTokens);
+        Queue<String> booleanTokenss = new LinkedList<String>(booleanTokens);
+        Queue<String> characterTokenss = new LinkedList<String>(characterTokens);
+        Queue<String> stringTokenss = new LinkedList<String>(stringTokens);
+        Queue<String> nullTokenss = new LinkedList<String>(nullTokens);
+        Queue<String> identifierTokenss = new LinkedList<String>(identifierTokens);
+
+        // Converts each token into the appropriate grammatical expression.
+        for (String t: tokens) {
+
+            // Turns each token into an int, so we can get its literal name.
+            int token = Integer.parseInt(t);
+
+            // Sanitizes the output.
+            builder = sanitize(builder, token, previousToken);
+
+            // If the token is a specific token, gets its literal name.
+            if ((token != 100) && ((token < 51) || (token > 56)) && (token>-1) && (token!=63)) {
+                builder.append(JavaParser.VOCABULARY.getLiteralName(token));
+            }
+
+            // If the token returns a null value based on JavaParser, dequeues from the appropriate queue.
+            else if (token == 51) {
+                if (integerTokenss.peek() != null) {
+                    builder.append(integerTokenss.remove());
+                } else {
+                    builder.append("IntegerLiteral");
+                }
+            } else if (token == 52) {
+                if (floatingTokenss.peek()!= null) {
+                    builder.append(floatingTokenss.remove());
+                } else {
+                    builder.append("FloatingPointLiteral");
+                }
+            } else if (token == 53) {
+                if (booleanTokenss.peek() != null) {
+                    builder.append(booleanTokenss.remove());
+                } else {
+                    builder.append("BooleanLiteral");
+                }
+            } else if (token == 54) {
+                if (characterTokenss.peek() != null) {
+                    builder.append(characterTokenss.remove());
+                } else {
+                    builder.append("CharacterLiteral");
+                }
+            } else if (token == 55) {
+                if (stringTokenss.peek() != null) {
+                    builder.append(stringTokenss.remove());
+                } else {
+                    builder.append("StringLiteral");
+                }
+            } else if (token == 56) {
+                if (nullTokenss.peek() != null) {
+                    builder.append(nullTokenss.remove());
+                } else {
+                    builder.append("nullLiteral");
+                }
+            } else if (token == 100) {
+                if (identifierTokenss.peek() != null) {
+                    builder.append(identifierTokenss.remove());
+                } else {
+                    builder.append("Identifier");
+                }
+            }
+
+            previousToken = token;
+        }
+
+
+        // Converts builder into an actual string.
+        String detokenizedCode = builder.toString().replace("\'","");
+
+
+        return detokenizedCode;
+    }
+
+    /*
+     * Sanitizes the detokenized code.
+     * @Param: builder, holds the detokenized code.
+     * @Param: token, the current token.
+     * @Return: builder, the sanitized, detokenized code.
+     */
+    private StringBuilder sanitize(StringBuilder builder, int token, int previousToken) {
+
+        // If the token is a semicolon, then the there is a new line.
+        if (token == 63) {
+            builder.append(";\n");
+            newLine = true;
+            return builder;
+        }
+
+        // If the token is not a '(', ')', '[', ']', '{', '}', ';', or '.' then we add a space before it.
+        else if (((token<57 || token > 63) && (token!=65)) && ((previousToken<57 || previousToken > 63 || previousToken == 59 || previousToken == 62) && (previousToken!=65)) && !newLine) {
+            builder.append(" ");
+        }
+        newLine = false;
+        return builder;
+    }
+
+    /*
+     * Holds the identifiers names so they can be used during
+     * @Param: tokenizedLine, tokens that may be identifiers, which means we need to store their function names for
+     *                        later use.
+     */
+    /*private void holdNullTokens(List<Token> tokenizedLine) {
+
+
+        // Goes through all the tokens in the line and adds them into varNames.
+        for (Token t : tokenizedLine) {
+            if (t.getType() == 51) {
+                integerTokens.add(t.getText());
+            } else if (t.getType() == 52) {
+                floatingTokens.add(t.getText());
+            } else if (t.getType() == 53) {
+                booleanTokens.add(t.getText());
+            } else if (t.getType() == 54) {
+                characterTokens.add(t.getText());
+            } else if (t.getType() == 55) {
+                stringTokens.add(t.getText());
+            } else if (t.getType() == 56) {
+                nullTokens.add(t.getText());
+            } else if (t.getType() == 100) {
+                identifierTokens.add(t.getText());
+            }
+        }
     }
 
     /**
