@@ -8,8 +8,25 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * class for storing all those FUCKING bits of state information that have to be passed arround
- * between step
+ * "class for storing all those FUCKING bits of state information that have to be passed arround
+ * between step" -as said a once wise man
+ *
+ * Class that handles Harmonization of the user code
+ * Construction: holds informaiton about the original bug input, namely the tokens of the user
+ * code, the original user file string, and the start and end lines which get used for hamonization
+ *
+ * Uses: calling object.harmonize(DatabaseEntry e);
+ * returns a string intended to mimic the users code in aesthetic parameters such as method
+ * and variable names but corresponds to the fixed version of the error code from the database
+ * entry object.
+ *
+ * The overall appraoch of the class:
+ * -Performs a local alginment between the userCode and the BuggyCode
+ * -Maps the error code Ambiguous token assignments to the assignmetns of the user code
+ * -Performs a complete alignment between the BuggyCode and the FixCode
+ * -Determines based on those alignments where the mapped start and end of the user code is in
+ *      the final fix code
+ * -Assembles the final output based on the best guess for every class name
  */
 public class HarmonizationStateObject {
     private static int COMPLETEAL_TOKEN_MATCH = 5;
@@ -819,7 +836,7 @@ public class HarmonizationStateObject {
     }
 
     private enum Alignments {
-        NULL,MATCH, MISMATCH, INSERTION, DELETION, ClipINSERTION, ClipDELETION
+        NULL, MATCH, MISMATCH, INSERTION, DELETION, ClipINSERTION, ClipDELETION
     }
 
     private enum AlignmentType {
