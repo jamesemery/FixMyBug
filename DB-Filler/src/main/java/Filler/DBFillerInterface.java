@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -144,10 +145,14 @@ public class DBFillerInterface {
             fixLinesRemaining = MAX_LINES_TO_GRAB - (processed.get(candidateFixIndex+1).fixStartLine
                     - processed.get(candidateFixIndex).fixStartLine) - 1;
         }
-        // If it is the last line of the file TODO?
+        // If it is the last line of the file TODO
         else {
-            System.out.println("candidateFixIndex: " + candidateFixIndex + " and processed size: " + processed.size());
-            System.out.println(edits);
+            DiffFinderHelper diff = processed.get(processed.size()-1);
+            int newlines = diff.diff.text.split("\r\n|\r|\n", -1).length-1;
+            errLinesRemaining = MAX_LINES_TO_GRAB - (diff.diff.operation== DiffMatchPatch
+                    .Operation.DELETE?newlines:0) -1;
+            fixLinesRemaining = MAX_LINES_TO_GRAB - (diff.diff.operation== DiffMatchPatch
+                    .Operation.INSERT?newlines:0) -1;
         }
 
 
@@ -356,6 +361,54 @@ public class DBFillerInterface {
             System.out.println("Could not read file");
         }
         return null;
+    }
+
+    /**
+     * Mehtod that builds a database index table of the supllied table argument in the string
+     * based on the Ngrams for error_code in the given table. The size of the Ngrams is determined
+     * by the ngramSize argument.
+     *
+     * @return count of the total number of table rows that were created in the index
+     */
+    public int createIndex(int ngramsize, String table) throws SQLException {
+        // Delete the existing index
+
+        Connection connection = dataSource.getConnection();
+        Statement statement = connection.createStatement();
+        Statement statement2 = connection.createStatement();
+        statement.executeUpdate("DROP TABLE" +
+                " IF EXISTS " + table + "_" + ngramsize + "gramindex;");
+
+        // Create new table
+        statement.executeUpdate("CREATE TABLE " + table + "_"
+                + ngramsize + "gramindex (id INTEGER, hash INTEGER);");
+
+        ResultSet rows = statement.executeQuery("SELECT * from "
+                + table);
+
+        // Iterate through the master table to find ngrams
+        int counter = 0;
+        while (true) {
+            if (rows.next()) {
+                int id = rows.getInt("id");
+                String errCode = DatabaseEntry.unescapeString(rows.getString("buggy_code"));
+
+                // populate the the array with each ngram
+                for (int i = ngramsize; i <= errCode.length(); i++) {
+                    StringBuilder b = new StringBuilder();
+                    for (int j = i - ngramsize; j < i; j++) {
+                        b.append(errCode.charAt(j));
+                    }
+                    int hash = b.toString().hashCode();
+                    counter++;
+                    statement2.executeUpdate("INSERT INTO " + table + "_"
+                            + ngramsize + "gramindex VALUES (" + id + "," + hash + ");");
+                }
+            } else break;
+
+        }
+        connection.close();
+        return counter;
     }
 
 

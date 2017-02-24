@@ -222,6 +222,22 @@ public static ResultSet LocalQuery(int startID, int maxVals) {
         //System.exit(1);
       }
     }
+    try {
+      System.out.println("Creating 3gramIndex");
+      dbFiller.createIndex(3, dbFiller.tableName);
+      System.out.println("Creating 4gramIndex");
+      dbFiller.createIndex(4, dbFiller.tableName);
+      System.out.println("Creating 5gramIndex");
+      dbFiller.createIndex(5, dbFiller.tableName);
+      System.out.println("Creating 6gramIndex");
+      dbFiller.createIndex(6, dbFiller.tableName);
+      System.out.println("Creating 7gramIndex");
+      dbFiller.createIndex(7, dbFiller.tableName);
+    }
+    catch (SQLException e) {
+      System.out.println(e);
+    }
+
   }
 
 

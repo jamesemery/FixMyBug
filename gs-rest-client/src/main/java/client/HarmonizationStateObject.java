@@ -8,13 +8,38 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * class for storing all those FUCKING bits of state information that have to be passed arround
- * between step
+ * "class for storing all those FUCKING bits of state information that have to be passed arround
+ * between step" -as said a once wise man
+ *
+ * Class that handles Harmonization of the user code
+ * Construction: holds informaiton about the original bug input, namely the tokens of the user
+ * code, the original user file string, and the start and end lines which get used for hamonization
+ *
+ * Uses: calling object.harmonize(DatabaseEntry e);
+ * returns a string intended to mimic the users code in aesthetic parameters such as method
+ * and variable names but corresponds to the fixed version of the error code from the database
+ * entry object.
+ *
+ * The overall appraoch of the class:
+ * -Performs a local alginment between the userCode and the BuggyCode
+ * -Maps the error code Ambiguous token assignments to the assignmetns of the user code
+ * -Performs a complete alignment between the BuggyCode and the FixCode
+ * -Determines based on those alignments where the mapped start and end of the user code is in
+ *      the final fix code
+ * -Assembles the final output based on the best guess for every class name
  */
 public class HarmonizationStateObject {
-    private static int TOKEN_MATCH = 5;
-    private static int IDENTIFIER_MATCH = 2;
-    private static int POSSIBLE_MATCH = 4;
+    private static int COMPLETEAL_TOKEN_MATCH = 5;
+    private static int COMPLETEAL_IDENTIFIER_MATCH = 2;
+    private static int COMPLETEAL_POSSIBLE_MATCH = 4;
+    private static int COMPLETEAL_MISMATCH = -4;
+    private static int COMPLETEAL_INDEL = -1;
+
+    private static int LOCAL_TOKEN_MATCH = 5;
+    private static int LOCAL_IDENTIFIER_MATCH = 2;
+    private static int LOCAL_POSSIBLE_MATCH = 4;
+    private static int LOCAL_MISMATCH = -3;
+    private static int LOCAL_INDEL = -2;
 
     //LIST OF VARIOUS GENERIC NAMES TO INPUT
     private int GLOBAL_VAR_GRAB_INDEX = 0;
@@ -91,10 +116,14 @@ public class HarmonizationStateObject {
         List<Integer > fixedCodeAssignments = Arrays.asList(e.getFixedCodeAssignments().split(" ")).stream()
                 .map(Integer::parseInt).collect(Collectors.toList());
 
+        System.out.println("userCode to buggy code Alignment:\nuserCode: "+userCode.stream().map(tok
+                -> tok.getType()).collect(Collectors.toList())+"\nbuggyCode:"+buggyCode);
         HarmonizationAlignment userToBugAlignment = new HarmonizationAlignment(userCode.stream().map(tok
-                -> tok.getType()).collect(Collectors.toList()), userAssignments, buggyCode, buggyCodeAssignments);
+                -> tok.getType()).collect(Collectors.toList()), userAssignments, buggyCode,
+                buggyCodeAssignments, AlignmentType.LOCAL);
+        System.out.println("buggy to fix code Alignment:\nbuggyCode:"+buggyCode+"\nfixCode: "+fixedCode);
         HarmonizationAlignment bugToFixAlignment = new HarmonizationAlignment(buggyCode,
-                buggyCodeAssignments, fixedCode, fixedCodeAssignments);
+                buggyCodeAssignments, fixedCode, fixedCodeAssignments, AlignmentType.COMPLETE);
 
         // Holds the detokenized, tokenized code.
         StringBuilder builder = new StringBuilder();
@@ -104,21 +133,44 @@ public class HarmonizationStateObject {
 
         int previousToken = 0;
 
+        // Finding where to start and end harmonization based on the double alignment
+        int userStartTokenIndex=0;
+        int userEndTokenIndex=0;
+        int fixStartTokenIndex=0;
+        int fixEndTokenIndex=0;
+        try {
+            userStartTokenIndex = userToBugAlignment.getUserStartIndex();
+            userEndTokenIndex = userToBugAlignment.getUserEndIndex();
+            fixStartTokenIndex = bugToFixAlignment.getFixStartIndex(userToBugAlignment.getFixStartIndex
+                    (userStartTokenIndex));
+            fixEndTokenIndex = bugToFixAlignment.getFixEndIndex(userToBugAlignment.getFixEndIndex
+                    (userEndTokenIndex));
+        } catch (Exception e1){
+            System.out.println("Something went wrong with grabbing the fix start and end " +
+                    "alignments");
+            System.out.println(e1.toString());
+            e1.printStackTrace();
+            //TODO probably throw and exception here
+        }
+        System.out.println("userStartTokenIndex ="+userStartTokenIndex+"\nuserEndTokenIndex " +
+                "="+userEndTokenIndex+"\nfixStartTokenIndex " +
+                "="+fixStartTokenIndex+"\nfixEndTokenIndex ="+fixEndTokenIndex);
+
         // Generating the index that holds all of the character seqences between tokens in the
         // original code for the token index
-//        String[] spacings = getUserSpacing(userCode);
-//        String prependingSpacing = spacings[0];
-//        if(!prependingSpacing.contains("\"")) builder.append(prependingSpacing);
+        String[] spacings = getUserSpacing(userCode);
+        String prependingSpacing = spacings[0];
+        for (int i = 0; i<userStartTokenIndex; i++) {
+            builder.append(spacings[i]+userCode.get(i).getText());
+        }
+
 
         // Loops through the fixed code and tries to print it
-        for (int i = 0; i<fixedCode.size(); i++) {
+        for (int i = fixStartTokenIndex; i<=fixEndTokenIndex; i++) {
             int token = fixedCode.get(i);
             //Add whatever spacing needs to be added to the previous stuff
 
-
             fakeUserSpacing(builder, token, previousToken);//, prependingSpacing);
-
-
 
             previousToken = token;
 
@@ -140,7 +192,13 @@ public class HarmonizationStateObject {
                 }
             }
         }
+
+        // Adding in any extra code to the back from harmonization
+        for (int i = userEndTokenIndex+1; i<userCode.size(); i++){
+            builder.append(spacings[i]+userCode.get(i).getText());
+        }
         System.out.println(fixTokenMappedString);
+        System.out.println("===========\n"+builder.toString()+"\n=========");
 
         GLOBAL_VAR_GRAB_INDEX = 0;
         return builder.toString()+"\n";
@@ -160,9 +218,9 @@ public class HarmonizationStateObject {
      *
      * @ param userTokens
      * @return
-     *
+     */
     private String[] getUserSpacing(List<EdiToken> userTokens) {
-        System.out.println("Genereating user spaicing map");
+//        System.out.println("Genereating user spaicing map");
         String[] output = new String[userTokens.size()+1];
         Scanner s = new Scanner(originalCode);
         String currentLine ="";
@@ -174,9 +232,9 @@ public class HarmonizationStateObject {
         String buffer = "";
         System.out.println(userTokens);
         for (int i = 0; i<userTokens.size(); i++){
-            System.out.println("for loop index: "+i);
-            System.out.println("inMultiLine: "+inMultiLine);
-            System.out.println("linenumber: "+i);
+//            System.out.println("for loop index: "+i);
+//            System.out.println("inMultiLine: "+inMultiLine);
+//            System.out.println("linenumber: "+i);
             // Ensuring that the current line matches the correct line of the token
             while(curLineNumber<userTokens.get(i).getLine()) {
                 if (!s.hasNextLine()) {
@@ -192,11 +250,11 @@ public class HarmonizationStateObject {
                 curLineNumber++;
             }
             inMultiLine = false;
-            System.out.println("new linenumber: "+i);
-            System.out.println("curLine: \'"+currentLine+"\'");
-            System.out.println("getstartindex: "+userTokens.get(i).getStartIndex());
-            System.out.println("getendindex: "+userTokens.get(i).getStopIndex());
-            System.out.println("getCharPositionInLine: "+userTokens.get(i).getTokenIndex());
+//            System.out.println("new linenumber: "+i);
+//            System.out.println("curLine: \'"+currentLine+"\'");
+//            System.out.println("getstartindex: "+userTokens.get(i).getStartIndex());
+//            System.out.println("getendindex: "+userTokens.get(i).getStopIndex());
+//            System.out.println("getCharPositionInLine: "+userTokens.get(i).getTokenIndex());
 
             output[i] = buffer + currentLine.substring(curCharInLine, userTokens.get(i).getCharPositionInLine());
             buffer = "";
@@ -218,7 +276,7 @@ public class HarmonizationStateObject {
             lines--;
         }
         output[output.length-1] = currentLine.substring(curCharInLine);
-
+        System.out.println("User Spacings:\n"+Arrays.asList(output));
         return output;
 
     }
@@ -235,6 +293,11 @@ public class HarmonizationStateObject {
         // If the token is a semicolon, then the there is a new line.
         if (previousToken == 63) {
             builder.append("\n");//+prependingSpacing);
+            return builder;
+        }
+        // If the token is a left bracket, then open a new line
+        else if (previousToken == 59) {
+            builder.append("\n\t");//+prependingSpacing);
             return builder;
         }
 
@@ -260,8 +323,11 @@ public class HarmonizationStateObject {
      */
     private String getName(int token, int assignment , Set<Integer> observedAssociations,
                            List<EdiToken> userCode, List<Integer> userMappings, Map<Integer, String> fixTokenMappedString) throws Exception {
+        if (fixTokenMappedString.containsKey(assignment)) {
+            return fixTokenMappedString.get(assignment);
+        }
         // The case where there is no reasonable mapping to the user entry
-        if (observedAssociations.isEmpty()) {
+        else if (observedAssociations.isEmpty()) {
             if (fixTokenMappedString.containsKey(assignment)) {
                 return fixTokenMappedString.get(assignment);
             } else {
@@ -307,28 +373,22 @@ public class HarmonizationStateObject {
 
         // if only one observed association, returns a single value
         else if (observedAssociations.size() == 1) {
-            int key = (int)observedAssociations.toArray()[0];
-            if (fixTokenMappedString.containsKey(assignment)) {
-                return fixTokenMappedString.get(assignment);
-                //if (!param.equals(fixTokenMappedString.get(key))) {
-//                    String message = "Mismatch in fixTokenMappedString association list, " +
-//                            "already contained \'"+fixTokenMappedString.get(key)+"\' but tried " +
-//                            "to associate a new \'"+param+"\'";
-//                    throw new Exception(message);
-                //}
-            } else {
-                String param = userCode.get(userMappings.indexOf(key)).getText();
-                fixTokenMappedString.put(assignment,param);
-                return param;
-            }
+            int key = (int) observedAssociations.toArray()[0];
+            String param = userCode.get(userMappings.indexOf(key)).getText();
+            fixTokenMappedString.put(assignment, param);
+            return param;
+
         }
 
         // the case if there are multiple observed associations...
         else {
-
-            //TODO handle what to do in this case...
+            StringJoiner joiner = new StringJoiner("/");
+            for (int key : observedAssociations) {
+                joiner.add(userCode.get(userMappings.indexOf(key)).getText());
+            }
+            fixTokenMappedString.put(assignment,joiner.toString());
+            return joiner.toString();
         }
-        return null;
     }
 
     /**
@@ -336,14 +396,26 @@ public class HarmonizationStateObject {
      * that should not be done in the harmonizaion loop
      */
     private class HarmonizationAlignment {
-        List<Alignments> matching;
+        private List<Alignments> matching;
+        private AlignmentType alignmentType;
         //NOTE this contains the reverse mapping, from the errcode to the fixed code
-        Map<Integer, List<Integer>> codeMapping = new HashMap<>();
+        private Map<Integer, List<Integer>> codeMapping = new HashMap<>();
+        // Keeping track of the lengths of each array for posterity sake
+        private int userCodeLength;
+        private int buggyCodeLength;
 
         public HarmonizationAlignment(List<Integer> userCode, List<Integer>
-                userAssignments, List<Integer> buggyCode, List<Integer> buggyCodeAssignments) {
-            matching = runAlignment(userCode, buggyCode);
+                userAssignments, List<Integer> buggyCode, List<Integer> buggyCodeAssignments,
+                                      AlignmentType type) {
+            alignmentType = type;
+            if (type == AlignmentType.LOCAL) {
+                matching = runLocalAlignment(userCode, buggyCode);
+            } else {
+                matching = runAlignment(userCode, buggyCode);
+            }
             makeMap(userCode, userAssignments, buggyCode, buggyCodeAssignments);
+            userCodeLength = userCode.size();
+            buggyCodeLength = buggyCode.size();
         }
 
         /*
@@ -367,32 +439,44 @@ public class HarmonizationStateObject {
             int i = 0;
             int j = 0;
             for (Alignments path: matching) {
-                if (path==Alignments.MATCH) {
-                    System.out.println("UserCodeIndex:"+i+"  BuggyCodeIndex:"+j);
-                    int t1 = userCode.get(i);
-                    int t2 = buggyCode.get(j);
+                switch (path) {
+                    case MATCH:
+                        int t1 = userCode.get(i);
+                        int t2 = buggyCode.get(j);
+                        if (TokenizerBuilder.isAmbiguousToken(t1) &&
+                                (TokenizerBuilder.isAmbiguousToken(t2))) {
+                            if (TokenizerBuilder.isDegenerate(t1,t2)){
+                                addMatch(buggyCodeAssignments.get(j), userAssignments.get(i));
+                            } else
+                            System.out.println("Degenracy issue between tokens '"+t1+"' and '"+t2+"'");
+//                        System.out.println(codeMapping);
+//                        System.out.println("add match for tokens:"+t1+" "+t2);
+//                        System.out.println("buggyCodeAssignments:"+buggyCodeAssignments);
+//                        System.out.println("userAssignments:"+userAssignments);
+//                        System.out.println(codeMapping);
 
-                    //if they are both amibiguous
-                    if (TokenizerBuilder.isAmbiguousToken(t1)&&
-                        (TokenizerBuilder.isAmbiguousToken(t2))) {
-                        System.out.println(codeMapping);
-                        System.out.println("add match for tokens:"+t1+" "+t2);
-                        System.out.println("buggyCodeAssignments:"+buggyCodeAssignments);
-                        System.out.println("userAssignments:"+userAssignments);
-                        addMatch(buggyCodeAssignments.get(j), userAssignments.get(i));
-                        System.out.println(codeMapping);
-
-                    }
-                    i++;
-                    j++;
-                } else if (path==Alignments.MISMATCH) {
-                    i++;
-                    j++;
-                } else if (path==Alignments.INSERTION){
-                    j++;
-                } else i++;
+                        }
+                        i++;
+                        j++;
+                        break;
+                    case MISMATCH:
+                        i++;
+                        j++;
+                        break;
+                    case INSERTION:
+                        j++;
+                        break;
+                    case ClipINSERTION:
+                        j++;
+                        break;
+                    case DELETION:
+                        i++;
+                        break;
+                    case ClipDELETION:
+                        i++;
+                        break;
+                }
             }
-            System.out.println(codeMapping);
         }
 
         /**
@@ -406,6 +490,155 @@ public class HarmonizationStateObject {
                 l.add(value);
                 codeMapping.put(key,l);
             }
+        }
+
+        /**
+         * Method that determines the index of the first matched character in the user code
+         * compared with the fix code.
+         */
+        public int getUserStartIndex() {
+            if (alignmentType==AlignmentType.LOCAL) {
+                int firstUserIndex = 0;
+                int matchingIndex = 0;
+                while (matchingIndex < matching.size()) {
+                    if (matching.get(matchingIndex)==Alignments.ClipDELETION) {
+                        firstUserIndex++;
+                    } else if (matching.get(matchingIndex)!=Alignments.ClipINSERTION) {
+                        break;
+                    }
+                    matchingIndex++;
+                }
+                return firstUserIndex;//TODO check for OBOB's
+            }
+            return 0;
+        }
+
+        /**
+         * Method that calculates the index of the last item in the user code that is important
+         */
+        public int getUserEndIndex() {
+            if (alignmentType==AlignmentType.LOCAL) {
+                int lastUserIndex = userCodeLength-1;
+                int matchingIndex = matching.size()-1;
+                while (matchingIndex > 0) {
+                    if (matching.get(matchingIndex)==Alignments.ClipDELETION) {
+                        lastUserIndex--;
+                    } else if (matching.get(matchingIndex)!=Alignments.ClipINSERTION) {
+                        break;
+                    }
+                    matchingIndex--;
+                }
+                return lastUserIndex;//TODO check for OBOB's
+            }
+            return userCodeLength-1;
+        }
+
+        /**
+         * Method that determines the index of the first token to use in the second alignment
+         * based on the provided userStartTokenIndex. Will determine the token based on the first
+         * fixcode token that aligns to the user code alignment
+         * @param userStartTokenIndex
+         */
+        public int getFixStartIndex(int userStartTokenIndex) throws Exception {
+            int curUserIndex = -1;
+            int curFixIndex = -1;
+            int matchingIndex = 0;
+            System.out.println("Getting fix start index:"+userStartTokenIndex);
+            while (matchingIndex < matching.size()) {
+                if (curUserIndex>=userStartTokenIndex) {
+                    return (curFixIndex>=0?curFixIndex:0);
+                }
+
+                // Else, properly increment the index counters
+                Alignments cur = matching.get(matchingIndex);
+                if (cur==Alignments.ClipDELETION) {
+                    curUserIndex++;
+                } else if (cur==Alignments.DELETION) {
+                    curUserIndex++;
+                } else if (cur==Alignments.ClipINSERTION) {
+                    curFixIndex++;
+                } else if (cur==Alignments.INSERTION) {
+                    curFixIndex++;
+                } else if (cur==Alignments.MATCH) {
+                    curUserIndex++;
+                    curFixIndex++;
+                } else if (cur==Alignments.MISMATCH) {
+                    curUserIndex++;
+                    curFixIndex++;
+                } else {
+                    throw new Exception("Alignment was bad, unexpected character '"+cur+"' at " +
+                            "position "+matchingIndex+" from the alignment: "+matching);
+                }
+
+                matchingIndex++;
+            }
+            throw new Exception("Something went wrong searching for the userIndexItem '"+
+                    userStartTokenIndex+"' from the alignment: "+matching);
+        }
+
+        /**
+         * Method that determines the index of the last token to use in the second alignment
+         * based on the provided userStartTokenIndex. Will determine the token based on the last
+         * fixcode token that aligns to the user code alignment
+         * @param userEndTokenIndex
+         */
+        public int getFixEndIndex(int userEndTokenIndex) throws Exception {
+            int curUserIndex = userCodeLength;
+            int curFixIndex = buggyCodeLength;
+            int lastFixIndex = buggyCodeLength;
+            int matchingIndex = matching.size()-1;
+            System.out.println("Getting fix end index:"+userEndTokenIndex);
+            while (matchingIndex >= 0) {
+                System.out.println("Matching index is:"+matchingIndex+"  " +
+                        "curUserIndex:"+curUserIndex+"   curFixIndex:"+curFixIndex+"     " +
+                        "lastMatchIndex:"+lastFixIndex);
+                if (curUserIndex <= userEndTokenIndex) {
+                    // We keep the last match index because we want to take the last of a run of
+                    // insertions and keep it.
+                    return lastFixIndex -1;
+                }
+
+                // Else, properly increment the index counters
+                Alignments cur = matching.get(matchingIndex);
+                if (cur==Alignments.ClipDELETION) {
+                    curUserIndex--;
+                } else if (cur==Alignments.DELETION) {
+                    if (curUserIndex-1<=userEndTokenIndex){
+                        return lastFixIndex -1;
+                    } else {
+                        lastFixIndex = curFixIndex;
+                    }
+                    curUserIndex--;
+                } else if (cur==Alignments.ClipINSERTION) {
+                    curFixIndex--;
+                    lastFixIndex = curFixIndex;
+                } else if (cur==Alignments.INSERTION) {
+                    curFixIndex--;
+                } else if (cur==Alignments.MATCH) {
+                    if (curUserIndex-1<=userEndTokenIndex){
+                        return lastFixIndex -1;
+                    } else {
+                        lastFixIndex = curFixIndex;
+                    }
+                    curUserIndex--;
+                    curFixIndex--;
+                } else if (cur==Alignments.MISMATCH) {
+                    if (curUserIndex-1<=userEndTokenIndex){
+                        return lastFixIndex -1;
+                    } else {
+                        lastFixIndex = curFixIndex;
+                    }
+                    curUserIndex--;
+                    curFixIndex--;
+                } else {
+                    throw new Exception("Alignment was bad, unexpected character '"+cur+"' at " +
+                            "position "+matchingIndex+" from the alignment: "+matching);
+                }
+
+                matchingIndex--;
+            }
+            throw new Exception("Something went wrong searching for the userIndexItem '"+
+                    userEndTokenIndex+"' from the alignment: "+matching);
         }
 
 
@@ -433,26 +666,30 @@ public class HarmonizationStateObject {
 
                     // if they match
                     if ((userCode.get(i - 1) == buggyCode.get(j - 1))) {
-                        match += TOKEN_MATCH;
+                        match += COMPLETEAL_TOKEN_MATCH;
                         last[i][j] = Alignments.MATCH;
 
                         // if they are possible matches
                     } else if (TokenizerBuilder.isDegenerate(userCode.get(i - 1), buggyCode
                             .get(j - 1))) {
-                        match += POSSIBLE_MATCH;
+                        match += COMPLETEAL_POSSIBLE_MATCH;
                         last[i][j] = Alignments.MATCH;
                     }
 
                         // if they were both identifiers
                     else if (TokenizerBuilder.isIdentifier(userCode.get(i - 1))
                             && TokenizerBuilder.isIdentifier(buggyCode.get(j - 1))) {
-                        match += IDENTIFIER_MATCH;
+                        match += COMPLETEAL_IDENTIFIER_MATCH;
                         last[i][j] = Alignments.MATCH;
+
+
+                    } else {
+                        match+= COMPLETEAL_MISMATCH;
                     }
 
                     match++;
-                    int left = scores[i - 1][j];
-                    int right = scores[i][j - 1];
+                    int left = scores[i - 1][j]+COMPLETEAL_INDEL;
+                    int right = scores[i][j - 1]+COMPLETEAL_INDEL;
                     int max = Math.max(match, Math.max(left, right));
 
                     //choose matches over other options
@@ -470,7 +707,7 @@ public class HarmonizationStateObject {
             int j = scores[0].length-1;
             while ((i != 0) || (j != 0)) {
                 output1.add(last[i][j]);
-                if (last[i][j] == Alignments.MATCH) {
+                if ((last[i][j] == Alignments.MATCH)||(last[i][j] == Alignments.MISMATCH)) {
                     i--;
                     j--;
                 } else if (last[i][j] == Alignments.INSERTION) {
@@ -483,10 +720,127 @@ public class HarmonizationStateObject {
             System.out.println("Alignment was: " + output2);
             return output2;
         }
+
+
+
+        /**
+         * Local intermediate alignmen step using smith-waterman approach
+         * <p>
+         * TODO make this a local alignment in the future
+         */
+        public List<Alignments> runLocalAlignment(List<Integer> userCode, List<Integer> buggyCode) {
+            int[][] scores = new int[userCode.size() + 1][buggyCode.size() + 1];
+            Alignments[][] last = new Alignments[userCode.size() + 1][buggyCode.size() + 1];
+
+            // setting up the initial conditions on the alginment table
+            Arrays.fill(last[0], Alignments.NULL);
+            for (int i = 0; i < last.length; i++) {
+                last[i][0] = Alignments.NULL;
+            }
+            last[0][0] = Alignments.NULL;
+
+            for (int i = 1; i < scores.length; i++) {
+                for (int j = 1; j < scores[0].length; j++) {
+                    int match = scores[i - 1][j - 1];
+
+                    // if they match
+                    if ((userCode.get(i - 1) == buggyCode.get(j - 1))) {
+                        match += LOCAL_TOKEN_MATCH;
+                        last[i][j] = Alignments.MATCH;
+
+                        // if they are possible matches
+                    } else if (TokenizerBuilder.isDegenerate(userCode.get(i - 1), buggyCode
+                            .get(j - 1))) {
+                        match += LOCAL_POSSIBLE_MATCH;
+                        last[i][j] = Alignments.MATCH;
+                    }
+
+                    // if they were both identifiers
+                    else if (TokenizerBuilder.isIdentifier(userCode.get(i - 1))
+                            && TokenizerBuilder.isIdentifier(buggyCode.get(j - 1))) {
+                        match += LOCAL_IDENTIFIER_MATCH;
+                        last[i][j] = Alignments.MATCH;
+                    } else {
+                        match += LOCAL_MISMATCH;
+                        last[i][j] = Alignments.MISMATCH;
+                    }
+
+                    match++;
+                    int left = scores[i - 1][j] + LOCAL_INDEL;
+                    int right = scores[i][j - 1] + LOCAL_INDEL;
+                    int max = Math.max(match, Math.max(left, right));
+
+                    //choose matches over other options
+                    if (max <= 0) {
+                        max = 0;
+                        last[i][j] = Alignments.NULL;
+                    } else if (match == max) ;
+                    else if (left == max) {last[i][j] = Alignments.DELETION;}
+                    else last[i][j] = Alignments.INSERTION;
+                    scores[i][j] = max;
+                }
+            }
+
+            // finding the best aligned subsection of the array to output
+            List<Alignments> output1 = new ArrayList<>();
+            List<Alignments> output2 = new ArrayList<>();
+            int i = scores.length-1;
+            int j = scores[0].length-1;
+            int max = 0;
+            for (int x = 1; x<last.length;x++) {
+                for (int y = 1; y<last[0].length;y++) {
+                    if (scores[x][y]>=max) {
+                        max = scores[x][y];
+                        i = x;
+                        j = y;
+                    }
+                }
+            }
+            // Adding Clip Insertions to the front and the back
+            for (int x = i;  x < scores.length-1; x++) {
+                output1.add(Alignments.ClipDELETION);
+            }
+            for (int y = j;  y < scores[0].length-1; y++) {
+                output1.add(Alignments.ClipINSERTION);
+            }
+
+            while ((i != 0) || (j != 0)) {
+                if (last[i][j] == Alignments.NULL) {
+                    break;
+                }
+                output1.add(last[i][j]);
+                if ((last[i][j] == Alignments.MATCH)||(last[i][j] == Alignments.MISMATCH)) {
+                    i--;
+                    j--;
+                } else if (last[i][j] == Alignments.INSERTION) {
+                    j--;
+                } else if (last[i][j] == Alignments.DELETION) i--;
+            }
+
+            // Adding clips to the front of the array and the back
+            while ((i != 0) || (j != 0)) {
+                if (i != 0) {
+                    output1.add(Alignments.ClipDELETION);
+                    i--;
+                } else {
+                    output1.add(Alignments.ClipINSERTION);
+                    j--;
+                }
+            }
+
+            //reversing for output
+            for (int a = output1.size()-1; a>=0; a--) output2.add(output1.get(a));
+            System.out.println("Alignment was: " + output2);
+            return output2;
+        }
     }
 
     private enum Alignments {
-        NULL,MATCH, MISMATCH, INSERTION, DELETION, ClipINSERTION, ClipDELETION
+        NULL, MATCH, MISMATCH, INSERTION, DELETION, ClipINSERTION, ClipDELETION
+    }
+
+    private enum AlignmentType {
+        LOCAL, COMPLETE
     }
 
 }
