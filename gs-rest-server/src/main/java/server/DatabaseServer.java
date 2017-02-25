@@ -329,8 +329,8 @@ public class DatabaseServer {
         for (DatabaseEntry e : entryList) {
             e.setSimilarity(computeSecondarySimilarity(userQuery, e));
         }
-        Collections.sort(entryList, (DatabaseEntry a, DatabaseEntry b) -> (int) (a.getSimilarity
-                () - b.getSimilarity()));
+        Collections.sort(entryList, (DatabaseEntry a, DatabaseEntry b) -> (int) (b.getSimilarity
+                () - a.getSimilarity()));
 
         //Cull the list to keep down outbound traffic to the client
         if (entryList.size() > MAX_USER_RETURN) {
@@ -354,8 +354,14 @@ public class DatabaseServer {
         // A filter to try and ascribe less weight to tiny fixes
         List<Integer> fix = DBAscii.toIntegerListFromAscii(entry.getFixedCode());
         System.out.println("Fix Size is "+fix.size()+" Err size is "+e.size()+" and score is: "+score);
-        if (fix.size()<e.size()) {
-            score = score*(1.0 -(1.0 - Math.sqrt((1.0 * fix.size()) / (1.0 * e.size()))));
+        if (fix.size()<=e.size()) {
+            score = score*( Math.sqrt((1.0 * fix.size()) / (1.0 * e.size())));
+        } else {
+            if (Math.sqrt((1.0 * fix.size())/(1.0 * e.size())) <= 1){
+                score = score * (1 - Math.sqrt((1.0 * fix.size()) / (1.0 * e.size())));
+            } else {
+                score = 0;
+            }
         }
         System.out.println("score is now: " + score);
         return score;

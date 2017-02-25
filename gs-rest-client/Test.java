@@ -13,5 +13,12 @@
 //z += 4; if(z == 5) { z++ return z; }
 
 public class Test {
+	public static void Main(String[] args) {
+		System.out.println("Hello World")
+	}
+}
+
+public class Test {
 	System.out.println("Hello World")
 }
+
