@@ -66,6 +66,7 @@ public class LevScorer {
      */
     public static int scoreSimilarityLocal(List<Integer> queryString, List<Integer> tokens) {
         if (queryString.size() == 0 || tokens.size() == 0) return 0;
+        System.out.println("Alignming things\nUserCode = "+queryString+"\nErrCode = "+tokens);
 
         int[][] scores = new int[queryString.size() + 1][tokens.size() + 1];
 
@@ -77,15 +78,14 @@ public class LevScorer {
                 if ((queryString.get(i - 1) == tokens.get(j - 1))) {
                     match += LOCAL_TOKEN_MATCH;
 
-                // if they were both identifiers
-                if    (((queryString.get(i - 1) == 100) || (queryString.get(i - 1)
-                            > 109)) && ((tokens.get(j - 1) == 100) || (tokens.get(i - 1)
+                    // if they were both identifiers
+                } else if (((queryString.get(i - 1) == 100) || (queryString.get(i - 1)
+                            > 109)) && ((tokens.get(j - 1) == 100) || (tokens.get(j - 1)
                             > 109))) match += LOCAL_IDENTIFIER_MATCH;
-                } else {
+                else {
                     match += LOCAL_MISMATCH;
                 }
 
-                match++;
                 int left = scores[i - 1][j] + LOCAL_INDEL;
                 int right = scores[i][j - 1] + LOCAL_INDEL;
                 int max = Math.max(match, Math.max(left, right));
@@ -99,8 +99,6 @@ public class LevScorer {
         }
 
         // finding the best aligned subsection of the array to output
-        int i = scores.length-1;
-        int j = scores[0].length-1;
         int maxAlignment = 0;
         for (int x = 1; x<scores.length;x++) {
             for (int y = 1; y<scores[0].length;y++) {

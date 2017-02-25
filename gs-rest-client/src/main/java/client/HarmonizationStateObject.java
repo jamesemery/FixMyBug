@@ -105,7 +105,7 @@ public class HarmonizationStateObject {
             .generateDisambiguationList(tokenizedCode.getTokens());
         userAssignments = userAssignments.subList(userCode.get(0).getTokenIndex(),userCode.get
                 (userCode.size()-1).getTokenIndex());
-
+        System.out.println("attemtping to harmonize with entry:\n"+e.toString());
         List<Integer > buggyCode = Arrays.asList(e.getBuggyCode().split(" ")).stream().map
                 (Integer::parseInt).collect(Collectors.toList());
         List<Integer > buggyCodeAssignments = Arrays.asList(e.getBuggyCodeAssignments().split(" ")).stream()

@@ -31,11 +31,11 @@ public class DatabaseServer {
     String tableName;
 
     // Default database operation variables
-    public static final int DEFAULT_NGRAM_SIZE = 4;
+    public static final int DEFAULT_NGRAM_SIZE = 3;
     public static final String DATABASE_TABLE_NAME = "master_table";
     public static final int MIN_SIMILAR_TO_PULL = 4;
     public static final double DEFAULT_PERCENT_TO_PULL = 0.5;
-    public static final int MAX_USER_RETURN = 4;
+    public static final int MAX_USER_RETURN = 15;
 
     // The table entries
     public static final String[] DATABASE_TABLE_FORMAT = {"id", "buggyCode",
@@ -249,7 +249,6 @@ public class DatabaseServer {
         indStatement.executeUpdate("CREATE TABLE " + table + "_"
                 + ngramsize + "comparison (id INTEGER, fix VARCHAR(128));");
 
-
         String qTokens = DBAscii.toAsciiFormat(Arrays.asList(query.split(" ")).stream().map(Integer::parseInt)
                 .collect(Collectors.toList()));
         System.out.println("UserCodeAscii is: " + qTokens);
@@ -265,7 +264,7 @@ public class DatabaseServer {
             //      .executeQuery("SELECT id FROM " + indexTableName + " " +
             //            "WHERE hash = " + hash);
             indStatement.executeUpdate("INSERT INTO " + table + "_" + ngramsize +
-                    "comparison SELECT M.id, M.fixed_code FROM  master_table M JOIN " +
+                    "comparison SELECT DISTINCT M.id, M.fixed_code FROM  master_table M JOIN " +
                     indexTableName + " I on M.id = I.id WHERE I.hash = " + hash + ";");
             // Grab every in in result set and put it into the map
 //            while (ngramSet.next()) {
@@ -330,8 +329,8 @@ public class DatabaseServer {
         for (DatabaseEntry e : entryList) {
             e.setSimilarity(computeSecondarySimilarity(userQuery, e));
         }
-        Collections.sort(entryList, (DatabaseEntry a, DatabaseEntry b) -> (int) (a.getSimilarity
-                () - b.getSimilarity()));
+        Collections.sort(entryList, (DatabaseEntry a, DatabaseEntry b) -> (int) (b.getSimilarity
+                () - a.getSimilarity()));
 
         //Cull the list to keep down outbound traffic to the client
         if (entryList.size() > MAX_USER_RETURN) {
@@ -347,9 +346,27 @@ public class DatabaseServer {
      * @return a similarity score between the userQuery and Database Entry code represented as a double
      */
     private double computeSecondarySimilarity(String userQuery, DatabaseEntry entry) {
-        List<Integer> q = DBAscii.toIntegerListFromAscii(userQuery);
+        List<Integer> q = Arrays.asList(userQuery.split(" ")).stream().map(Integer::parseInt)
+                .collect(Collectors.toList());
         List<Integer> e = DBAscii.toIntegerListFromAscii(entry.getBuggyCode());
-        return LevScorer.scoreSimilarityLocal(q, e);
+        double score = LevScorer.scoreSimilarityLocal(q, e);
+
+        // A filter to try and ascribe less weight to tiny fixes
+        List<Integer> fix = DBAscii.toIntegerListFromAscii(entry.getFixedCode());
+        System.out.println("Fix Size is "+fix.size()+" Err size is "+e.size()+" and score is: "+score);
+        if (fix.size()<=e.size()) {
+
+            double scoreRatio = Math.atan( 10*(1.0*fix.size()-0.3*e.size()) / (1.0*e.size()) - 0.5) /Math.PI
+                    + (1 - Math.atan( 10*(1.0-0.3) - 0.5)/ Math.PI);
+            score = score * scoreRatio*scoreRatio;
+        } else {
+
+            double scoreRatio = Math.atan( 10*(-1.0*fix.size()+2.5*e.size()) / (1.0*e.size())) /Math.PI
+                    + (1 - Math.atan( 10*(-1.0+2.5))/ Math.PI);
+            score = score * scoreRatio*scoreRatio;
+        }
+        System.out.println("score is now: " + score);
+        return score;
     }
 
 
