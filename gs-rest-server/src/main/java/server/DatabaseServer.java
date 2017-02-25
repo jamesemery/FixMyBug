@@ -264,7 +264,7 @@ public class DatabaseServer {
             //      .executeQuery("SELECT id FROM " + indexTableName + " " +
             //            "WHERE hash = " + hash);
             indStatement.executeUpdate("INSERT INTO " + table + "_" + ngramsize +
-                    "comparison SELECT M.id, M.fixed_code FROM  master_table M JOIN " +
+                    "comparison SELECT DISTINCT M.id, M.fixed_code FROM  master_table M JOIN " +
                     indexTableName + " I on M.id = I.id WHERE I.hash = " + hash + ";");
             // Grab every in in result set and put it into the map
 //            while (ngramSet.next()) {
