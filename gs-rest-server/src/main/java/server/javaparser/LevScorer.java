@@ -66,6 +66,7 @@ public class LevScorer {
      */
     public static int scoreSimilarityLocal(List<Integer> queryString, List<Integer> tokens) {
         if (queryString.size() == 0 || tokens.size() == 0) return 0;
+        System.out.println("Alignming things\nUserCode = "+queryString+"\nErrCode = "+tokens);
 
         int[][] scores = new int[queryString.size() + 1][tokens.size() + 1];
 
