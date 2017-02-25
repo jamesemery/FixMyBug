@@ -349,7 +349,14 @@ public class DatabaseServer {
     private double computeSecondarySimilarity(String userQuery, DatabaseEntry entry) {
         List<Integer> q = DBAscii.toIntegerListFromAscii(userQuery);
         List<Integer> e = DBAscii.toIntegerListFromAscii(entry.getBuggyCode());
-        return LevScorer.scoreSimilarityLocal(q, e);
+        double score = LevScorer.scoreSimilarityLocal(q, e);
+
+        // A filter to try and ascribe less weight to tiny fixes
+        List<Integer> fix = DBAscii.toIntegerListFromAscii(entry.getFixedCode());
+        if (fix.size()<e.size()) {
+            score = score*(1.0 -(1.0 - Math.sqrt((1.0 * fix.size()) / (1.0 * e.size()))));
+        }
+        return score;
     }
 
 

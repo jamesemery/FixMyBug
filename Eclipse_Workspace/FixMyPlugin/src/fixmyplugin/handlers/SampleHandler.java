@@ -36,7 +36,7 @@ import org.eclipse.jface.viewers.ISelection;
 public class SampleHandler extends AbstractHandler {
 	
 	// When toggled to true, calls a dummy method rather than the actual server.
-	private boolean testing = true;
+	private boolean testing = false;
 	
 	
 	/**
