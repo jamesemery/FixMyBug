@@ -494,7 +494,7 @@ public class TokenizerBuilder {
 
 
             // if one is a class, check for class degeneracy
-            if ((token1==100)||(token2==100)) {
+            if ((token1==110)||(token2==110)) {
                 if ((token1==114)||(token2==114)) {
                     return true;
                 }
