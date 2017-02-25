@@ -355,13 +355,13 @@ public class DatabaseServer {
         List<Integer> fix = DBAscii.toIntegerListFromAscii(entry.getFixedCode());
         System.out.println("Fix Size is "+fix.size()+" Err size is "+e.size()+" and score is: "+score);
         if (fix.size()<=e.size()) {
-            score = score*( Math.sqrt((1.0 * fix.size()) / (1.0 * e.size())));
+            double scoreRatio = Math.atan((1.0*fix.size() / (1.0*e.size())) - 1.0*e.size()) /
+                    Math.PI + (1 - Math.atan(1.0 * e.size() - 1) / Math.PI);
+            score = score*scoreRatio;
         } else {
-            if (Math.sqrt((1.0 * fix.size())/(1.0 * e.size())) <= 1){
-                score = score * (1 - Math.sqrt((1.0 * fix.size()) / (1.0 * e.size())));
-            } else {
-                score = 0;
-            }
+            double scoreRatio = Math.atan(-(1.0*fix.size() / (1.0*e.size())) + 1.0*e.size()) / Math.PI
+                    + (1 - Math.atan(1.0 * e.size() - 1) / Math.PI);
+            score = score * scoreRatio;
         }
         System.out.println("score is now: " + score);
         return score;
