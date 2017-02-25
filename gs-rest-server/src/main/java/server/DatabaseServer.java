@@ -249,7 +249,6 @@ public class DatabaseServer {
         indStatement.executeUpdate("CREATE TABLE " + table + "_"
                 + ngramsize + "comparison (id INTEGER, fix VARCHAR(128));");
 
-
         String qTokens = DBAscii.toAsciiFormat(Arrays.asList(query.split(" ")).stream().map(Integer::parseInt)
                 .collect(Collectors.toList()));
         System.out.println("UserCodeAscii is: " + qTokens);
@@ -347,7 +346,8 @@ public class DatabaseServer {
      * @return a similarity score between the userQuery and Database Entry code represented as a double
      */
     private double computeSecondarySimilarity(String userQuery, DatabaseEntry entry) {
-        List<Integer> q = DBAscii.toIntegerListFromAscii(userQuery);
+        List<Integer> q = Arrays.asList(userQuery.split(" ")).stream().map(Integer::parseInt)
+                .collect(Collectors.toList());
         List<Integer> e = DBAscii.toIntegerListFromAscii(entry.getBuggyCode());
         double score = LevScorer.scoreSimilarityLocal(q, e);
 
