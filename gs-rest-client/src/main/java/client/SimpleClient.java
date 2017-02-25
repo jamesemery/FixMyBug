@@ -191,7 +191,12 @@ public class SimpleClient {
                 for (DatabaseEntry e : dbEntries.getEntryList()) {
                     System.out.println("\nFixed Code:");
                     System.out.println(stateObject.harmonize(e));
-                    fixedCode.add(stateObject.harmonize(e));
+                    String code = stateObject.harmonize(e);
+                    // Make sure duplicate entries don't make it into the final list
+                    if (!fixedCode.contains(code)) {
+                      fixedCode.add(code);
+                    }
+                    //fixedCode.add(stateObject.harmonize(e));
                             //tokenBuilder.harmonize(e.getFixedCode(),sourceFile));
                 }
                 break;
@@ -215,6 +220,11 @@ public class SimpleClient {
 
         } catch (IOException e) {
             e.printStackTrace();
+        }
+        // Return just the top 5 fixes
+        if (fixedCode.size() > 5) {
+          List<String> topFive = new ArrayList<String>(fixedCode.subList(0, 4));
+          return topFive;
         }
         return fixedCode;
     }
