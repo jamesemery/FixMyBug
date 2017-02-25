@@ -51,7 +51,7 @@
                id="FixMyPlugin.toolbars.sampleToolbar">
             <command
                   commandId="FixMyPlugin.commands.sampleCommand"
-                  icon="icons/Lure.png"
+                  icon="icons/fixmybug_icon.png"
                   tooltip="Fix My Bug!"
                   id="FixMyPlugin.toolbars.sampleCommand">
             </command>
@@ -64,7 +64,7 @@
       		name="Bug Fixes"
             class="fixmyplugin.FixMyBugView"
             id="BugFixerView"
-            icon="icons/Lure.png"
+            icon="icons/fixmybug_icon.png"
             >
       </view>
 </extension>

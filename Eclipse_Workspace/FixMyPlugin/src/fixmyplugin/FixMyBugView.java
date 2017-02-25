@@ -72,7 +72,7 @@ public class FixMyBugView extends ViewPart {
 //		unusedData.horizontalAlignment = SWT.FILL;
 //		unusedData.verticalAlignment = SWT.FILL;
 		unusedText.setLayoutData(unusedData);
-		unusedText.setText("Highlight text and press the Lure Ball!");
+		unusedText.setText("Highlight text and press the blue bug icon!");
 		
 		scrolledComposite.setContent(composite);
     }
