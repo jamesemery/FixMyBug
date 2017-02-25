@@ -35,7 +35,7 @@ public class DatabaseServer {
     public static final String DATABASE_TABLE_NAME = "master_table";
     public static final int MIN_SIMILAR_TO_PULL = 4;
     public static final double DEFAULT_PERCENT_TO_PULL = 0.5;
-    public static final int MAX_USER_RETURN = 4;
+    public static final int MAX_USER_RETURN = 15;
 
     // The table entries
     public static final String[] DATABASE_TABLE_FORMAT = {"id", "buggyCode",
