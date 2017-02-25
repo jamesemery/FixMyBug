@@ -353,7 +353,7 @@ public class DatabaseServer {
 
         // A filter to try and ascribe less weight to tiny fixes
         List<Integer> fix = DBAscii.toIntegerListFromAscii(entry.getFixedCode());
-        System.out.println("Fix Size is "+fix.size()+" and score is: "+score);
+        System.out.println("Fix Size is "+fix.size()+" Err size is "+e.size()+" and score is: "+score);
         if (fix.size()<e.size()) {
             score = score*(1.0 -(1.0 - Math.sqrt((1.0 * fix.size()) / (1.0 * e.size()))));
         }
