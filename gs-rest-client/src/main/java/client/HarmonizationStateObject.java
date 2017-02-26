@@ -445,7 +445,7 @@ public class HarmonizationStateObject {
                         int t2 = buggyCode.get(j);
                         if (TokenizerBuilder.isAmbiguousToken(t1) &&
                                 (TokenizerBuilder.isAmbiguousToken(t2))) {
-                            if (TokenizerBuilder.isDegenerate(t1,t2)){
+                            if (TokenizerBuilder.isDegenerate(t1, t2)){
                                 addMatch(buggyCodeAssignments.get(j), userAssignments.get(i));
                             } else
                             System.out.println("Degenracy issue between tokens '"+t1+"' and '"+t2+"'");
@@ -618,18 +618,18 @@ public class HarmonizationStateObject {
                     if (curUserIndex-1<=userEndTokenIndex){
                         return lastFixIndex -1;
                     } else {
+                        curUserIndex--;
+                        curFixIndex--;
                         lastFixIndex = curFixIndex;
                     }
-                    curUserIndex--;
-                    curFixIndex--;
                 } else if (cur==Alignments.MISMATCH) {
                     if (curUserIndex-1<=userEndTokenIndex){
                         return lastFixIndex -1;
                     } else {
+                        curUserIndex--;
+                        curFixIndex--;
                         lastFixIndex = curFixIndex;
                     }
-                    curUserIndex--;
-                    curFixIndex--;
                 } else {
                     throw new Exception("Alignment was bad, unexpected character '"+cur+"' at " +
                             "position "+matchingIndex+" from the alignment: "+matching);
