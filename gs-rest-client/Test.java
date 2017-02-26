@@ -14,11 +14,13 @@
 
 public class Test {
 	public static void Main(String[] args) {
-		System.out.println("Hello World")
+		int i = new int[];
 	}
 }
 
 public class Test {
 	System.out.println("Hello World")
 }
+
+
 
